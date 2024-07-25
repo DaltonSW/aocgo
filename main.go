@@ -1,4 +1,10 @@
-package aocutil
+package main
+
+import (
+	"fmt"
+
+	"dalton.dog/aocutil/internal"
+)
 
 // TODO: GetData()
 
@@ -7,6 +13,7 @@ package aocutil
 // TODO: GetExample()
 
 func main() {
+	fmt.Println(internal.GetSessionToken())
 	return
 }
 
