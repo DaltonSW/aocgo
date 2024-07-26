@@ -1,4 +1,4 @@
-package aocutil
+package aocli
 
 // TODO: `help` - Print help and info about the CLI tool
 
