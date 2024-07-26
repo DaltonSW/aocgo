@@ -1,4 +1,4 @@
-package internal
+package api
 
 import (
 	"fmt"
@@ -8,7 +8,7 @@ import (
 	"strconv"
 	"strings"
 
-	"dalton.dog/aocutil/internal/models"
+	"github.com/charmbracelet/log"
 )
 
 const USER_AGENT = "dalton.dog/aocutil/0.0"
@@ -38,7 +38,7 @@ func InitClient(userSessionToken string) {
 	MasterClient = client
 }
 
-func newGetReq(url string) (*http.Response, error) {
+func NewGetReq(url string) (*http.Response, error) {
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		panic(err)
@@ -63,12 +63,14 @@ func newGetReq(url string) (*http.Response, error) {
 
 // My `answer` tests in Postman weren't working. Not sure what I was doing wrong. Maybe it'll work here
 // So... Postman at home was working fine? I am confuse, but oh well lol
-func SubmitAnswer(year int, day int, part int, val *models.SubValue) error {
+func SubmitAnswer(year int, day int, part int, userSession string, answer string) error {
 	URL := PuzzleAnswerURL(year, day)
+	log.Infof("Attempting to submit answer for Day %v (%v) [Part %v] to URL %v", day, year, part, URL)
+	log.Infof("Answer: %v -- User: %v", answer, userSession)
 
 	formData := url.Values{}
 	formData.Set("level", strconv.Itoa(part))
-	formData.Set("answer", val.GetValue())
+	formData.Set("answer", answer)
 
 	encodedForm := formData.Encode()
 
@@ -78,7 +80,7 @@ func SubmitAnswer(year int, day int, part int, val *models.SubValue) error {
 	}
 
 	req.Header.Add("User-Agent", USER_AGENT)
-	req.Header.Add("Cookie", fmt.Sprintf("session=%v", MasterClient.sessionToken))
+	req.Header.Add("Cookie", fmt.Sprintf("session=%v", userSession))
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
 	resp, err := MasterClient.client.Do(req)
@@ -92,38 +94,8 @@ func SubmitAnswer(year int, day int, part int, val *models.SubValue) error {
 		return err
 	}
 
-	fmt.Println(string(data))
+	log.Infof("Response: %v", string(data))
 	return nil
-}
-
-func GetGenericPuzzleData(year int, day int) {
-	URL := PuzzlePageURL(year, day)
-	resp, err := newGetReq(URL)
-	if err != nil {
-		panic(err)
-	}
-
-	fmt.Println(resp)
-}
-
-func GetUserPuzzleInput(year int, day int, userSession string) []byte {
-	URL := PuzzleInputURL(year, day)
-	resp, err := newGetReq(URL)
-	if err != nil {
-		panic(err)
-	}
-	defer resp.Body.Close()
-
-	inputData, err := io.ReadAll(resp.Body)
-	if err != nil {
-		panic(err)
-	}
-
-	return inputData
-}
-
-func GetData(user *models.User, day int, year int) string {
-	return ""
 }
 
 // URL Helper Methods
