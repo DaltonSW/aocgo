@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	"dalton.dog/aocutil/internal"
+	"dalton.dog/aocutil/internal/session"
 )
 
 // TODO: GetData()
@@ -13,7 +13,7 @@ import (
 // TODO: GetExample()
 
 func main() {
-	fmt.Println(internal.GetSessionToken())
+	fmt.Println(session.GetSessionToken())
 	return
 }
 
