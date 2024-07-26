@@ -1,3 +1,7 @@
 package models
 
-type User struct{}
+type User struct {
+	numStars   int
+	calendar   Calendar
+	sessionTok string
+}

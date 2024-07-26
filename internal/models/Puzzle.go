@@ -1,15 +1,12 @@
 package models
 
 import (
+	"io"
 	"strconv"
 	"time"
-)
 
-type Year struct {
-	numStars    int
-	puzzles     []*Puzzle
-	leaderboard Leaderboard
-}
+	"dalton.dog/aocutil/internal/api"
+)
 
 type Puzzle struct {
 	day   int
@@ -17,6 +14,37 @@ type Puzzle struct {
 	partA PuzzlePart
 	partB PuzzlePart
 	URL   string
+}
+
+func (p *Puzzle) GetPuzzlePageData() []byte {
+	resp, err := api.NewGetReq(p.URL)
+	if err != nil {
+		panic(err)
+	}
+
+	defer resp.Body.Close()
+
+	pageData, err := io.ReadAll(resp.Body)
+	if err != nil {
+		panic(err)
+	}
+
+	return pageData
+}
+
+func (p *Puzzle) GetUserPuzzleInput(userSession string) []byte {
+	resp, err := api.NewGetReq(p.URL + "/input")
+	if err != nil {
+		panic(err)
+	}
+	defer resp.Body.Close()
+
+	inputData, err := io.ReadAll(resp.Body)
+	if err != nil {
+		panic(err)
+	}
+
+	return inputData
 }
 
 type PuzzlePart struct {
@@ -45,15 +73,4 @@ func (v SubValue) GetValue() string {
 		return v.string
 	}
 	return strconv.Itoa(v.number)
-}
-
-type Leaderboard struct {
-	year   int
-	day    int
-	places []*Placing
-}
-
-type Placing struct {
-	score    int
-	username string
 }
