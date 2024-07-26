@@ -4,6 +4,9 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
+	"strconv"
+	"strings"
 
 	"dalton.dog/aocutil/internal/models"
 )
@@ -53,16 +56,48 @@ func newGetReq(url string) (*http.Response, error) {
 //	URL:	 https://adventofcode.com/yyyy/day/d/answer
 //	Headers:
 //		Cookie: session=<session token>
+//		Content-Type: application/x-www-form-urlencoded
 //	Form Data (Body):
 //		`level` : 1 if Part A, 2 if Part B
 //		`answer` : Answer to submit
 
 // My `answer` tests in Postman weren't working. Not sure what I was doing wrong. Maybe it'll work here
 // So... Postman at home was working fine? I am confuse, but oh well lol
-func NewPostReq() {}
+func SubmitAnswer(year int, day int, part int, val *models.SubValue) error {
+	URL := PuzzleAnswerURL(year, day)
 
-func GetGenericPuzzleData(day int, year int) {
-	URL := fmt.Sprintf(DAY_URL, year, day)
+	formData := url.Values{}
+	formData.Set("level", strconv.Itoa(part))
+	formData.Set("answer", val.GetValue())
+
+	encodedForm := formData.Encode()
+
+	req, err := http.NewRequest("POST", URL, strings.NewReader(encodedForm))
+	if err != nil {
+		return err
+	}
+
+	req.Header.Add("User-Agent", USER_AGENT)
+	req.Header.Add("Cookie", fmt.Sprintf("session=%v", MasterClient.sessionToken))
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+	resp, err := MasterClient.client.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	data, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
+
+	fmt.Println(string(data))
+	return nil
+}
+
+func GetGenericPuzzleData(year int, day int) {
+	URL := PuzzlePageURL(year, day)
 	resp, err := newGetReq(URL)
 	if err != nil {
 		panic(err)
@@ -72,7 +107,8 @@ func GetGenericPuzzleData(day int, year int) {
 }
 
 func GetUserPuzzleInput(year int, day int, userSession string) []byte {
-	resp, err := newGetReq(PuzzleInputURL(year, day))
+	URL := PuzzleInputURL(year, day)
+	resp, err := newGetReq(URL)
 	if err != nil {
 		panic(err)
 	}

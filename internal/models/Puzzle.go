@@ -1,6 +1,9 @@
 package models
 
-import "time"
+import (
+	"strconv"
+	"time"
+)
 
 type Year struct {
 	numStars    int
@@ -35,6 +38,13 @@ type Submission struct {
 type SubValue struct {
 	number int
 	string string
+}
+
+func (v SubValue) GetValue() string {
+	if v.string != "" {
+		return v.string
+	}
+	return strconv.Itoa(v.number)
 }
 
 type Leaderboard struct {
