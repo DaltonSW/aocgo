@@ -2,6 +2,7 @@ package internal
 
 import (
 	"fmt"
+	"io"
 	"net/http"
 
 	"dalton.dog/aocutil/internal/models"
@@ -57,12 +58,48 @@ func newGetReq(url string) (*http.Response, error) {
 //		`answer` : Answer to submit
 
 // My `answer` tests in Postman weren't working. Not sure what I was doing wrong. Maybe it'll work here
+// So... Postman at home was working fine? I am confuse, but oh well lol
 func NewPostReq() {}
 
-func GetGenericPuzzleData(day int, year int) {}
+func GetGenericPuzzleData(day int, year int) {
+	URL := fmt.Sprintf(DAY_URL, year, day)
+	resp, err := newGetReq(URL)
+	if err != nil {
+		panic(err)
+	}
 
-func GetUserPuzzleInput(day int, year int, userSession string) {}
+	fmt.Println(resp)
+}
+
+func GetUserPuzzleInput(year int, day int, userSession string) []byte {
+	resp, err := newGetReq(PuzzleInputURL(year, day))
+	if err != nil {
+		panic(err)
+	}
+	defer resp.Body.Close()
+
+	inputData, err := io.ReadAll(resp.Body)
+	if err != nil {
+		panic(err)
+	}
+
+	return inputData
+}
 
 func GetData(user *models.User, day int, year int) string {
 	return ""
+}
+
+// URL Helper Methods
+
+func PuzzlePageURL(year int, day int) string {
+	return fmt.Sprintf(DAY_URL, year, day)
+}
+
+func PuzzleInputURL(year int, day int) string {
+	return fmt.Sprintf(DAY_URL, year, day) + "/input"
+}
+
+func PuzzleAnswerURL(year int, day int) string {
+	return fmt.Sprintf(DAY_URL, year, day) + "/answer"
 }
