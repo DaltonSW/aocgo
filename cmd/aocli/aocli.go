@@ -1,4 +1,4 @@
-package aocli
+package main
 
 import (
 	"fmt"
@@ -22,9 +22,9 @@ var helpStyle = lipgloss.NewStyle()
 
 func main() {
 	args := os.Args
-
 	if len(args) == 1 {
 		nothing()
+		os.Exit(0)
 	}
 
 	switch args[1] {
@@ -50,15 +50,28 @@ func nothing() {
 	fmt.Println(helpStyle.Render(s))
 }
 
-// `help` command - Prints info and a list of commands
+// `help [command]` command
+// Desc: Prints info and a list of commands
+// Params:
+//
+//	[command] - command name to print help for
 func help(args []string) {
 
 }
 
+// `get [year] [day]` command
+// Desc: Gets input data for a specific day
+// Params:
+//
+//	[year] - 2 or 4 digit year (16 or 2016)
+//	[day]  - 1 or 2 digit day (1, 01, 21)
+//
+// TODO: Accept an -o flag to write the input to a file vs forcing a redirection
 func get(args []string) {
 
 }
 
+// `submit [year] [day] [part] [answer]` command
 func submit(args []string) {
 
 }
@@ -67,10 +80,14 @@ func run(args []string) {
 
 }
 
+// `view [year] [day]` command
+// Desc: Pretty-prints the puzzle's page data
 func view(args []string) {
 
 }
 
+// `health` command
+// Desc: Checks if a session key is available
 func health(args []string) {
 
 }
