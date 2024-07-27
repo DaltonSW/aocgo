@@ -12,12 +12,12 @@ import (
 const PUZZLE_URL = "https://adventofcode.com/%v/day/%v"
 
 type Puzzle struct {
-	day   int
-	year  int
-	desc  string
-	partA PuzzlePart
-	partB PuzzlePart
-	URL   string
+	day      int
+	year     int
+	pageData *PageData
+	partA    PuzzlePart
+	partB    PuzzlePart
+	URL      string
 }
 
 func NewPuzzle(year int, day int) *Puzzle {
@@ -28,26 +28,33 @@ func NewPuzzle(year int, day int) *Puzzle {
 	}
 }
 
-func (p *Puzzle) GetPuzzlePageData() []byte {
+func (p *Puzzle) GetPuzzlePageData(userSession string) PageData {
+	if p.pageData != nil {
+		return *p.pageData
+	}
 	// TODO: Try load from disk
-	resp, err := api.NewGetReq(p.URL)
+	resp, err := api.NewGetReq(p.URL, userSession)
 	if err != nil {
 		panic(err)
 	}
 
 	defer resp.Body.Close()
 
-	pageData, err := io.ReadAll(resp.Body)
+	rawPage, err := io.ReadAll(resp.Body)
 	if err != nil {
 		panic(err)
 	}
 
+	pageData := NewPageData(rawPage)
+
+	p.pageData = pageData
+
 	// TODO: Save to disk
-	return pageData
+	return *pageData
 }
 
 func (p *Puzzle) GetUserPuzzleInput(userSession string) []byte {
-	resp, err := api.NewGetReq(p.URL + "/input")
+	resp, err := api.NewGetReq(p.URL+"/input", userSession)
 	if err != nil {
 		panic(err)
 	}

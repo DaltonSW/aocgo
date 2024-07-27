@@ -1,6 +1,8 @@
 package models
 
 import (
+	"errors"
+
 	"dalton.dog/aocutil/internal/api"
 	"dalton.dog/aocutil/internal/session"
 	"github.com/charmbracelet/log"
@@ -26,6 +28,10 @@ func NewUser(token string) (*User, error) {
 		}
 	}
 	// Try to load User object to store stuff like numStars and calendar info
+
+	if token == "" {
+		return nil, errors.New("Token was still empty after load attempts.")
+	}
 
 	api.InitClient(token)
 

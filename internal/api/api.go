@@ -39,16 +39,22 @@ func InitClient(userSessionToken string) {
 	MasterClient = client
 }
 
-func NewGetReq(url string) (*http.Response, error) {
+func NewGetReq(url string, sessionToken string) (*http.Response, error) {
 	log.Debug("Making GET request.", "URL", url)
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		log.Fatal("Error creating GET request!", "error", err)
 	}
 
+	if sessionToken == "" {
+		sessionToken = MasterClient.sessionToken
+	}
+
 	// We don't NEED to send a User-Agent, but it feels respectful in case we need to get yelled at
 	req.Header.Add("User-Agent", USER_AGENT)
-	req.Header.Add("Cookie", fmt.Sprintf("session=%v", MasterClient.sessionToken))
+	log.Debug("Adding header to request.", "User Agent", USER_AGENT)
+	req.Header.Add("Cookie", fmt.Sprintf("session=%s", strings.TrimSpace(sessionToken)))
+	log.Debug("Adding header to request.", "Cookie", fmt.Sprintf("session=%v", sessionToken))
 
 	return MasterClient.client.Do(req)
 }

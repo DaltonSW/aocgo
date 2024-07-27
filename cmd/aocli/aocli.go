@@ -24,6 +24,8 @@ var testStyle = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("#FF000
 
 // NOTE: Bold just changes to a different font for me. Not sure why. But it DOES do something
 func main() {
+	log.SetLevel(log.DebugLevel)
+
 	args := os.Args
 	if len(args) == 1 {
 		nothing()
@@ -106,6 +108,7 @@ func run(args []string) {
 // `view [year] [day]` command
 // Desc: Pretty-prints the puzzle's page data
 func view(args []string) {
+	// TODO: Load user since it needs the token to know whether or not to include Part B
 	// TODO: Validate input
 	if len(args) < 4 {
 		return
@@ -113,12 +116,16 @@ func view(args []string) {
 		// TODO: Print `get` help message
 	}
 
+	user, err := models.NewUser("")
+	if err != nil {
+		log.Error("Unable to load/create user!", "err", err)
+	}
+
 	year, _ := strconv.Atoi(args[2])
 	day, _ := strconv.Atoi(args[3])
 
 	puzzle := models.NewPuzzle(year, day)
-	rawPage := puzzle.GetPuzzlePageData()
-	pageData := models.NewPageData(rawPage)
+	pageData := puzzle.GetPuzzlePageData(user.GetToken())
 	pageData.PrintPageData()
 }
 

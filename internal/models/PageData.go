@@ -6,19 +6,10 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/PuerkitoBio/goquery"
+	"github.com/PuerkitoBio/goquery" // Bless this package
 	"github.com/charmbracelet/lipgloss"
 	"github.com/charmbracelet/log"
-	// "github.com/muesli/reflow/wordwrap"
-	// "github.com/muesli/termenv"
-	// These might be useful
-	// "github.com/muesli/reflow/indent"
-	// "github.com/muesli/reflow/padding"
 )
-
-// TODO: Replace lipgloss with `reflow` and `termenv`
-// https://github.com/muesli/reflow
-// https://github.com/muesli/termenv
 
 type PageData struct {
 	// Both of these two can be found in the page's <head>'s <title> tag
@@ -29,11 +20,11 @@ type PageData struct {
 	// Below that, there should be a header that has the day's title. Ex: '--- Day 1: Trebuchet?! ---'
 	header string
 
-	// The article consists of articleContents
+	// The article consists of articleContents (as you might expect)
 	articleContents *goquery.Selection
 }
 
-func NewPageData(raw []byte) PageData {
+func NewPageData(raw []byte) *PageData {
 	reader := bytes.NewReader(raw)
 
 	doc, err := goquery.NewDocumentFromReader(reader)
@@ -41,13 +32,15 @@ func NewPageData(raw []byte) PageData {
 		log.Fatal("Error constructing new PageData.", "error", err)
 	}
 
+	// HACK: Admittedly making some assumptions on input, but should be fine. AoC is very consistent
 	title := strings.Split(doc.Find("title").Text(), " ")
+	day, _ := strconv.Atoi(title[1])
+	year, _ := strconv.Atoi(title[len(title)-1])
+
 	dayDesc := doc.Find(".day-desc")
 	header := dayDesc.Find("h2").Text()
 
-	day, _ := strconv.Atoi(title[1])
-	year, _ := strconv.Atoi(title[len(title)-1])
-	return PageData{
+	return &PageData{
 		header:          header,
 		day:             day,
 		year:            year,
@@ -55,6 +48,7 @@ func NewPageData(raw []byte) PageData {
 	}
 }
 
+// Stylings
 const ParagraphWidth = 70
 
 var (
@@ -77,15 +71,16 @@ func (p *PageData) PrintPageData() {
 			if goquery.NodeName(sel) == "a" {
 				href, exists := sel.Attr("href")
 				if exists {
+					// Links get made blue with an underline
 					linkText := linkStyle.Render(sel.Text())
 					sOut += createLink(href, linkText)
 				}
 			} else if goquery.NodeName(sel) == "em" {
 				parent := sel.Parent()
 				if goquery.NodeName(parent) == "code" {
-					sOut += codeStyle.Render(sel.Text())
-				}
-				if sel.HasClass("star") {
+					// Emphatic code should get rendered as code and emphasis
+					sOut += italStyle.Render(codeStyle.Render(sel.Text()))
+				} else if sel.HasClass("star") {
 					sOut += starStyle.Render(sel.Text())
 				} else {
 					sOut += italStyle.Render(sel.Text())
