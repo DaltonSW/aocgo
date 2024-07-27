@@ -1,20 +1,25 @@
 package api
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"net/http"
 	"net/url"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/charmbracelet/log"
+	"golang.org/x/time/rate"
 )
 
 const USER_AGENT = "dalton.dog/aocutil/0.0"
 const BASE_URL = "https://adventofcode.com"
 const YEAR_URL = BASE_URL + "/%v"
 const DAY_URL = YEAR_URL + "/day/%v"
+
+const REQS_PER_SEC = 10
 
 // WARN: Be sure to implement rate limiting from the start. Try to make access as efficient as possible
 //		https://github.com/wimglenn/advent-of-code-data/issues/59
@@ -28,13 +33,30 @@ var MasterClient httpClient
 type httpClient struct {
 	client       http.Client
 	sessionToken string // Eventually make this []string in case we want to run for multiple users?
+	rateLimiter  *rate.Limiter
+}
+
+func (c *httpClient) Do(req *http.Request) (*http.Response, error) {
+	err := c.rateLimiter.Wait(context.Background())
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := c.client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+
+	return resp, nil
 }
 
 func InitClient(userSessionToken string) {
 	log.Debug("Initiating API client.", "sessionToken", userSessionToken)
+	limiter := rate.NewLimiter(rate.Every(time.Second), REQS_PER_SEC)
 	client := httpClient{
 		client:       http.Client{},
 		sessionToken: userSessionToken,
+		rateLimiter:  limiter,
 	}
 	MasterClient = client
 }
@@ -50,13 +72,14 @@ func NewGetReq(url string, sessionToken string) (*http.Response, error) {
 		sessionToken = MasterClient.sessionToken
 	}
 
-	// We don't NEED to send a User-Agent, but it feels respectful in case we need to get yelled at
+	// NOTE: We don't NEED to send a User-Agent, but it feels respectful
 	req.Header.Add("User-Agent", USER_AGENT)
-	log.Debug("Adding header to request.", "User Agent", USER_AGENT)
-	req.Header.Add("Cookie", fmt.Sprintf("session=%s", strings.TrimSpace(sessionToken)))
-	log.Debug("Adding header to request.", "Cookie", fmt.Sprintf("session=%v", sessionToken))
+	// log.Debug("Adding header to request.", "User Agent", USER_AGENT)
 
-	return MasterClient.client.Do(req)
+	req.Header.Add("Cookie", fmt.Sprintf("session=%s", strings.TrimSpace(sessionToken)))
+	// log.Debug("Adding header to request.", "Cookie", fmt.Sprintf("session=%v", sessionToken))
+
+	return MasterClient.Do(req)
 }
 
 // NOTE: To submit answers:
@@ -69,8 +92,6 @@ func NewGetReq(url string, sessionToken string) (*http.Response, error) {
 //		`level` : 1 if Part A, 2 if Part B
 //		`answer` : Answer to submit
 
-// My `answer` tests in Postman weren't working. Not sure what I was doing wrong. Maybe it'll work here
-// So... Postman at home was working fine? I am confuse, but oh well lol
 func SubmitAnswer(year int, day int, part int, userSession string, answer string) error {
 	URL := PuzzleAnswerURL(year, day)
 	log.Infof("Attempting to submit answer for Day %v (%v) [Part %v] to URL %v", day, year, part, URL)
@@ -101,6 +122,8 @@ func SubmitAnswer(year int, day int, part int, userSession string, answer string
 	if err != nil {
 		return err
 	}
+
+	// TODO: Pass data into Submission
 
 	log.Infof("Response: %v", string(data))
 	return nil
