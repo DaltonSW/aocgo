@@ -3,8 +3,11 @@ package main
 import (
 	"fmt"
 	"os"
+	"strconv"
 
+	"dalton.dog/aocutil/internal/models"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/charmbracelet/log"
 )
 
 // TODO: `help` - Print help and info about the CLI tool
@@ -16,10 +19,10 @@ import (
 
 // TODO: `run` - Will benchmark and run files in current and subdirectory
 
-// TODO: `view [day] [year]` - surface the description and examples in a pretty lipgloss text view or whatever
-
 var helpStyle = lipgloss.NewStyle()
+var testStyle = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("#FF0000"))
 
+// NOTE: Bold just changes to a different font for me. Not sure why. But it DOES do something
 func main() {
 	args := os.Args
 	if len(args) == 1 {
@@ -40,6 +43,10 @@ func main() {
 		view(args)
 	case "health":
 		health(args)
+	case "test":
+		test(args)
+	default:
+		fmt.Println("Not a valid command! Run `aocli help` to see valid commands.")
 	}
 	return
 }
@@ -68,7 +75,23 @@ func help(args []string) {
 //
 // TODO: Accept an -o flag to write the input to a file vs forcing a redirection
 func get(args []string) {
+	// TODO: Validate input
+	if len(args) < 4 {
+		return
+		// TODO: Try loading with today
+		// TODO: Print `get` help message
+	}
+	user, err := models.NewUser("")
+	if err != nil {
+		log.Error("Unable to load/create user!", "err", err)
+	}
 
+	year, _ := strconv.Atoi(args[2])
+	day, _ := strconv.Atoi(args[3])
+
+	puzzle := models.NewPuzzle(year, day)
+	userInput := puzzle.GetUserPuzzleInput(user.GetToken())
+	fmt.Print(userInput)
 }
 
 // `submit [year] [day] [part] [answer]` command
@@ -83,11 +106,30 @@ func run(args []string) {
 // `view [year] [day]` command
 // Desc: Pretty-prints the puzzle's page data
 func view(args []string) {
+	// TODO: Validate input
+	if len(args) < 4 {
+		return
+		// TODO: Try loading with today
+		// TODO: Print `get` help message
+	}
 
+	year, _ := strconv.Atoi(args[2])
+	day, _ := strconv.Atoi(args[3])
+
+	puzzle := models.NewPuzzle(year, day)
+	rawPage := puzzle.GetPuzzlePageData()
+	pageData := models.NewPageData(rawPage)
+	pageData.PrintPageData()
 }
 
 // `health` command
 // Desc: Checks if a session key is available
 func health(args []string) {
+
+}
+
+// Command:	`test`
+// Desc:	Does whatever I need to test at the time :)
+func test(args []string) {
 
 }
