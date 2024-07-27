@@ -7,6 +7,7 @@ require (
 	github.com/charmbracelet/lipgloss v0.10.0
 	github.com/charmbracelet/log v0.4.0
 	go.etcd.io/bbolt v1.3.10
+	golang.org/x/time v0.5.0
 )
 
 require (
