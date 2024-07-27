@@ -5,6 +5,7 @@ import (
 	"os"
 	"strconv"
 
+	"dalton.dog/aocutil/internal/dirparse"
 	"dalton.dog/aocutil/internal/models"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/charmbracelet/log"
@@ -137,5 +138,5 @@ func health(args []string) {
 // Command:	`test`
 // Desc:	Does whatever I need to test at the time :)
 func test(args []string) {
-
+	dirparse.GetDayAndYearFromCWD()
 }

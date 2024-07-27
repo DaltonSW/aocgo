@@ -77,9 +77,12 @@ type Resource interface {
 var masterDBM *DatabaseManager
 
 const ( // Buckets
-	PAGE_DATA  = "Page Data"
-	USER_INPUT = "User Input"
-	CALENDAR   = "Calendar"
+	PAGE_DATA = "Page Data"
+	CALENDAR  = "Calendar"
+	USER_DATA = "User Data"
+
+	// Sub Buckets
+	USER_INPUTS = "User Inputs"
 
 	// PAGE_DATA = "Page Data"
 	// PAGE_DATA = "Page Data"
@@ -129,7 +132,7 @@ func (dbm *DatabaseManager) Initialize() error {
 func (dbm *DatabaseManager) initializeBuckets() {
 	dbm.database.Update(func(tx *bolt.Tx) error {
 		tx.CreateBucketIfNotExists([]byte(PAGE_DATA))
-		tx.CreateBucketIfNotExists([]byte(USER_INPUT))
+		tx.CreateBucketIfNotExists([]byte(USER_DATA))
 		tx.CreateBucketIfNotExists([]byte(CALENDAR))
 		return nil
 	})
@@ -156,7 +159,7 @@ func SaveResource(resource Resource) {
 }
 
 // Load resource from database by ID
-func LoadResource(bucketName string, idToLoad string) []byte {
+func LoadResource(bucketName, idToLoad string) []byte {
 	log.Printf("Loading resource from %v: %v\n", bucketName, idToLoad)
 
 	// fmt.Println("Loading resource", bucketName, idToLoad)
@@ -167,6 +170,14 @@ func LoadResource(bucketName string, idToLoad string) []byte {
 		return nil
 	})
 	return output
+}
+
+func SaveSubResource(parentBucket, childBucket, idToSave string) {
+
+}
+
+func LoadSubResource(parentBucket, childBucket, idToLoad string) []byte {
+	return []byte{}
 }
 
 func checkErr(err error) {

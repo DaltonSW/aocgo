@@ -2,6 +2,7 @@ package models
 
 import (
 	"errors"
+	"strings"
 
 	"dalton.dog/aocutil/internal/api"
 	"dalton.dog/aocutil/internal/session"
@@ -32,6 +33,7 @@ func NewUser(token string) (*User, error) {
 	if token == "" {
 		return nil, errors.New("Token was still empty after load attempts.")
 	}
+	token = strings.TrimSpace(token)
 
 	api.InitClient(token)
 

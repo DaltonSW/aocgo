@@ -21,11 +21,6 @@ const DAY_URL = YEAR_URL + "/day/%v"
 
 const REQS_PER_SEC = 10
 
-// WARN: Be sure to implement rate limiting from the start. Try to make access as efficient as possible
-//		https://github.com/wimglenn/advent-of-code-data/issues/59
-
-// TODO: GetData()
-
 // TODO: SubmitGuess()
 
 var MasterClient httpClient
