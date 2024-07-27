@@ -6,12 +6,15 @@ import (
 	"os"
 	"path"
 	"strconv"
+	"time"
 
 	"github.com/charmbracelet/log"
+	bolt "go.etcd.io/bbolt"
 )
 
 var UserCacheDir, _ = os.UserCacheDir()
 var CacheDir = path.Join(UserCacheDir, "aocutil")
+var CacheFile = path.Join(CacheDir, "aocutil.db")
 var InputCacheDir = path.Join(CacheDir, "inputs")
 
 func InitCache() {
@@ -62,4 +65,112 @@ func SaveUserInput(year int, day int, userSession string, input []byte) error {
 	file.Write(input)
 	log.Infof("Success")
 	return nil
+}
+
+// Interface for storable resource
+type Resource interface {
+	GetID() string                // ID is used as key for storage
+	GetBucketName() string        // Returns the name of the bucket the resource is stored in
+	MarshalData() ([]byte, error) // Returns the resources data in a savable format
+}
+
+var masterDBM *DatabaseManager
+
+const ( // Buckets
+	PAGE_DATA  = "Page Data"
+	USER_INPUT = "User Input"
+	CALENDAR   = "Calendar"
+
+	// PAGE_DATA = "Page Data"
+	// PAGE_DATA = "Page Data"
+)
+
+// Create and initialize master database manager
+func Startup() {
+	masterDBM = &DatabaseManager{}
+	masterDBM.Initialize()
+}
+
+// Ensure Master DBM gets shutdown
+func Shutdown() {
+	masterDBM.Shutdown()
+}
+
+// Database Manager
+type DatabaseManager struct {
+	database     *bolt.DB
+	saveFilePath string
+}
+
+// Initializes the DBM
+func (dbm *DatabaseManager) Initialize() error {
+	log.Debug("---Initializing Database---")
+
+	// Load save file path and ensure it exists
+	dbm.saveFilePath = CacheFile
+	os.MkdirAll(path.Join(CacheDir), os.ModePerm)
+
+	log.Printf("Trying to access save file path: %v\n", dbm.saveFilePath)
+
+	// Open database. Read/Write for user, Read for group & other
+	tempDB, err := bolt.Open(dbm.saveFilePath, 0644, &bolt.Options{Timeout: 10 * time.Second})
+	if err != nil {
+		return err
+	}
+	dbm.database = tempDB
+	log.Debug("Database opened")
+
+	dbm.initializeBuckets()
+	log.Debug("Buckets initialized")
+	return nil
+}
+
+// Ensure all buckets exist so they can assuredly be loaded later on
+func (dbm *DatabaseManager) initializeBuckets() {
+	dbm.database.Update(func(tx *bolt.Tx) error {
+		tx.CreateBucketIfNotExists([]byte(PAGE_DATA))
+		tx.CreateBucketIfNotExists([]byte(USER_INPUT))
+		tx.CreateBucketIfNotExists([]byte(CALENDAR))
+		return nil
+	})
+}
+
+// Ensure database is properly closed
+func (dbm *DatabaseManager) Shutdown() {
+	masterDBM.database.Close()
+	log.Debug("Database closed")
+}
+
+// Save resource to database
+func SaveResource(resource Resource) {
+	log.Printf("Saving resource: %v\n", resource)
+	// fmt.Println("Saving resource", resource)
+	masterDBM.database.Update(func(tx *bolt.Tx) error {
+		bucket := tx.Bucket([]byte(resource.GetBucketName()))
+		resourceData, err := resource.MarshalData()
+		checkErr(err)
+		bucket.Put([]byte(resource.GetID()), resourceData)
+		return nil
+	})
+
+}
+
+// Load resource from database by ID
+func LoadResource(bucketName string, idToLoad string) []byte {
+	log.Printf("Loading resource from %v: %v\n", bucketName, idToLoad)
+
+	// fmt.Println("Loading resource", bucketName, idToLoad)
+	var output []byte
+	masterDBM.database.View(func(tx *bolt.Tx) error {
+		bucket := tx.Bucket([]byte(bucketName))
+		output = bucket.Get([]byte(idToLoad))
+		return nil
+	})
+	return output
+}
+
+func checkErr(err error) {
+	if err != nil {
+		log.Error("Database error!", "err", err)
+	}
 }

@@ -11,6 +11,9 @@ type Leaderboard struct {
 type Placing struct {
 	score    int
 	username string
+	userID   int
+	href     string
+	placing  int
 }
 
 func (l *Leaderboard) Display() {
