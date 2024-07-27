@@ -1,6 +1,7 @@
 package models
 
 import (
+	"fmt"
 	"io"
 	"strconv"
 	"time"
@@ -8,15 +9,27 @@ import (
 	"dalton.dog/aocutil/internal/api"
 )
 
+const PUZZLE_URL = "https://adventofcode.com/%v/day/%v"
+
 type Puzzle struct {
 	day   int
 	year  int
+	desc  string
 	partA PuzzlePart
 	partB PuzzlePart
 	URL   string
 }
 
+func NewPuzzle(year int, day int) *Puzzle {
+	return &Puzzle{
+		day:  day,
+		year: year,
+		URL:  fmt.Sprintf(PUZZLE_URL, year, day),
+	}
+}
+
 func (p *Puzzle) GetPuzzlePageData() []byte {
+	// TODO: Try load from disk
 	resp, err := api.NewGetReq(p.URL)
 	if err != nil {
 		panic(err)
@@ -29,6 +42,7 @@ func (p *Puzzle) GetPuzzlePageData() []byte {
 		panic(err)
 	}
 
+	// TODO: Save to disk
 	return pageData
 }
 
@@ -49,7 +63,6 @@ func (p *Puzzle) GetUserPuzzleInput(userSession string) []byte {
 
 type PuzzlePart struct {
 	starObtained  bool
-	description   string
 	example       string
 	isPartB       bool
 	submissions   []*Submission

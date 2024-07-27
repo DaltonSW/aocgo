@@ -23,25 +23,27 @@ const DAY_URL = YEAR_URL + "/day/%v"
 
 // TODO: SubmitGuess()
 
-var MasterClient *httpClient
+var MasterClient httpClient
 
 type httpClient struct {
-	client       *http.Client
-	sessionToken string
+	client       http.Client
+	sessionToken string // Eventually make this []string in case we want to run for multiple users?
 }
 
 func InitClient(userSessionToken string) {
-	client := &httpClient{
-		client:       &http.Client{},
+	log.Debug("Initiating API client.", "sessionToken", userSessionToken)
+	client := httpClient{
+		client:       http.Client{},
 		sessionToken: userSessionToken,
 	}
 	MasterClient = client
 }
 
 func NewGetReq(url string) (*http.Response, error) {
+	log.Debug("Making GET request.", "URL", url)
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
-		panic(err)
+		log.Fatal("Error creating GET request!", "error", err)
 	}
 
 	// We don't NEED to send a User-Agent, but it feels respectful in case we need to get yelled at
