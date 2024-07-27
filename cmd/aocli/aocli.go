@@ -17,6 +17,8 @@ import (
 
 // TODO: `run` - Will benchmark and run files in current and subdirectory
 
+// TODO: `leaderboard [year] [day]` - Display the leaderboard for a day/year
+
 var helpStyle = lipgloss.NewStyle()
 var testStyle = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("#FF0000"))
 
