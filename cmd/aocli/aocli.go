@@ -12,8 +12,6 @@ import (
 
 // TODO: `help` - Print help and info about the CLI tool
 
-// TODO: `get [day] [year]`  - if no inputs, checks today's date
-
 // TODO: `submit [day] [year]` - if no inputs, tries today's date
 //	Not sure if we're going to need to specifically accept submitting for Part 1 or 2
 
@@ -74,8 +72,6 @@ func help(args []string) {
 //
 //	[year] - 2 or 4 digit year (16 or 2016)
 //	[day]  - 1 or 2 digit day (1, 01, 21)
-//
-// TODO: Accept an -o flag to write the input to a file vs forcing a redirection
 func get(args []string) {
 	// TODO: Validate input
 	if len(args) < 4 {
@@ -93,7 +89,8 @@ func get(args []string) {
 
 	puzzle := models.NewPuzzle(year, day)
 	userInput := puzzle.GetUserPuzzleInput(user.GetToken())
-	fmt.Print(userInput)
+	fmt.Print(string(userInput))
+	return
 }
 
 // `submit [year] [day] [part] [answer]` command
