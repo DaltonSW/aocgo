@@ -7,6 +7,7 @@ import (
 
 	// "dalton.dog/aocutil/internal/dirparse"
 	"dalton.dog/aocutil/internal/models"
+	"dalton.dog/aocutil/internal/session"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/charmbracelet/log"
 )
@@ -20,7 +21,10 @@ import (
 
 // TODO: `leaderboard [year] [day]` - Display the leaderboard for a day/year
 
-var helpStyle = lipgloss.NewStyle()
+// TODO: `clear session [year] [day]` - Clears the stored information for a given session
+
+var helpBodyStyle = lipgloss.NewStyle().Width(70)
+var helpTitleStyle = lipgloss.NewStyle().Width(70)
 var testStyle = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("#FF0000"))
 
 func main() {
@@ -28,7 +32,7 @@ func main() {
 
 	args := os.Args
 	if len(args) == 1 {
-		nothing()
+		fmt.Println(helpBodyStyle.Render("Welcome to aocli! Try running `aocli help` for a list of available commands."))
 		os.Exit(0)
 	}
 
@@ -39,24 +43,18 @@ func main() {
 		get(args)
 	case "submit":
 		submit(args)
-	case "run":
-		run(args)
+	// case "run":
+	// 	run(args)
 	case "view":
 		view(args)
 	case "health":
-		health(args)
-	case "test":
-		test(args)
+		health()
+	// case "test":
+	// 	test(args)
 	default:
 		fmt.Println("Not a valid command! Run `aocli help` to see valid commands.")
 	}
 	return
-}
-
-// Runs when no command was given. Suggests to run "aocli help"
-func nothing() {
-	s := "No command was given! Try running `aocli help`."
-	fmt.Println(helpStyle.Render(s))
 }
 
 // `help [command]` command
@@ -65,6 +63,45 @@ func nothing() {
 //
 //	[command] - command name to print help for
 func help(args []string) {
+	// Clear terminal
+	fmt.Print("\033[H\033[2J")
+
+	// Too many args
+	if len(args) > 3 {
+		fmt.Println(helpBodyStyle.Render("Too many arguments passed!"))
+		return
+	}
+
+	// They requested help for a specific command
+	if len(args) == 3 {
+		commandName := args[2]
+		helptext, ok := HelpTextMap[commandName]
+		if ok {
+			helptext.Print()
+		} else {
+			fmt.Println(helpBodyStyle.Render("Not a valid command!"))
+		}
+		return
+	}
+
+	// Otherwise they just open-endedly requested help
+	ht, ok := HelpTextMap["aocli"]
+	if ok {
+		outS := "\n"
+		outS += NameStyle.Render("NAME:  ")
+		outS += ht.name + "\n\n"
+
+		outS += UseStyle.Render("USAGE: ")
+		outS += ht.use + "\n\n"
+
+		outS += DescStyle.Render("DESCRIPTION")
+		outS += ht.desc + "\n\n"
+
+		outS += ArgsStyle.Render("COMMANDS")
+		outS += ht.args
+
+		fmt.Println(outS)
+	}
 
 }
 
@@ -90,7 +127,10 @@ func get(args []string) {
 	day, _ := strconv.Atoi(args[3])
 
 	puzzle := models.NewPuzzle(year, day)
-	userInput := puzzle.GetUserPuzzleInput(user.GetToken())
+	if err != nil {
+		log.Error("Unable to load puzzle data!", "year", year, "day", day, "err", err)
+	}
+	userInput, err := puzzle.GetUserPuzzleInput(user.GetToken())
 	fmt.Print(string(userInput))
 	return
 }
@@ -130,8 +170,13 @@ func view(args []string) {
 
 // `health` command
 // Desc: Checks if a session key is available
-func health(args []string) {
+func health() {
+	sessionKey, err := session.GetSessionToken()
+	if err != nil {
+		log.Error("Test failed! Couldn't properly load a session key.", "err", err)
+	}
 
+	log.Info("Test succeeded! Properly loaded session key", "key", sessionKey)
 }
 
 // Command:	`test`
