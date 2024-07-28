@@ -5,7 +5,7 @@ import (
 	"os"
 	"strconv"
 
-	"dalton.dog/aocutil/internal/dirparse"
+	// "dalton.dog/aocutil/internal/dirparse"
 	"dalton.dog/aocutil/internal/models"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/charmbracelet/log"
@@ -23,7 +23,6 @@ import (
 var helpStyle = lipgloss.NewStyle()
 var testStyle = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("#FF0000"))
 
-// NOTE: Bold just changes to a different font for me. Not sure why. But it DOES do something
 func main() {
 	log.SetLevel(log.DebugLevel)
 
@@ -138,5 +137,5 @@ func health(args []string) {
 // Command:	`test`
 // Desc:	Does whatever I need to test at the time :)
 func test(args []string) {
-	dirparse.GetDayAndYearFromCWD()
+	//dirparse.GetDayAndYearFromCWD()
 }
