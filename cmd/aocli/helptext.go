@@ -12,6 +12,7 @@ var DescStyle = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("#FFFF0
 var ArgsStyle = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("#FF00FF"))
 
 var HelpTextMap map[string]*helpText = map[string]*helpText{
+	// NOTE: `aocli` program
 	"aocli": {
 		name: "aocli - CLI tool for interacting with Advent of Code",
 		use:  "aocli <command> [params...]",
@@ -26,6 +27,7 @@ var HelpTextMap map[string]*helpText = map[string]*helpText{
 		// submit <answer> <part> [year] [day] - Attempts to submit an answer for a puzzle
 	},
 
+	// NOTE: `view` command
 	"view": {
 		name: "view - Pretty prints the puzzle's page data to the screen",
 		use:  "aocli view [year] [day]",
@@ -38,6 +40,7 @@ var HelpTextMap map[string]*helpText = map[string]*helpText{
 	day  - Day to load input for. If not provided, will try to derive from current dir names.`,
 	},
 
+	// NOTE: `get` command
 	"get": {
 		name: "get - Saves the user's puzzle input to a file",
 		use:  "aocli get [year] [day]",
@@ -49,6 +52,7 @@ var HelpTextMap map[string]*helpText = map[string]*helpText{
 	day  - Day to load input for. If not provided, will try to derive from current dir names.`,
 	},
 
+	// NOTE: `health` command
 	"health": {
 		name: "health - Checks validity of aocutil module",
 		use:  "aocli health",

@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"dalton.dog/aocutil/internal/api"
+	"dalton.dog/aocutil/internal/cache"
 )
 
 const PUZZLE_URL = "https://adventofcode.com/%v/day/%v"
@@ -14,6 +15,7 @@ const PUZZLE_URL = "https://adventofcode.com/%v/day/%v"
 type Puzzle struct {
 	day      int
 	year     int
+	bucketID string
 	pageData *PageData
 	partA    PuzzlePart
 	partB    PuzzlePart
@@ -22,9 +24,10 @@ type Puzzle struct {
 
 func NewPuzzle(year int, day int) *Puzzle {
 	return &Puzzle{
-		day:  day,
-		year: year,
-		URL:  fmt.Sprintf(PUZZLE_URL, year, day),
+		day:      day,
+		year:     year,
+		bucketID: strconv.Itoa(day) + strconv.Itoa(year),
+		URL:      fmt.Sprintf(PUZZLE_URL, year, day),
 	}
 }
 
@@ -53,19 +56,27 @@ func (p *Puzzle) GetPuzzlePageData(userSession string) PageData {
 	return *pageData
 }
 
-func (p *Puzzle) GetUserPuzzleInput(userSession string) []byte {
+func (p *Puzzle) GetUserPuzzleInput(userSession string) ([]byte, error) {
+	data := cache.LoadSubResource(userSession, cache.USER_INPUTS, p.bucketID)
+
+	if data != nil {
+		return data, nil
+	}
+
 	resp, err := api.NewGetReq(p.URL+"/input", userSession)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 	defer resp.Body.Close()
 
 	inputData, err := io.ReadAll(resp.Body)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
-	return inputData
+	cache.SaveSubResource(userSession, cache.USER_INPUTS, p.bucketID, inputData)
+
+	return inputData, nil
 }
 
 type PuzzlePart struct {

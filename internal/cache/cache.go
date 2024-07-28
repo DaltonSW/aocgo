@@ -83,6 +83,10 @@ const ( // Buckets
 
 	// Sub Buckets
 	USER_INPUTS = "User Inputs"
+	USER_PAGES  = "User Pages"
+
+	// Other
+	GENERIC_USER = "Generic User"
 
 	// PAGE_DATA = "Page Data"
 	// PAGE_DATA = "Page Data"
@@ -132,8 +136,8 @@ func (dbm *DatabaseManager) Initialize() error {
 func (dbm *DatabaseManager) initializeBuckets() {
 	dbm.database.Update(func(tx *bolt.Tx) error {
 		tx.CreateBucketIfNotExists([]byte(PAGE_DATA))
-		tx.CreateBucketIfNotExists([]byte(USER_DATA))
 		tx.CreateBucketIfNotExists([]byte(CALENDAR))
+		tx.CreateBucketIfNotExists([]byte(USER_DATA))
 		return nil
 	})
 }
@@ -172,12 +176,50 @@ func LoadResource(bucketName, idToLoad string) []byte {
 	return output
 }
 
-func SaveSubResource(parentBucket, childBucket, idToSave string) {
+func SaveSubResource(parentBucket, childBucket, idToSave string, dataToSave []byte) {
+	masterDBM.database.Update(func(tx *bolt.Tx) error {
+		parent, err := tx.CreateBucketIfNotExists([]byte(parentBucket))
+		if err != nil {
+			return err
+		}
+
+		bucket, err := parent.CreateBucketIfNotExists([]byte(childBucket))
+		if err != nil {
+			return err
+		}
+		bucket.Put([]byte(idToSave), dataToSave)
+		return nil
+	})
 
 }
 
 func LoadSubResource(parentBucket, childBucket, idToLoad string) []byte {
-	return []byte{}
+	var resource []byte
+	masterDBM.database.Update(func(tx *bolt.Tx) error {
+		parent := tx.Bucket([]byte(parentBucket))
+		if parent == nil {
+			return errors.New("No bucket with that name")
+		}
+
+		bucket := tx.Bucket([]byte(childBucket))
+		resource = bucket.Get([]byte(idToLoad))
+
+		return nil
+	})
+	return resource
+}
+
+func InitUser(userSession string) {
+	masterDBM.database.Update(func(tx *bolt.Tx) error {
+		bucket, err := tx.CreateBucketIfNotExists([]byte(userSession))
+		if err != nil {
+			return err
+		}
+
+		bucket.CreateBucket([]byte(USER_PAGES))
+		bucket.CreateBucket([]byte(USER_INPUTS))
+		return nil
+	})
 }
 
 func checkErr(err error) {
