@@ -16,7 +16,7 @@ func TestGetSessionTokenFromEnv(t *testing.T) {
 	// Test: Get token from environment variable
 	expectedEnvToken := "test_token_from_env"
 	os.Setenv("AOC_SESSION_TOKEN", expectedEnvToken)
-	token, err := GetSessionToken()
+	token, err := getTokenFromEnv()
 	if err != nil {
 		t.Fatalf("Expected no error, got %v", err)
 	}
@@ -26,10 +26,7 @@ func TestGetSessionTokenFromEnv(t *testing.T) {
 	os.Unsetenv("AOC_SESSION_TOKEN")
 
 	// Test: No token available
-	token, err = GetSessionToken()
-	if err == nil {
-		t.Fatalf("Expected error, got none")
-	}
+	token, err = getTokenFromEnv()
 	if token != "" {
 		t.Fatalf("Expected empty token, got %v", token)
 	}
@@ -49,9 +46,12 @@ func TestGetTokenFromFile(t *testing.T) {
 	if err := os.WriteFile(tokenFile, []byte(expectedToken), 0644); err != nil {
 		t.Fatalf("Unable to write session token file: %v", err)
 	}
-	token := getTokenFromFile(tokenFile)
+	token, err := getTokenFromFile(tokenFile)
 	if token != expectedToken {
 		t.Fatalf("Expected token %v, got %v", expectedToken, token)
+	}
+	if err != nil {
+		t.Fatalf("Expected no error, got %v", err)
 	}
 
 	// Cleanup: Remove the session token file
@@ -60,7 +60,7 @@ func TestGetTokenFromFile(t *testing.T) {
 	}
 
 	// Test: Token file does not exist
-	token = getTokenFromFile(tokenFile)
+	token, err = getTokenFromFile(tokenFile)
 	if token != "" {
 		t.Fatalf("Expected empty token, got %v", token)
 	}

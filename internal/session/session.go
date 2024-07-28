@@ -7,25 +7,34 @@ import (
 )
 
 func GetSessionToken() (string, error) {
-	sessionToken := getTokenFromFile("")
+	sessionToken, err := getTokenFromFile("")
 	if sessionToken != "" {
-		return sessionToken, nil
+		return sessionToken, err
 	}
 
-	sessionToken = os.Getenv("AOC_SESSION_TOKEN")
+	sessionToken, err = getTokenFromEnv()
 	if sessionToken != "" {
-		return sessionToken, nil
+		return sessionToken, err
 	}
 
 	return "", errors.New("Unable to load AoC session token from file or environment variable")
 }
 
-func getTokenFromFile(path string) string {
+// Making this a separate function so it's testable
+func getTokenFromEnv() (string, error) {
+	token := os.Getenv("AOC_SESSION_TOKEN")
+	if token == "" {
+		return "", errors.New("Couldn't load session token from environment variable!")
+	}
+	return token, nil
+}
+
+func getTokenFromFile(path string) (string, error) {
 	var filePath string
 	if path == "" {
 		userHomeDir, err := os.UserHomeDir()
 		if err != nil {
-			return ""
+			return "", err
 		}
 		filePath = filepath.Join(userHomeDir, ".config", "aocutil", "session.token")
 
@@ -34,7 +43,7 @@ func getTokenFromFile(path string) string {
 	}
 	file, err := os.ReadFile(filePath)
 	if err != nil {
-		return ""
+		return "", err
 	}
-	return string(file)
+	return string(file), nil
 }
