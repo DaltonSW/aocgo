@@ -6,8 +6,8 @@ import (
 	"strconv"
 	"time"
 
-	"dalton.dog/aocutil/internal/api"
-	"dalton.dog/aocutil/internal/cache"
+	"dalton.dog/aocgo/internal/api"
+	"dalton.dog/aocgo/internal/cache"
 )
 
 const PUZZLE_URL = "https://adventofcode.com/%v/day/%v"

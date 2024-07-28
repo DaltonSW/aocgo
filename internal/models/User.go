@@ -4,8 +4,8 @@ import (
 	"errors"
 	"strings"
 
-	"dalton.dog/aocutil/internal/api"
-	"dalton.dog/aocutil/internal/session"
+	"dalton.dog/aocgo/internal/api"
+	"dalton.dog/aocgo/internal/session"
 	"github.com/charmbracelet/log"
 )
 

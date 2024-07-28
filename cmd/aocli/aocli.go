@@ -5,9 +5,9 @@ import (
 	"os"
 	"strconv"
 
-	// "dalton.dog/aocutil/internal/dirparse"
-	"dalton.dog/aocutil/internal/models"
-	"dalton.dog/aocutil/internal/session"
+	// "dalton.dog/aocgo/internal/dirparse"
+	"dalton.dog/aocgo/internal/models"
+	"dalton.dog/aocgo/internal/session"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/charmbracelet/log"
 )

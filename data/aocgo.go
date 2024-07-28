@@ -3,7 +3,7 @@ package aocgo
 import (
 	"fmt"
 
-	"dalton.dog/aocutil/internal/session"
+	"dalton.dog/aocgo/internal/session"
 )
 
 // TODO: GetData()
@@ -17,9 +17,18 @@ func main() {
 	return
 }
 
-func GetData() {
-	// Try figuring it out by path (filename and preceding directories)
-	// Try today's date
+func GetDataAsString() {
+
+}
+
+func GetDataAsByteArray() {
+
+}
+
+func getData(day, year string) {}
+
+func GetDataWithSpecificToken(userSession string) {
+
 }
 
 func GetSpecificData(day string, year string) {
