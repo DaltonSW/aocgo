@@ -1,10 +1,13 @@
 package dirparse
 
 import (
+	"errors"
+	"fmt"
 	"os"
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 	// "github.com/charmbracelet/log"
 )
 
@@ -24,36 +27,68 @@ func GetDayAndYearFromCWD() (int, int, error) {
 }
 
 func GetDayAndYearFromDirInput(curDir, parentDir string) (int, int, error) {
-	day, err := parseDay(curDir)
+	day, err := ParseDay(curDir)
 	if err != nil {
 		return 0, 0, err
 	}
-	year, err := parseYear(parentDir)
+
+	year, err := ParseYear(parentDir)
 	if err != nil {
-		return 0, 0, err
+		return day, 0, err
 	}
 
 	return day, year, nil
 }
 
-// TODO: Make public
-
-// TODO: Validate before returning
-func parseYear(yearStr string) (int, error) {
+func ParseYear(yearStr string) (int, error) {
 	re := regexp.MustCompile(`\d+`)
 	match := re.FindString(yearStr)
+	var outYear, year int
+	var err error
 	if len(match) == 2 {
-		year, err := strconv.Atoi(match)
+		year, err = strconv.Atoi(match)
 		if err != nil {
-			return 0, nil
+			return 0, err
 		}
-		return 2000 + year, nil
+		outYear = 2000 + year
+	} else {
+		outYear, err = strconv.Atoi(match)
+		if err != nil {
+			return 0, err
+		}
 	}
-	return strconv.Atoi(match)
+
+	if outYear < 2016 {
+		return 0, errors.New("Year parsed to be earlier than 2016.")
+	}
+
+	var maxYear int
+	if time.Now().Month() == time.December {
+		maxYear = time.Now().Year()
+	} else {
+		maxYear = time.Now().Year() - 1
+	}
+
+	if outYear > maxYear {
+		return 0, errors.New(fmt.Sprintf("Year parsed to be later than %v.", maxYear))
+	}
+
+	return outYear, nil
 }
 
-func parseDay(dayStr string) (int, error) {
+func ParseDay(dayStr string) (int, error) {
 	re := regexp.MustCompile(`\d+`)
 	match := re.FindString(dayStr)
-	return strconv.Atoi(match)
+	outInt, err := strconv.Atoi(match)
+	if err != nil {
+		return 0, nil
+	}
+
+	if outInt < 1 {
+		return 0, errors.New("Day parsed to be less than 1.")
+	} else if outInt > 25 {
+		return 0, errors.New("Day parsed to be greater than 25.")
+	}
+
+	return outInt, nil
 }
