@@ -18,10 +18,18 @@ type PageData struct {
 
 	// Once we get into the <main> tag, the first child should be <article class="day-desc">
 	// Below that, there should be a header that has the day's title. Ex: '--- Day 1: Trebuchet?! ---'
-	header string
+	headerOne string
+	headerTwo string
+
+	answerOne string
+	answerTwo string
 
 	// The article consists of articleContents (as you might expect)
+	articleOne      string
+	articleTwo      string
 	articleContents *goquery.Selection
+
+	mainContents *goquery.Selection
 }
 
 func NewPageData(raw []byte) *PageData {
@@ -37,14 +45,14 @@ func NewPageData(raw []byte) *PageData {
 	day, _ := strconv.Atoi(title[1])
 	year, _ := strconv.Atoi(title[len(title)-1])
 
-	dayDesc := doc.Find(".day-desc")
-	header := dayDesc.Find("h2").Text()
+	mainContents := doc.Find("main")
+	header := mainContents.Find("h2").Text()
 
 	return &PageData{
-		header:          header,
-		day:             day,
-		year:            year,
-		articleContents: dayDesc,
+		headerOne:    header,
+		day:          day,
+		year:         year,
+		mainContents: mainContents,
 	}
 }
 
@@ -60,39 +68,65 @@ var (
 	wordWrap   = lipgloss.NewStyle().Width(ParagraphWidth)
 )
 
-func (p *PageData) PrintPageData() {
-	titleWidth := lipgloss.Width(p.header)
-	titlePad := (ParagraphWidth - titleWidth) / 2
-	titleStyle.PaddingLeft(titlePad).PaddingRight(titlePad)
-	sOut := titleStyle.Render(p.header) + "\n\n"
+func (p *PageData) processPageData() {
+	processArticleFn := func(article *goquery.Selection) string {
+		title := article.Find("h2").Text()
+		articleOut := title
 
-	p.articleContents.Find("p, pre").Each(func(i int, s *goquery.Selection) {
-		s.Contents().Each(func(j int, sel *goquery.Selection) {
-			if goquery.NodeName(sel) == "a" {
-				href, exists := sel.Attr("href")
+		article.Contents().Each(func(i int, s *goquery.Selection) {
+			if goquery.NodeName(s) == "a" {
+				href, exists := s.Attr("href")
 				if exists {
 					// Links get made blue with an underline
-					linkText := linkStyle.Render(sel.Text())
-					sOut += createLink(href, linkText)
+					linkText := linkStyle.Render(s.Text())
+					articleOut += createLink(href, linkText)
 				}
-			} else if goquery.NodeName(sel) == "em" {
-				parent := sel.Parent()
+			} else if goquery.NodeName(s) == "em" {
+				parent := s.Parent()
 				if goquery.NodeName(parent) == "code" {
 					// Emphatic code should get rendered as code and emphasis
-					sOut += italStyle.Render(codeStyle.Render(sel.Text()))
-				} else if sel.HasClass("star") {
-					sOut += starStyle.Render(sel.Text())
+					articleOut += italStyle.Render(codeStyle.Render(s.Text()))
+				} else if s.HasClass("star") {
+					articleOut += starStyle.Render(s.Text())
 				} else {
-					sOut += italStyle.Render(sel.Text())
+					articleOut += italStyle.Render(s.Text())
 				}
-			} else if goquery.NodeName(sel) == "code" {
-				sOut += codeStyle.Render(sel.Text())
+			} else if goquery.NodeName(s) == "code" {
+				articleOut += codeStyle.Render(s.Text())
 			} else {
-				sOut += sel.Text()
+				articleOut += s.Text()
 			}
 		})
-		sOut += "\n\n"
+
+		return articleOut
+	}
+
+	p.mainContents.Find("article").Each(func(i int, s *goquery.Selection) {
+		outStr := processArticleFn(s)
+		if p.articleOne == "" {
+			p.articleOne = outStr
+		} else {
+			p.articleTwo = outStr
+		}
 	})
+
+	// This should only grab "Your puzzle answer was: " tags
+	p.mainContents.Find("article + p").Each(func(i int, s *goquery.Selection) {
+		outStr := s.Text()
+		if p.answerOne == "" {
+			p.answerOne = outStr
+		} else {
+			p.answerTwo = outStr
+		}
+	})
+}
+
+func (p *PageData) PrintPageData() {
+	titleWidth := lipgloss.Width(p.headerOne)
+	titlePad := (ParagraphWidth - titleWidth) / 2
+	titleStyle.PaddingLeft(titlePad).PaddingRight(titlePad)
+
+	sOut := titleStyle.Render(p.headerOne) + "\n\n"
 
 	fmt.Print("\033[H\033[2J")
 	fmt.Println(wordWrap.Render(sOut))

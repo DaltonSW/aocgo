@@ -57,7 +57,7 @@ func (p *Puzzle) GetPuzzlePageData(userSession string) PageData {
 }
 
 func (p *Puzzle) GetUserPuzzleInput(userSession string) ([]byte, error) {
-	data := cache.LoadSubResource(userSession, cache.USER_INPUTS, p.bucketID)
+	data := cache.LoadResource(cache.USER_INPUTS, p.bucketID)
 
 	if data != nil {
 		return data, nil
@@ -74,7 +74,7 @@ func (p *Puzzle) GetUserPuzzleInput(userSession string) ([]byte, error) {
 		return nil, err
 	}
 
-	cache.SaveSubResource(userSession, cache.USER_INPUTS, p.bucketID, inputData)
+	cache.SaveResource(cache.USER_INPUTS, p.bucketID, inputData)
 
 	return inputData, nil
 }
