@@ -6,26 +6,25 @@ import (
 	"strconv"
 
 	// "dalton.dog/aocgo/internal/dirparse"
+	"dalton.dog/aocgo/internal/cache"
 	"dalton.dog/aocgo/internal/models"
 	"dalton.dog/aocgo/internal/session"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/charmbracelet/log"
 )
 
-// TODO: `help` - Print help and info about the CLI tool
-
 // TODO: `submit [day] [year]` - if no inputs, tries today's date
 //	Not sure if we're going to need to specifically accept submitting for Part 1 or 2
 
 // TODO: `run` - Will benchmark and run files in current and subdirectory
-
-// TODO: `leaderboard [year] [day]` - Display the leaderboard for a day/year
 
 // TODO: `clear session [year] [day]` - Clears the stored information for a given session
 
 var helpBodyStyle = lipgloss.NewStyle().Width(70)
 var helpTitleStyle = lipgloss.NewStyle().Width(70)
 var testStyle = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("#FF0000"))
+
+var User *models.User
 
 func main() {
 	log.SetLevel(log.DebugLevel)
@@ -36,6 +35,14 @@ func main() {
 		os.Exit(0)
 	}
 
+	User, err := models.NewUser("")
+	if err != nil {
+		log.Error("Unable to create user to run requests as. Try running `aocli health`.")
+	}
+
+	cache.Startup(User.GetToken())
+	defer cache.Shutdown()
+
 	switch args[1] {
 	case "help":
 		help(args)
@@ -43,6 +50,9 @@ func main() {
 		get(args)
 	case "submit":
 		submit(args)
+	case "lb":
+	case "leaderboard":
+		leaderboard(args)
 	// case "run":
 	// 	run(args)
 	case "view":
@@ -50,7 +60,7 @@ func main() {
 	case "health":
 		health()
 	// case "test":
-	// 	test(args)
+	// 	test()
 	default:
 		fmt.Println("Not a valid command! Run `aocli help` to see valid commands.")
 	}
@@ -120,7 +130,7 @@ func get(args []string) {
 	}
 	user, err := models.NewUser("")
 	if err != nil {
-		log.Error("Unable to load/create user!", "err", err)
+		log.Fatal("Unable to load/create user!", "err", err)
 	}
 
 	year, _ := strconv.Atoi(args[2])
@@ -128,11 +138,37 @@ func get(args []string) {
 
 	puzzle := models.NewPuzzle(year, day)
 	if err != nil {
-		log.Error("Unable to load puzzle data!", "year", year, "day", day, "err", err)
+		log.Fatal("Unable to load puzzle data!", "year", year, "day", day, "err", err)
 	}
 	userInput, err := puzzle.GetUserPuzzleInput(user.GetToken())
 	fmt.Print(string(userInput))
 	return
+}
+
+// TODO: Handle days as well
+
+// `leaderboard [year] [day]` command
+func leaderboard(args []string) {
+	if len(args) != 3 {
+		fmt.Println("Only works with yearly leaderboards for right now. Run `aocli help leaderboard`")
+		return
+	}
+
+	// Ensure that the API is initialized. We don't actually need the user
+	year, _ := strconv.Atoi(args[2])
+	var day int
+	// if len(args) == 4 {
+	// 	day, _ = strconv.Atoi(args[3])
+	// }
+
+	lb := models.NewLeaderboard(year, day)
+
+	if lb == nil {
+		log.Fatal("Unable to load/create leaderboard!")
+		return
+	}
+
+	lb.Display()
 }
 
 // `submit [year] [day] [part] [answer]` command
@@ -181,6 +217,8 @@ func health() {
 
 // Command:	`test`
 // Desc:	Does whatever I need to test at the time :)
-func test(args []string) {
+func test() {
+	lb := models.NewLeaderboard(2020, 0)
+	lb.Display()
 	//dirparse.GetDayAndYearFromCWD()
 }

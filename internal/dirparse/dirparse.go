@@ -36,6 +36,9 @@ func GetDayAndYearFromDirInput(curDir, parentDir string) (int, int, error) {
 	return day, year, nil
 }
 
+// TODO: Make public
+
+// TODO: Validate before returning
 func parseYear(yearStr string) (int, error) {
 	re := regexp.MustCompile(`\d+`)
 	match := re.FindString(yearStr)

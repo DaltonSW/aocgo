@@ -14,7 +14,7 @@ import (
 	"golang.org/x/time/rate"
 )
 
-const USER_AGENT = "dalton.dog/aocutil/0.0"
+const USER_AGENT = "dalton.dog/aocgo"
 const BASE_URL = "https://adventofcode.com"
 const YEAR_URL = BASE_URL + "/%v"
 const DAY_URL = YEAR_URL + "/day/%v"
@@ -68,11 +68,9 @@ func NewGetReq(url string, sessionToken string) (*http.Response, error) {
 	}
 
 	// NOTE: We don't NEED to send a User-Agent, but it feels respectful
-	req.Header.Add("User-Agent", USER_AGENT)
-	// log.Debug("Adding header to request.", "User Agent", USER_AGENT)
 
+	req.Header.Add("User-Agent", USER_AGENT)
 	req.Header.Add("Cookie", fmt.Sprintf("session=%s", strings.TrimSpace(sessionToken)))
-	// log.Debug("Adding header to request.", "Cookie", fmt.Sprintf("session=%v", sessionToken))
 
 	return MasterClient.Do(req)
 }

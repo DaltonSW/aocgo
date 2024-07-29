@@ -2,6 +2,7 @@ package cache
 
 import (
 	"errors"
+	"fmt"
 	"io"
 	"os"
 	"path"
@@ -14,8 +15,10 @@ import (
 
 var UserCacheDir, _ = os.UserCacheDir()
 var CacheDir = path.Join(UserCacheDir, "aocutil")
-var CacheFile = path.Join(CacheDir, "aocutil.db")
+var CacheFile = path.Join(CacheDir, "%v.db")
 var InputCacheDir = path.Join(CacheDir, "inputs")
+
+var GeneralCacheDB = fmt.Sprintf(CacheFile, GENERIC_USER)
 
 func InitCache() {
 	os.MkdirAll(CacheDir, 0600)
@@ -77,25 +80,23 @@ type Resource interface {
 var masterDBM *DatabaseManager
 
 const ( // Buckets
-	PAGE_DATA = "Page Data"
-	CALENDAR  = "Calendar"
-	USER_DATA = "User Data"
+	PAGE_DATA    = "PageData"
+	CALENDAR     = "Calendar"
+	USER_DATA    = "UserData"
+	LEADERBOARDS = "Leaderboards"
 
 	// Sub Buckets
-	USER_INPUTS = "User Inputs"
-	USER_PAGES  = "User Pages"
+	USER_INPUTS = "UserInputs"
+	USER_PAGES  = "UserPages"
 
 	// Other
-	GENERIC_USER = "Generic User"
-
-	// PAGE_DATA = "Page Data"
-	// PAGE_DATA = "Page Data"
+	GENERIC_USER = "GenericUser"
 )
 
 // Create and initialize master database manager
-func Startup() {
+func Startup(userSession string) error {
 	masterDBM = &DatabaseManager{}
-	masterDBM.Initialize()
+	return masterDBM.Initialize(userSession)
 }
 
 // Ensure Master DBM gets shutdown
@@ -105,28 +106,39 @@ func Shutdown() {
 
 // Database Manager
 type DatabaseManager struct {
-	database     *bolt.DB
+	sessionDB *bolt.DB
+	// generalDB    *bolt.DB
 	saveFilePath string
 }
 
 // Initializes the DBM
-func (dbm *DatabaseManager) Initialize() error {
+func (dbm *DatabaseManager) Initialize(userSession string) error {
 	log.Debug("---Initializing Database---")
 
 	// Load save file path and ensure it exists
-	dbm.saveFilePath = CacheFile
+	dbm.saveFilePath = fmt.Sprintf(CacheFile, userSession)
 	os.MkdirAll(path.Join(CacheDir), os.ModePerm)
 
-	log.Printf("Trying to access save file path: %v\n", dbm.saveFilePath)
+	log.Debugf("Trying to access save file path: %v", dbm.saveFilePath)
 
-	// Open database. Read/Write for user, Read for group & other
-	tempDB, err := bolt.Open(dbm.saveFilePath, 0644, &bolt.Options{Timeout: 10 * time.Second})
+	// Open database. Read/Write for user, none for Group/Other, and none for Gretchen Weiners
+	tempDB, err := bolt.Open(dbm.saveFilePath, 0600, &bolt.Options{Timeout: 10 * time.Second})
 	if err != nil {
 		return err
 	}
-	dbm.database = tempDB
-	log.Debug("Database opened")
+	dbm.sessionDB = tempDB
+	log.Debug("Session database opened")
 
+	log.Debugf("Trying to access save file path: %v", GeneralCacheDB)
+
+	// // Open database. Read/Write for user, none for Group/Other, and none for Gretchen Weiners
+	// tempDB, err = bolt.Open(GeneralCacheDB, 0600, &bolt.Options{Timeout: 10 * time.Second})
+	// if err != nil {
+	// 	return err
+	// }
+	// dbm.generalDB = tempDB
+	// log.Debug("General database opened")
+	//
 	dbm.initializeBuckets()
 	log.Debug("Buckets initialized")
 	return nil
@@ -134,29 +146,34 @@ func (dbm *DatabaseManager) Initialize() error {
 
 // Ensure all buckets exist so they can assuredly be loaded later on
 func (dbm *DatabaseManager) initializeBuckets() {
-	dbm.database.Update(func(tx *bolt.Tx) error {
+	dbm.sessionDB.Update(func(tx *bolt.Tx) error {
 		tx.CreateBucketIfNotExists([]byte(PAGE_DATA))
-		tx.CreateBucketIfNotExists([]byte(CALENDAR))
+		tx.CreateBucketIfNotExists([]byte(USER_INPUTS))
 		tx.CreateBucketIfNotExists([]byte(USER_DATA))
+		tx.CreateBucketIfNotExists([]byte(LEADERBOARDS))
 		return nil
 	})
+
+	// dbm.generalDB.Update(func(tx *bolt.Tx) error {
+	// 	tx.CreateBucketIfNotExists([]byte(LEADERBOARDS))
+	// 	tx.CreateBucketIfNotExists([]byte(USER_DATA))
+	// 	return nil
+	// })
 }
 
 // Ensure database is properly closed
 func (dbm *DatabaseManager) Shutdown() {
-	masterDBM.database.Close()
+	masterDBM.sessionDB.Close()
+	// masterDBM.generalDB.Close()
 	log.Debug("Database closed")
 }
 
 // Save resource to database
-func SaveResource(resource Resource) {
-	log.Printf("Saving resource: %v\n", resource)
-	// fmt.Println("Saving resource", resource)
-	masterDBM.database.Update(func(tx *bolt.Tx) error {
-		bucket := tx.Bucket([]byte(resource.GetBucketName()))
-		resourceData, err := resource.MarshalData()
-		checkErr(err)
-		bucket.Put([]byte(resource.GetID()), resourceData)
+func SaveResource(bucketName, idToSave string, dataToSave []byte) {
+	log.Debug("Saving resource", "bucket", bucketName, "id", idToSave, "data", dataToSave)
+	masterDBM.sessionDB.Update(func(tx *bolt.Tx) error {
+		bucket := tx.Bucket([]byte(bucketName))
+		bucket.Put([]byte(idToSave), dataToSave)
 		return nil
 	})
 
@@ -164,11 +181,9 @@ func SaveResource(resource Resource) {
 
 // Load resource from database by ID
 func LoadResource(bucketName, idToLoad string) []byte {
-	log.Printf("Loading resource from %v: %v\n", bucketName, idToLoad)
-
-	// fmt.Println("Loading resource", bucketName, idToLoad)
+	log.Debug("Loading resource", "bucket", bucketName, "id", idToLoad)
 	var output []byte
-	masterDBM.database.View(func(tx *bolt.Tx) error {
+	masterDBM.sessionDB.View(func(tx *bolt.Tx) error {
 		bucket := tx.Bucket([]byte(bucketName))
 		output = bucket.Get([]byte(idToLoad))
 		return nil
@@ -177,40 +192,57 @@ func LoadResource(bucketName, idToLoad string) []byte {
 }
 
 func SaveSubResource(parentBucket, childBucket, idToSave string, dataToSave []byte) {
-	masterDBM.database.Update(func(tx *bolt.Tx) error {
+	log.Debug("Saving subresource", "parent", parentBucket, "child", childBucket, "ID", idToSave)
+	// var db *bolt.DB
+	// if parentBucket == GENERIC_USER {
+	// 	db = masterDBM.generalDB
+	// } else {
+	// 	db = masterDBM.sessionDB
+	// }
+	masterDBM.sessionDB.Update(func(tx *bolt.Tx) error {
 		parent, err := tx.CreateBucketIfNotExists([]byte(parentBucket))
 		if err != nil {
 			return err
 		}
 
-		bucket, err := parent.CreateBucketIfNotExists([]byte(childBucket))
+		child, err := parent.CreateBucketIfNotExists([]byte(childBucket))
 		if err != nil {
 			return err
 		}
-		bucket.Put([]byte(idToSave), dataToSave)
+		child.Put([]byte(idToSave), dataToSave)
+		log.Debug("Successfully saved subresource", "data", dataToSave)
 		return nil
 	})
 
 }
 
 func LoadSubResource(parentBucket, childBucket, idToLoad string) []byte {
+	log.Debug("Loading subresource", "parent", parentBucket, "child", childBucket, "ID", idToLoad)
+	// var db *bolt.DB
+	// if parentBucket == GENERIC_USER {
+	// 	db = masterDBM.generalDB
+	// } else {
+	// 	db = masterDBM.sessionDB
+	// }
 	var resource []byte
-	masterDBM.database.Update(func(tx *bolt.Tx) error {
+	masterDBM.sessionDB.View(func(tx *bolt.Tx) error {
 		parent := tx.Bucket([]byte(parentBucket))
 		if parent == nil {
+			log.Debug("Parent bucket doesn't exist")
 			return errors.New("No bucket with that name")
 		}
 
 		bucket := tx.Bucket([]byte(childBucket))
+		log.Debug("Child bucket", "child", bucket)
 		resource = bucket.Get([]byte(idToLoad))
-
+		log.Debug("Resource", "res", resource)
 		return nil
 	})
 	return resource
 }
 
 func InitUser(userSession string) {
-	masterDBM.database.Update(func(tx *bolt.Tx) error {
+	masterDBM.sessionDB.Update(func(tx *bolt.Tx) error {
 		bucket, err := tx.CreateBucketIfNotExists([]byte(userSession))
 		if err != nil {
 			return err
