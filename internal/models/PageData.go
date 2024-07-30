@@ -70,18 +70,21 @@ var (
 	wordWrap   = lipgloss.NewStyle().Width(ParagraphWidth)
 )
 
+// TODO: Rewrite function to return a string instead of just print so it can be passed into viewport
+// ... OR maybe just make a PageData model (or add a Page Data to the viewport), store the data, and then call this function in the View() method?
+
 func (p *PageData) PrintPageData() {
 	p.processPageData()
 
 	fmt.Print("\033[H\033[2J") // Clear terminal
-	printArticle(p.articleOneSel)
+	fmt.Println(wordWrap.Render(printArticle(p.articleOneSel)))
 
 	if p.answerOne != "" {
 		fmt.Println(wordWrap.Render(p.answerOne))
 	}
 
 	if p.articleTwoSel != nil {
-		printArticle(p.articleTwoSel)
+		fmt.Println(wordWrap.Render(printArticle(p.articleTwoSel)))
 
 		if p.answerTwo != "" {
 			fmt.Println(wordWrap.Render(p.answerTwo))
@@ -90,7 +93,27 @@ func (p *PageData) PrintPageData() {
 
 }
 
-func printArticle(article *goquery.Selection) {
+func (p *PageData) GetPageDataPrettyString() string {
+	p.processPageData()
+
+	sOut := printArticle(p.articleOneSel)
+
+	if p.answerOne != "" {
+		sOut += p.answerOne
+	}
+
+	if p.articleTwoSel != nil {
+		sOut += printArticle(p.articleTwoSel)
+
+		if p.answerTwo != "" {
+			sOut += p.answerTwo
+		}
+	}
+
+	return sOut
+}
+
+func printArticle(article *goquery.Selection) string {
 	articleOut := ""
 
 	title := article.Find("h2").Text()
@@ -130,9 +153,10 @@ func printArticle(article *goquery.Selection) {
 	titlePad := (ParagraphWidth - titleWidth) / 2
 	titleStyle.PaddingLeft(titlePad).PaddingRight(titlePad)
 
-	fmt.Println(titleStyle.Render(title))
-
-	fmt.Println(wordWrap.Render(articleOut))
+	return titleStyle.Render(title) + "\n" + articleOut
+	// fmt.Println(titleStyle.Render(title))
+	//
+	// fmt.Println(wordWrap.Render(articleOut))
 }
 
 func (p *PageData) processPageData() {

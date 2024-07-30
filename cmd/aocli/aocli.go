@@ -9,6 +9,7 @@ import (
 	"dalton.dog/aocgo/internal/cache"
 	"dalton.dog/aocgo/internal/models"
 	"dalton.dog/aocgo/internal/session"
+	"dalton.dog/aocgo/internal/tui"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/charmbracelet/log"
 )
@@ -221,5 +222,7 @@ func test() {
 	user, _ := models.NewUser("")
 	puzzle := models.NewPuzzle(2023, 1)
 	pageData := puzzle.GetPuzzlePageData(user.GetToken())
-	pageData.PrintPageData()
+	pageDataString := pageData.GetPageDataPrettyString()
+
+	tui.StartViewport(pageDataString)
 }
