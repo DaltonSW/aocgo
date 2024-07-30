@@ -16,17 +16,17 @@ type PageData struct {
 	day  int
 	year int
 
-	// Once we get into the <main> tag, the first child should be <article class="day-desc">
-	// Below that, there should be a header that has the day's title. Ex: '--- Day 1: Trebuchet?! ---'
-	headerOne string
-	headerTwo string
-
 	answerOne string
 	answerTwo string
 
+	headerOne string
+	headerTwo string
+
 	// The article consists of articleContents (as you might expect)
 	articleOne      string
+	articleOneSel   *goquery.Selection
 	articleTwo      string
+	articleTwoSel   *goquery.Selection
 	articleContents *goquery.Selection
 
 	mainContents *goquery.Selection
@@ -46,14 +46,16 @@ func NewPageData(raw []byte) *PageData {
 	year, _ := strconv.Atoi(title[len(title)-1])
 
 	mainContents := doc.Find("main")
-	header := mainContents.Find("h2").Text()
 
-	return &PageData{
-		headerOne:    header,
+	pageData := &PageData{
 		day:          day,
 		year:         year,
 		mainContents: mainContents,
 	}
+
+	pageData.processPageData()
+
+	return pageData
 }
 
 // Stylings
@@ -69,44 +71,18 @@ var (
 )
 
 func (p *PageData) processPageData() {
-	processArticleFn := func(article *goquery.Selection) string {
-		title := article.Find("h2").Text()
-		articleOut := title
-
-		article.Contents().Each(func(i int, s *goquery.Selection) {
-			if goquery.NodeName(s) == "a" {
-				href, exists := s.Attr("href")
-				if exists {
-					// Links get made blue with an underline
-					linkText := linkStyle.Render(s.Text())
-					articleOut += createLink(href, linkText)
-				}
-			} else if goquery.NodeName(s) == "em" {
-				parent := s.Parent()
-				if goquery.NodeName(parent) == "code" {
-					// Emphatic code should get rendered as code and emphasis
-					articleOut += italStyle.Render(codeStyle.Render(s.Text()))
-				} else if s.HasClass("star") {
-					articleOut += starStyle.Render(s.Text())
-				} else {
-					articleOut += italStyle.Render(s.Text())
-				}
-			} else if goquery.NodeName(s) == "code" {
-				articleOut += codeStyle.Render(s.Text())
-			} else {
-				articleOut += s.Text()
-			}
-		})
-
-		return articleOut
-	}
+	p.answerOne = ""
+	p.answerTwo = ""
+	p.headerOne = ""
+	p.headerTwo = ""
+	p.articleOneSel = nil
+	p.articleTwoSel = nil
 
 	p.mainContents.Find("article").Each(func(i int, s *goquery.Selection) {
-		outStr := processArticleFn(s)
-		if p.articleOne == "" {
-			p.articleOne = outStr
+		if p.articleOneSel == nil {
+			p.articleOneSel = s
 		} else {
-			p.articleTwo = outStr
+			p.articleTwoSel = s
 		}
 	})
 
@@ -122,14 +98,68 @@ func (p *PageData) processPageData() {
 }
 
 func (p *PageData) PrintPageData() {
+	p.processPageData()
+
 	titleWidth := lipgloss.Width(p.headerOne)
 	titlePad := (ParagraphWidth - titleWidth) / 2
 	titleStyle.PaddingLeft(titlePad).PaddingRight(titlePad)
 
-	sOut := titleStyle.Render(p.headerOne) + "\n\n"
+	fmt.Print("\033[H\033[2J") // Clear terminal
+	// fmt.Println(HeaderStyle.Render(p.headerOne))
+	printArticle(p.articleOneSel)
 
-	fmt.Print("\033[H\033[2J")
-	fmt.Println(wordWrap.Render(sOut))
+	if p.answerOne != "" {
+		fmt.Println(wordWrap.Render(p.answerOne))
+	}
+
+	if p.articleTwoSel != nil {
+		// fmt.Println("\n" + HeaderStyle.Render(p.headerTwo))
+		printArticle(p.articleTwoSel)
+	}
+
+	if p.answerTwo != "" {
+		fmt.Println(wordWrap.Render(p.answerTwo))
+	}
+
+}
+
+func printArticle(article *goquery.Selection) {
+	var articleOut string
+
+	title := article.Find("h2").Text()
+
+	article.Contents().Each(func(i int, s *goquery.Selection) {
+		if goquery.NodeName(s) == "a" {
+			href, exists := s.Attr("href")
+			if exists {
+				// Links get made blue with an underline
+				linkText := linkStyle.Render(s.Text())
+				articleOut += createLink(href, linkText)
+			}
+		} else if goquery.NodeName(s) == "em" {
+			parent := s.Parent()
+			if goquery.NodeName(parent) == "code" {
+				// Emphatic code should get rendered as code and emphasis
+				articleOut += italStyle.Render(codeStyle.Render(s.Text()))
+			} else if s.HasClass("star") {
+				articleOut += starStyle.Render(s.Text())
+			} else {
+				articleOut += italStyle.Render(s.Text())
+			}
+		} else if goquery.NodeName(s) == "code" {
+			articleOut += codeStyle.Render(s.Text())
+		} else if goquery.NodeName(s) != "h2" {
+			articleOut += s.Text()
+		}
+	})
+
+	titleWidth := lipgloss.Width(title)
+	titlePad := (ParagraphWidth - titleWidth) / 2
+	titleStyle.PaddingLeft(titlePad).PaddingRight(titlePad)
+
+	fmt.Println(titleStyle.Render(title))
+
+	fmt.Println(wordWrap.Render(articleOut))
 }
 
 func createLink(url string, text string) string {
