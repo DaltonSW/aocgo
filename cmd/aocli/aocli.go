@@ -224,5 +224,5 @@ func test() {
 	pageData := puzzle.GetPuzzlePageData(user.GetToken())
 	pageDataString := pageData.GetPageDataPrettyString()
 
-	tui.StartViewport(pageDataString)
+	tui.StartViewport(pageDataString, pageData.PuzzleTitle)
 }

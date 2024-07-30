@@ -12,19 +12,24 @@ import (
 
 const useHighPerformanceRenderer = false
 
+const ViewportWidth = 80
+
 var (
 	titleStyle = lipgloss.NewStyle()
 	infoStyle  = lipgloss.NewStyle()
 )
 
 type model struct {
-	content  string
-	ready    bool
-	viewport viewport.Model
+	content   string
+	ready     bool
+	viewport  viewport.Model
+	viewTitle string
 }
 
-func StartViewport(input string) {
-	p := tea.NewProgram(model{content: input}, tea.WithAltScreen(), tea.WithMouseCellMotion())
+// TODO: Add commands for submitting and downloading input
+
+func StartViewport(input string, title string) {
+	p := tea.NewProgram(model{content: input, viewTitle: title}, tea.WithAltScreen(), tea.WithMouseCellMotion())
 
 	if _, err := p.Run(); err != nil {
 		fmt.Println("Couldn't run viewport:", err)
@@ -35,6 +40,8 @@ func StartViewport(input string) {
 func (m model) Init() tea.Cmd {
 	return nil
 }
+
+// BUG: Always reports 100% scroll, and doesn't actually let you scroll
 
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var (
@@ -59,7 +66,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			// we can initialize the viewport. The initial dimensions come in
 			// quickly, though asynchronously, which is why we wait for them
 			// here.
-			m.viewport = viewport.New(msg.Width, msg.Height-verticalMarginHeight)
+			m.viewport = viewport.New(min(ViewportWidth, msg.Width), msg.Height-verticalMarginHeight)
 			m.viewport.YPosition = headerHeight
 			m.viewport.HighPerformanceRendering = useHighPerformanceRenderer
 			m.viewport.SetContent(m.content)
@@ -71,7 +78,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			// Render the viewport one line below the header.
 			m.viewport.YPosition = headerHeight + 1
 		} else {
-			m.viewport.Width = msg.Width
+			m.viewport.Width = min(80, msg.Width)
 			m.viewport.Height = msg.Height - verticalMarginHeight
 		}
 
@@ -99,11 +106,12 @@ func (m model) View() string {
 }
 
 func (m model) headerView() string {
-	title := titleStyle.Render("Mr. Pager")
+	title := titleStyle.Render(m.viewTitle)
 	line := strings.Repeat("─", max(0, m.viewport.Width-lipgloss.Width(title)))
 	return lipgloss.JoinHorizontal(lipgloss.Center, title, line)
 }
 
+// TODO: Make this print the help information
 func (m model) footerView() string {
 	info := infoStyle.Render(fmt.Sprintf("%3.f%%", m.viewport.ScrollPercent()*100))
 	line := strings.Repeat("─", max(0, m.viewport.Width-lipgloss.Width(info)))

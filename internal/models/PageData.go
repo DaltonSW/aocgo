@@ -19,8 +19,7 @@ type PageData struct {
 	answerOne string
 	answerTwo string
 
-	headerOne string
-	headerTwo string
+	PuzzleTitle string
 
 	// The article consists of articleContents (as you might expect)
 	articleOne      string
@@ -46,8 +45,14 @@ func NewPageData(raw []byte) *PageData {
 	year, _ := strconv.Atoi(title[len(title)-1])
 
 	mainContents := doc.Find("main")
+	puzzleTitle := mainContents.Find("h2").First().Text()
+
+	titleWidth := lipgloss.Width(puzzleTitle)
+	titlePad := (ParagraphWidth - titleWidth) / 2
+	titleStyle.PaddingLeft(titlePad).PaddingRight(titlePad)
 
 	pageData := &PageData{
+		PuzzleTitle:  titleStyle.Render(puzzleTitle),
 		day:          day,
 		year:         year,
 		mainContents: mainContents,
@@ -59,8 +64,9 @@ func NewPageData(raw []byte) *PageData {
 }
 
 // Stylings
-const ParagraphWidth = 90
+const ParagraphWidth = 80
 
+// TODO: answerStyle
 var (
 	titleStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("#000000")).Background(lipgloss.Color("#FFFF00"))
 	italStyle  = lipgloss.NewStyle().Foreground(lipgloss.Color("#E10045"))
@@ -103,7 +109,11 @@ func (p *PageData) GetPageDataPrettyString() string {
 	}
 
 	if p.articleTwoSel != nil {
-		sOut += printArticle(p.articleTwoSel)
+		titleWidth := lipgloss.Width("--- Part Two ---")
+		titlePad := (ParagraphWidth - titleWidth) / 2
+		titleStyle.PaddingLeft(titlePad).PaddingRight(titlePad)
+		sOut += "\n" + titleStyle.Render("--- Part Two ---")
+		sOut += "\n" + printArticle(p.articleTwoSel)
 
 		if p.answerTwo != "" {
 			sOut += p.answerTwo
@@ -116,22 +126,23 @@ func (p *PageData) GetPageDataPrettyString() string {
 func printArticle(article *goquery.Selection) string {
 	articleOut := ""
 
-	title := article.Find("h2").Text()
-
 	article.Contents().Each(func(i int, sel *goquery.Selection) {
 		if goquery.NodeName(sel) == "h2" {
 			return
 		}
 
 		sel.Contents().Each(func(j int, s *goquery.Selection) {
-			if goquery.NodeName(s) == "a" {
-				href, exists := s.Attr("href")
-				if exists {
-					// Links get made blue with an underline
-					linkText := linkStyle.Render(s.Text())
-					articleOut += createLink(href, linkText)
-				}
-			} else if goquery.NodeName(s) == "em" {
+			// TODO: Try to fix links. Maybe try "termlink" module
+
+			// if goquery.NodeName(s) == "a" {
+			// 	href, exists := s.Attr("href")
+			// 	if exists {
+			// 		// Links get made blue with an underline
+			// 		articleOut += createLink(href, linkStyle.Render(s.Text()))
+			// 		// articleOut += linkStyle.Render(s.Text() + "(" + href + ")")
+			// 	}
+			// } else
+			if goquery.NodeName(s) == "em" {
 				parent := s.Parent()
 				if goquery.NodeName(parent) == "code" {
 					// Emphatic code should get rendered as code and emphasis
@@ -147,23 +158,16 @@ func printArticle(article *goquery.Selection) string {
 				articleOut += s.Text()
 			}
 		})
+
+		articleOut += "\n"
 	})
 
-	titleWidth := lipgloss.Width(title)
-	titlePad := (ParagraphWidth - titleWidth) / 2
-	titleStyle.PaddingLeft(titlePad).PaddingRight(titlePad)
-
-	return titleStyle.Render(title) + "\n" + articleOut
-	// fmt.Println(titleStyle.Render(title))
-	//
-	// fmt.Println(wordWrap.Render(articleOut))
+	return "\n" + articleOut
 }
 
 func (p *PageData) processPageData() {
 	p.answerOne = ""
 	p.answerTwo = ""
-	p.headerOne = ""
-	p.headerTwo = ""
 	p.articleOneSel = nil
 	p.articleTwoSel = nil
 
@@ -187,5 +191,6 @@ func (p *PageData) processPageData() {
 }
 
 func createLink(url string, text string) string {
-	return fmt.Sprintf("\033]8;;%s\a%s\033]8;;\a", url, text)
+	// return fmt.Sprintf("\033]8;;%s\a%s\033]8;;\a", url, text)
+	return fmt.Sprintf("\x1b]8;;" + url + "\x07" + text + "\x1b]8;;\x07" + "\u001b[0m")
 }
