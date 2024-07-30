@@ -59,7 +59,7 @@ func NewPageData(raw []byte) *PageData {
 }
 
 // Stylings
-const ParagraphWidth = 70
+const ParagraphWidth = 90
 
 var (
 	titleStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("#000000")).Background(lipgloss.Color("#FFFF00"))
@@ -69,6 +69,71 @@ var (
 	codeStyle  = lipgloss.NewStyle().Foreground(lipgloss.Color("#FAC3D5")).Bold(true)
 	wordWrap   = lipgloss.NewStyle().Width(ParagraphWidth)
 )
+
+func (p *PageData) PrintPageData() {
+	p.processPageData()
+
+	fmt.Print("\033[H\033[2J") // Clear terminal
+	printArticle(p.articleOneSel)
+
+	if p.answerOne != "" {
+		fmt.Println(wordWrap.Render(p.answerOne))
+	}
+
+	if p.articleTwoSel != nil {
+		printArticle(p.articleTwoSel)
+
+		if p.answerTwo != "" {
+			fmt.Println(wordWrap.Render(p.answerTwo))
+		}
+	}
+
+}
+
+func printArticle(article *goquery.Selection) {
+	articleOut := ""
+
+	title := article.Find("h2").Text()
+
+	article.Contents().Each(func(i int, sel *goquery.Selection) {
+		if goquery.NodeName(sel) == "h2" {
+			return
+		}
+
+		sel.Contents().Each(func(j int, s *goquery.Selection) {
+			if goquery.NodeName(s) == "a" {
+				href, exists := s.Attr("href")
+				if exists {
+					// Links get made blue with an underline
+					linkText := linkStyle.Render(s.Text())
+					articleOut += createLink(href, linkText)
+				}
+			} else if goquery.NodeName(s) == "em" {
+				parent := s.Parent()
+				if goquery.NodeName(parent) == "code" {
+					// Emphatic code should get rendered as code and emphasis
+					articleOut += italStyle.Render(codeStyle.Render(s.Text()))
+				} else if s.HasClass("star") {
+					articleOut += starStyle.Render(s.Text())
+				} else {
+					articleOut += italStyle.Render(s.Text())
+				}
+			} else if goquery.NodeName(s) == "code" {
+				articleOut += codeStyle.Render(s.Text())
+			} else if goquery.NodeName(s) != "h2" {
+				articleOut += s.Text()
+			}
+		})
+	})
+
+	titleWidth := lipgloss.Width(title)
+	titlePad := (ParagraphWidth - titleWidth) / 2
+	titleStyle.PaddingLeft(titlePad).PaddingRight(titlePad)
+
+	fmt.Println(titleStyle.Render(title))
+
+	fmt.Println(wordWrap.Render(articleOut))
+}
 
 func (p *PageData) processPageData() {
 	p.answerOne = ""
@@ -95,71 +160,6 @@ func (p *PageData) processPageData() {
 			p.answerTwo = outStr
 		}
 	})
-}
-
-func (p *PageData) PrintPageData() {
-	p.processPageData()
-
-	titleWidth := lipgloss.Width(p.headerOne)
-	titlePad := (ParagraphWidth - titleWidth) / 2
-	titleStyle.PaddingLeft(titlePad).PaddingRight(titlePad)
-
-	fmt.Print("\033[H\033[2J") // Clear terminal
-	// fmt.Println(HeaderStyle.Render(p.headerOne))
-	printArticle(p.articleOneSel)
-
-	if p.answerOne != "" {
-		fmt.Println(wordWrap.Render(p.answerOne))
-	}
-
-	if p.articleTwoSel != nil {
-		// fmt.Println("\n" + HeaderStyle.Render(p.headerTwo))
-		printArticle(p.articleTwoSel)
-	}
-
-	if p.answerTwo != "" {
-		fmt.Println(wordWrap.Render(p.answerTwo))
-	}
-
-}
-
-func printArticle(article *goquery.Selection) {
-	var articleOut string
-
-	title := article.Find("h2").Text()
-
-	article.Contents().Each(func(i int, s *goquery.Selection) {
-		if goquery.NodeName(s) == "a" {
-			href, exists := s.Attr("href")
-			if exists {
-				// Links get made blue with an underline
-				linkText := linkStyle.Render(s.Text())
-				articleOut += createLink(href, linkText)
-			}
-		} else if goquery.NodeName(s) == "em" {
-			parent := s.Parent()
-			if goquery.NodeName(parent) == "code" {
-				// Emphatic code should get rendered as code and emphasis
-				articleOut += italStyle.Render(codeStyle.Render(s.Text()))
-			} else if s.HasClass("star") {
-				articleOut += starStyle.Render(s.Text())
-			} else {
-				articleOut += italStyle.Render(s.Text())
-			}
-		} else if goquery.NodeName(s) == "code" {
-			articleOut += codeStyle.Render(s.Text())
-		} else if goquery.NodeName(s) != "h2" {
-			articleOut += s.Text()
-		}
-	})
-
-	titleWidth := lipgloss.Width(title)
-	titlePad := (ParagraphWidth - titleWidth) / 2
-	titleStyle.PaddingLeft(titlePad).PaddingRight(titlePad)
-
-	fmt.Println(titleStyle.Render(title))
-
-	fmt.Println(wordWrap.Render(articleOut))
 }
 
 func createLink(url string, text string) string {

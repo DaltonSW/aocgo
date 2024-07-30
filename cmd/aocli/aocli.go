@@ -59,8 +59,8 @@ func main() {
 		view(args)
 	case "health":
 		health()
-	// case "test":
-	// 	test()
+	case "test":
+		test()
 	default:
 		fmt.Println("Not a valid command! Run `aocli help` to see valid commands.")
 	}
@@ -218,7 +218,8 @@ func health() {
 // Command:	`test`
 // Desc:	Does whatever I need to test at the time :)
 func test() {
-	lb := models.NewLeaderboard(2020, 0)
-	lb.Display()
-	//dirparse.GetDayAndYearFromCWD()
+	user, _ := models.NewUser("")
+	puzzle := models.NewPuzzle(2023, 1)
+	pageData := puzzle.GetPuzzlePageData(user.GetToken())
+	pageData.PrintPageData()
 }
