@@ -202,11 +202,18 @@ func view(args []string) {
 
 	puzzle := models.NewPuzzle(year, day)
 	pageData := puzzle.GetPuzzlePageData(user.GetToken())
-	pageData.PrintPageData()
+	pageDataContent := pageData.GetPageDataPrettyString()
+
+	for pageDataStr := range pageDataContent {
+		fmt.Println(pageDataStr)
+	}
+
+	tui.StartViewportWithArr(pageDataContent, pageData.PuzzleTitle)
 }
 
 // `health` command
 // Desc: Checks if a session key is available
+
 func health() {
 	sessionKey, err := session.GetSessionToken()
 	if err != nil {
@@ -222,7 +229,7 @@ func test() {
 	user, _ := models.NewUser("")
 	puzzle := models.NewPuzzle(2023, 1)
 	pageData := puzzle.GetPuzzlePageData(user.GetToken())
-	pageDataString := pageData.GetPageDataPrettyString()
+	pageDataStringArr := pageData.GetPageDataPrettyString()
 
-	tui.StartViewport(pageDataString, pageData.PuzzleTitle)
+	tui.StartViewportWithArr(pageDataStringArr, pageData.PuzzleTitle)
 }

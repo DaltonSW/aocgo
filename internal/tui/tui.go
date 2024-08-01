@@ -11,13 +11,22 @@ import (
 	// "github.com/charmbracelet/log"
 )
 
-const useHighPerformanceRenderer = false
+const useHighPerformanceRenderer = true
 
-const ViewportWidth = 200
+const ViewportWidth = 80
 
 var (
-	titleStyle = lipgloss.NewStyle()
-	infoStyle  = lipgloss.NewStyle()
+	titleStyle = func() lipgloss.Style {
+		b := lipgloss.RoundedBorder()
+		b.Right = "├"
+		return lipgloss.NewStyle().BorderStyle(b).Padding(0, 1)
+	}()
+
+	infoStyle = func() lipgloss.Style {
+		b := lipgloss.RoundedBorder()
+		b.Left = "┤"
+		return titleStyle.BorderStyle(b)
+	}()
 )
 
 type model struct {
@@ -25,6 +34,16 @@ type model struct {
 	ready     bool
 	viewport  viewport.Model
 	viewTitle string
+}
+
+func StartViewportWithArr(input []string, title string) {
+	contentStr := strings.Join(input, "")
+	p := tea.NewProgram(model{content: contentStr, viewTitle: title}, tea.WithAltScreen(), tea.WithMouseCellMotion())
+
+	if _, err := p.Run(); err != nil {
+		fmt.Println("Couldn't run viewport:", err)
+		os.Exit(1)
+	}
 }
 
 // TODO: Add commands for submitting and downloading input
@@ -72,10 +91,15 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.viewport.HighPerformanceRendering = useHighPerformanceRenderer
 			m.viewport.SetContent(m.content)
 			m.ready = true
+			m.viewport.YPosition = headerHeight + 1
 
 		} else {
 			m.viewport.Width = min(ViewportWidth, msg.Width)
 			m.viewport.Height = msg.Height - verticalMarginHeight
+		}
+
+		if useHighPerformanceRenderer {
+			cmds = append(cmds, viewport.Sync(m.viewport))
 		}
 	}
 

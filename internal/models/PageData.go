@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"strings"
 
+	"dalton.dog/aocgo/internal/tui"
 	"github.com/PuerkitoBio/goquery" // Bless this package
 	"github.com/charmbracelet/lipgloss"
 	"github.com/charmbracelet/log"
@@ -65,65 +66,46 @@ func NewPageData(raw []byte) *PageData {
 // TODO: answerStyle
 var (
 	titleStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("#000000")).Background(lipgloss.Color("#FFFF00"))
-	italStyle  = lipgloss.NewStyle().Foreground(lipgloss.Color("#E10045"))
+	italStyle  = lipgloss.NewStyle().Foreground(lipgloss.Color("#FF3374"))
 	starStyle  = lipgloss.NewStyle().Foreground(lipgloss.Color("#F1FA8C"))
 	linkStyle  = lipgloss.NewStyle().Foreground(lipgloss.Color("#8BE9FD")).Underline(true)
 	codeStyle  = lipgloss.NewStyle().Foreground(lipgloss.Color("#FAC3D5")).Bold(true)
-	// wordWrap   = lipgloss.NewStyle().Width(ParagraphWidth)
+	wordWrap   = lipgloss.NewStyle().Width(tui.ViewportWidth)
 )
 
-// TODO: Rewrite function to return a string instead of just print so it can be passed into viewport
-// ... OR maybe just make a PageData model (or add a Page Data to the viewport), store the data, and then call this function in the View() method?
-
-func (p *PageData) PrintPageData() {
-	p.processPageData()
-
-	fmt.Print("\033[H\033[2J") // Clear terminal
-	fmt.Println(printArticle(p.articleOneSel))
-
-	if p.answerOne != "" {
-		fmt.Println(p.answerOne)
-	}
-
-	if p.articleTwoSel != nil {
-		fmt.Println(printArticle(p.articleTwoSel))
-
-		if p.answerTwo != "" {
-			fmt.Println(p.answerTwo)
-		}
-	}
-
-}
-
-func (p *PageData) GetPageDataPrettyString() string {
+func (p *PageData) GetPageDataPrettyString() []string {
 	p.processPageData()
 
 	sOut := printArticle(p.articleOneSel)
 
 	if p.answerOne != "" {
-		sOut += p.answerOne
+		sOut = append(sOut, p.answerOne)
 	}
 
 	if p.articleTwoSel != nil {
-		sOut += "\n" + titleStyle.Render("--- Part Two ---")
-		sOut += "\n" + printArticle(p.articleTwoSel)
+		sOut = append(sOut, "\n"+titleStyle.Render("--- Part Two ---"))
+		sOut = append(sOut, printArticle(p.articleTwoSel)...)
 
 		if p.answerTwo != "" {
-			sOut += p.answerTwo
+			sOut = append(sOut, p.answerTwo)
 		}
 	}
+
+	// wrappedText := wrapText(sOut, tui.ViewportWidth)
+	// return wrappedText
 
 	return sOut
 }
 
-func printArticle(article *goquery.Selection) string {
-	articleOut := ""
+func printArticle(article *goquery.Selection) []string {
+	var articleOut []string
 
 	article.Contents().Each(func(i int, sel *goquery.Selection) {
 		if goquery.NodeName(sel) == "h2" {
 			return
 		}
 
+		loopContents := ""
 		sel.Contents().Each(func(j int, s *goquery.Selection) {
 			// TODO: Try to fix links. Maybe try "termlink" module
 
@@ -135,27 +117,28 @@ func printArticle(article *goquery.Selection) string {
 			// 		// articleOut += linkStyle.Render(s.Text() + "(" + href + ")")
 			// 	}
 			// } else
+
 			if goquery.NodeName(s) == "em" {
 				parent := s.Parent()
 				if goquery.NodeName(parent) == "code" {
 					// Emphatic code should get rendered as code and emphasis
-					articleOut += italStyle.Render(codeStyle.Render(s.Text()))
+					loopContents += italStyle.Render(codeStyle.Render(s.Text()))
 				} else if s.HasClass("star") {
-					articleOut += starStyle.Render(s.Text())
+					loopContents += starStyle.Render(s.Text())
 				} else {
-					articleOut += italStyle.Render(s.Text())
+					loopContents += italStyle.Render(s.Text())
 				}
 			} else if goquery.NodeName(s) == "code" {
-				articleOut += codeStyle.Render(s.Text())
+				loopContents += codeStyle.Render(s.Text())
 			} else if goquery.NodeName(s) != "h2" {
-				articleOut += s.Text()
+				loopContents += s.Text()
 			}
 		})
 
-		articleOut += "\n"
+		articleOut = append(articleOut, wrapText(loopContents, tui.ViewportWidth)+"\n")
 	})
 
-	return "\n" + articleOut
+	return articleOut
 }
 
 func (p *PageData) processPageData() {
@@ -181,6 +164,28 @@ func (p *PageData) processPageData() {
 			p.answerTwo = outStr
 		}
 	})
+}
+
+func wrapText(line string, width int) string {
+	var result string
+	words := strings.Fields(line)
+	lineLength := 0
+
+	for _, word := range words {
+		if lineLength+len(word)+1 > width {
+			result += "\n"
+			lineLength = 0
+		}
+		if lineLength > 0 {
+			result += " "
+			lineLength++
+		}
+
+		result += word
+		lineLength += len(word)
+	}
+
+	return result
 }
 
 func createLink(url string, text string) string {
