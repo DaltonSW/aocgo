@@ -1,4 +1,4 @@
-package aocgo
+package aocutils
 
 import (
 	"regexp"
