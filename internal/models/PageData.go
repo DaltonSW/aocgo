@@ -47,10 +47,6 @@ func NewPageData(raw []byte) *PageData {
 	mainContents := doc.Find("main")
 	puzzleTitle := mainContents.Find("h2").First().Text()
 
-	titleWidth := lipgloss.Width(puzzleTitle)
-	titlePad := (ParagraphWidth - titleWidth) / 2
-	titleStyle.PaddingLeft(titlePad).PaddingRight(titlePad)
-
 	pageData := &PageData{
 		PuzzleTitle:  titleStyle.Render(puzzleTitle),
 		day:          day,
@@ -64,7 +60,7 @@ func NewPageData(raw []byte) *PageData {
 }
 
 // Stylings
-const ParagraphWidth = 80
+// const ParagraphWidth = 120
 
 // TODO: answerStyle
 var (
@@ -73,7 +69,7 @@ var (
 	starStyle  = lipgloss.NewStyle().Foreground(lipgloss.Color("#F1FA8C"))
 	linkStyle  = lipgloss.NewStyle().Foreground(lipgloss.Color("#8BE9FD")).Underline(true)
 	codeStyle  = lipgloss.NewStyle().Foreground(lipgloss.Color("#FAC3D5")).Bold(true)
-	wordWrap   = lipgloss.NewStyle().Width(ParagraphWidth)
+	// wordWrap   = lipgloss.NewStyle().Width(ParagraphWidth)
 )
 
 // TODO: Rewrite function to return a string instead of just print so it can be passed into viewport
@@ -83,17 +79,17 @@ func (p *PageData) PrintPageData() {
 	p.processPageData()
 
 	fmt.Print("\033[H\033[2J") // Clear terminal
-	fmt.Println(wordWrap.Render(printArticle(p.articleOneSel)))
+	fmt.Println(printArticle(p.articleOneSel))
 
 	if p.answerOne != "" {
-		fmt.Println(wordWrap.Render(p.answerOne))
+		fmt.Println(p.answerOne)
 	}
 
 	if p.articleTwoSel != nil {
-		fmt.Println(wordWrap.Render(printArticle(p.articleTwoSel)))
+		fmt.Println(printArticle(p.articleTwoSel))
 
 		if p.answerTwo != "" {
-			fmt.Println(wordWrap.Render(p.answerTwo))
+			fmt.Println(p.answerTwo)
 		}
 	}
 
@@ -109,9 +105,6 @@ func (p *PageData) GetPageDataPrettyString() string {
 	}
 
 	if p.articleTwoSel != nil {
-		titleWidth := lipgloss.Width("--- Part Two ---")
-		titlePad := (ParagraphWidth - titleWidth) / 2
-		titleStyle.PaddingLeft(titlePad).PaddingRight(titlePad)
 		sOut += "\n" + titleStyle.Render("--- Part Two ---")
 		sOut += "\n" + printArticle(p.articleTwoSel)
 

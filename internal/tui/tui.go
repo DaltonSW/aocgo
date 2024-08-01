@@ -8,11 +8,12 @@ import (
 	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	// "github.com/charmbracelet/log"
 )
 
 const useHighPerformanceRenderer = false
 
-const ViewportWidth = 80
+const ViewportWidth = 200
 
 var (
 	titleStyle = lipgloss.NewStyle()
@@ -72,28 +73,17 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.viewport.SetContent(m.content)
 			m.ready = true
 
-			// This is only necessary for high performance rendering, which in
-			// most cases you won't need.
-			//
-			// Render the viewport one line below the header.
-			m.viewport.YPosition = headerHeight + 1
 		} else {
-			m.viewport.Width = min(80, msg.Width)
+			m.viewport.Width = min(ViewportWidth, msg.Width)
 			m.viewport.Height = msg.Height - verticalMarginHeight
-		}
-
-		if useHighPerformanceRenderer {
-			// Render (or re-render) the whole viewport. Necessary both to
-			// initialize the viewport and when the window is resized.
-			//
-			// This is needed for high-performance rendering only.
-			cmds = append(cmds, viewport.Sync(m.viewport))
 		}
 	}
 
 	// Handle keyboard and mouse events in the viewport
 	m.viewport, cmd = m.viewport.Update(msg)
 	cmds = append(cmds, cmd)
+	// log.Debugf("Viewport Height: %d\n", m.viewport.Height)
+	// log.Debugf("Content Height: %d\n", lipgloss.Height(m.content))
 
 	return m, tea.Batch(cmds...)
 }
