@@ -13,7 +13,7 @@ import (
 
 const ()
 
-func GetDayAndYearFromCWD() (int, int, error) {
+func GetYearAndDayFromCWD() (int, int, error) {
 	cwd, err := os.Getwd()
 	if err != nil {
 		return 0, 0, err
@@ -23,10 +23,10 @@ func GetDayAndYearFromCWD() (int, int, error) {
 	cwdLen := len(splitCWD)
 	curDir, parentDir := splitCWD[cwdLen-1], splitCWD[cwdLen-2]
 
-	return GetDayAndYearFromDirInput(curDir, parentDir)
+	return GetYearAndDayFromDirInput(curDir, parentDir)
 }
 
-func GetDayAndYearFromDirInput(curDir, parentDir string) (int, int, error) {
+func GetYearAndDayFromDirInput(curDir, parentDir string) (int, int, error) {
 	day, err := ParseDay(curDir)
 	if err != nil {
 		return 0, 0, err
@@ -37,7 +37,7 @@ func GetDayAndYearFromDirInput(curDir, parentDir string) (int, int, error) {
 		return day, 0, err
 	}
 
-	return day, year, nil
+	return year, day, nil
 }
 
 func ParseYear(yearStr string) (int, error) {

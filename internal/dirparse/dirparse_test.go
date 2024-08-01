@@ -20,7 +20,7 @@ func TestGetDayAndYearFromCWD(t *testing.T) {
 	for _, test := range tests {
 		testname := fmt.Sprintf(".../%v/%v", test.paren, test.cur)
 		t.Run(testname, func(t *testing.T) {
-			outDay, outYear, outErr := GetDayAndYearFromDirInput(test.cur, test.paren)
+			outDay, outYear, outErr := GetYearAndDayFromDirInput(test.cur, test.paren)
 			if outErr != nil {
 				t.Errorf("Got unexpected error: %v", outErr)
 			}
