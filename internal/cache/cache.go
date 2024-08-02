@@ -14,7 +14,7 @@ import (
 )
 
 var UserCacheDir, _ = os.UserCacheDir()
-var CacheDir = path.Join(UserCacheDir, "aocutil")
+var CacheDir = path.Join(UserCacheDir, "aocgo")
 var CacheFile = path.Join(CacheDir, "%v.db")
 var InputCacheDir = path.Join(CacheDir, "inputs")
 

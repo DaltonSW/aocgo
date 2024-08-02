@@ -1,3 +1,4 @@
+// Copyright 2024 Dalton Williams
 package main
 
 import (
@@ -49,8 +50,8 @@ func main() {
 		help(args)
 	case "get":
 		get(args)
-	case "submit":
-		submit(args)
+	// case "submit":
+	// 	submit(args)
 	case "lb":
 	case "leaderboard":
 		leaderboard(args)

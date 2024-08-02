@@ -1,4 +1,6 @@
-// Package aocgo provides data access functions for a non-intrusive way to get your Advent of Code puzzle inputs
+// Copyright 2024 Dalton Williams
+//
+// Package aocgo provides functions to get your Advent of Code puzzle inputs in a non-intrusive way.
 package aocgo
 
 import (
