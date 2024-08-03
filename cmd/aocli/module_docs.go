@@ -6,10 +6,10 @@
 // Though consider contributing back to the repo!
 
 /*
-Aocli allows you to interface with Advent of Code workflows without leaving your terminal.
-This command is NOT Go-specific and can be used with any language for solving.
+`Aocli` allows you to interface with Advent of Code workflows without leaving your terminal.
+This command is *NOT* Go-specific and can be used with any language for solving.
 
-This command is NOT intended to be installed or updated as part of the parent module.
+This command is *NOT* intended to be installed or updated as part of the parent module.
 Though part of the parent module, that is for central code sharing purposes. Aocli has self-updating capabilities that can/should be used to keep it up-to-date. Otherwise, you can find and install the latest version by checking the GitHub Releases
 
 Usage:
@@ -26,7 +26,7 @@ Available commands are:
 
 Any commands that rely on a year and day will attempt to derive those values from the names of the current directory and the parent directory. If those can't be properly derived, or you wish to run the command for another date, you can pass those in manually.
 
-Run aocli help <command> for more information on a specific command.
+Run aocli help `<command>` for more information on a specific command.
 
 # Get puzzle input for default session token
 

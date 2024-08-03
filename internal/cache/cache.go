@@ -3,72 +3,37 @@ package cache
 import (
 	"errors"
 	"fmt"
-	"io"
 	"os"
 	"path"
-	"strconv"
 	"time"
 
 	"github.com/charmbracelet/log"
 	bolt "go.etcd.io/bbolt"
 )
 
-var UserCacheDir, _ = os.UserCacheDir()
-var CacheDir = path.Join(UserCacheDir, "aocgo")
-var CacheFile = path.Join(CacheDir, "%v.db")
-var InputCacheDir = path.Join(CacheDir, "inputs")
+const (
+	// Buckets
+	PAGE_DATA    = "PageData"
+	CALENDAR     = "Calendar"
+	USER_DATA    = "UserData"
+	LEADERBOARDS = "Leaderboards"
+	PUZZLES      = "Puzzles"
 
-var GeneralCacheDB = fmt.Sprintf(CacheFile, GENERIC_USER)
+	// Sub Buckets
+	USER_INPUTS = "UserInputs"
+	USER_PAGES  = "UserPages"
 
-func InitCache() {
-	os.MkdirAll(CacheDir, 0600)
-}
+	// Other
+	GENERIC_USER = "GenericUser"
+)
 
-func LoadUserInput(year int, day int, userSession string) []byte {
-	log.Infof("Loading user puzzle input for Day %v (%v) for user %v", day, year, userSession)
-
-	fileDir := path.Join(InputCacheDir, userSession, strconv.Itoa(year))
-	filePath := path.Join(fileDir, strconv.Itoa(day)+".input")
-
-	var file *os.File
-	var err error
-
-	file, err = os.Open(filePath)
-	if err != nil {
-		return []byte{}
-	}
-	defer file.Close()
-
-	data, _ := io.ReadAll(file)
-	log.Infof("Success")
-	return data
-}
-
-func SaveUserInput(year int, day int, userSession string, input []byte) error {
-	log.Infof("Saving user puzzle input for Day %v (%v) for user %v", day, year, userSession)
-
-	fileDir := path.Join(InputCacheDir, userSession, strconv.Itoa(year))
-	filePath := path.Join(fileDir, strconv.Itoa(day)+".input")
-
-	var file *os.File
-	var err error
-
-	os.MkdirAll(fileDir, 0600)
-	file, err = os.Open(filePath)
-	if errors.Is(err, os.ErrNotExist) {
-		file, err = os.Create(filePath)
-		if err != nil {
-			return err
-		}
-	} else {
-		return err
-	}
-	defer file.Close()
-
-	file.Write(input)
-	log.Infof("Success")
-	return nil
-}
+var (
+	UserCacheDir, _ = os.UserCacheDir()
+	CacheDir        = path.Join(UserCacheDir, "aocgo")
+	CacheFile       = path.Join(CacheDir, "%v.db")
+	InputCacheDir   = path.Join(CacheDir, "inputs")
+	GeneralCacheDB  = fmt.Sprintf(CacheFile, GENERIC_USER)
+)
 
 // Interface for storable resource
 type Resource interface {
@@ -79,28 +44,14 @@ type Resource interface {
 
 var masterDBM *DatabaseManager
 
-const ( // Buckets
-	PAGE_DATA    = "PageData"
-	CALENDAR     = "Calendar"
-	USER_DATA    = "UserData"
-	LEADERBOARDS = "Leaderboards"
-
-	// Sub Buckets
-	USER_INPUTS = "UserInputs"
-	USER_PAGES  = "UserPages"
-
-	// Other
-	GENERIC_USER = "GenericUser"
-)
-
-// Create and initialize master database manager
-func Startup(userSession string) error {
+// Create and initialize master database manager, taking in a valid AoC user session token
+func StartupDBM(userSession string) error {
 	masterDBM = &DatabaseManager{}
-	return masterDBM.Initialize(userSession)
+	return masterDBM.initializeDBM(userSession)
 }
 
 // Ensure Master DBM gets shutdown
-func Shutdown() {
+func ShutdownDBM() {
 	masterDBM.Shutdown()
 }
 
@@ -112,7 +63,7 @@ type DatabaseManager struct {
 }
 
 // Initializes the DBM
-func (dbm *DatabaseManager) Initialize(userSession string) error {
+func (dbm *DatabaseManager) initializeDBM(userSession string) error {
 	log.Debug("---Initializing Database---")
 
 	// Load save file path and ensure it exists
@@ -148,6 +99,7 @@ func (dbm *DatabaseManager) Initialize(userSession string) error {
 func (dbm *DatabaseManager) initializeBuckets() {
 	dbm.sessionDB.Update(func(tx *bolt.Tx) error {
 		tx.CreateBucketIfNotExists([]byte(PAGE_DATA))
+		tx.CreateBucketIfNotExists([]byte(PUZZLES))
 		tx.CreateBucketIfNotExists([]byte(USER_INPUTS))
 		tx.CreateBucketIfNotExists([]byte(USER_DATA))
 		tx.CreateBucketIfNotExists([]byte(LEADERBOARDS))

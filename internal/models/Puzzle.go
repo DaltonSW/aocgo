@@ -22,13 +22,20 @@ type Puzzle struct {
 	URL      string
 }
 
+// func LoadOrCreatePuzzle(year int, day int) *Puzzle {
+// 	puzzleData := cache.LoadResource(cache.USER)
+//
+// }
+
 func NewPuzzle(year int, day int) *Puzzle {
-	return &Puzzle{
+	newPuzzle := &Puzzle{
 		day:      day,
 		year:     year,
 		bucketID: strconv.Itoa(day) + strconv.Itoa(year),
 		URL:      fmt.Sprintf(PUZZLE_URL, year, day),
 	}
+
+	return newPuzzle
 }
 
 func (p *Puzzle) GetPuzzlePageData(userSession string) PageData {

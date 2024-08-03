@@ -41,8 +41,8 @@ func main() {
 		log.Error("Unable to create user to run requests as. Try running `aocli health`.")
 	}
 
-	cache.Startup(User.GetToken())
-	defer cache.Shutdown()
+	cache.StartupDBM(User.GetToken())
+	defer cache.ShutdownDBM()
 
 	switch args[1] {
 	case "check-update":
