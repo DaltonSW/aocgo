@@ -1,12 +1,12 @@
 package models
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"strconv"
 	"strings"
 
+	"dalton.dog/aocgo/internal/api"
 	"dalton.dog/aocgo/internal/cache"
 	"dalton.dog/aocgo/internal/tui"
 	"github.com/PuerkitoBio/goquery" // Bless this package
@@ -14,37 +14,51 @@ import (
 	"github.com/charmbracelet/log"
 )
 
+// Information about the actual HTML contents of the page for a certain puzzle
 type PageData struct {
-	// Both of these two can be found in the page's <head>'s <title> tag
-	day  int
-	year int
-
+	day      int
+	year     int
 	bucketID string
 
-	answerOne string
-	answerTwo string
-
-	PuzzleTitle string
+	// Stuff relevant to printing
+	PuzzleTitle     string
+	PrettyStringArr []string
+	AnswerOne       string
+	AnswerTwo       string
 
 	// The article consists of articleContents (as you might expect)
-	articleOne      string
-	articleOneSel   *goquery.Selection
-	articleTwo      string
-	articleTwoSel   *goquery.Selection
-	articleContents *goquery.Selection
-
-	mainContents *goquery.Selection
+	articleOneSel goquery.Selection
+	articleTwoSel goquery.Selection
+	mainContents  goquery.Selection
 }
 
-func (p *PageData) GetID() string                { return p.bucketID }
-func (p *PageData) GetBucketName() string        { return cache.PAGE_DATA }
-func (p *PageData) MarshalData() ([]byte, error) { return json.Marshal(p) }
-func (p *PageData) SaveResource()                { cache.SaveResource(p) }
+func (p *PageData) GetID() string               { return p.bucketID }
+func (p *PageData) GetBucketName() string       { return cache.PAGE_DATA }
+func (p PageData) MarshalData() ([]byte, error) { return json.Marshal(p) }
+func (p *PageData) SaveResource()               { cache.SaveResource(p) }
 
-func NewPageData(raw []byte) *PageData {
-	reader := bytes.NewReader(raw)
+func LoadOrCreatePageData(year, day int, userSession, URL string) *PageData {
+	bucketID := strconv.Itoa(year) + strconv.Itoa(day)
+	data := cache.LoadResource(cache.PAGE_DATA, bucketID)
 
-	doc, err := goquery.NewDocumentFromReader(reader)
+	if data != nil {
+		var pageData *PageData
+		json.Unmarshal(data, &pageData)
+		return pageData
+	}
+
+	return NewPageData(userSession, URL)
+
+}
+
+func NewPageData(userSesssion, URL string) *PageData {
+	resp, err := api.NewGetReq(URL, userSesssion)
+	if err != nil {
+		panic(err)
+	}
+
+	defer resp.Body.Close()
+	doc, err := goquery.NewDocumentFromReader(resp.Body)
 	if err != nil {
 		log.Fatal("Error constructing new PageData.", "error", err)
 	}
@@ -61,12 +75,13 @@ func NewPageData(raw []byte) *PageData {
 		PuzzleTitle:  titleStyle.Render(puzzleTitle),
 		day:          day,
 		year:         year,
-		bucketID:     strconv.Itoa(day) + strconv.Itoa(year),
-		mainContents: mainContents,
+		bucketID:     strconv.Itoa(year) + strconv.Itoa(day),
+		mainContents: *mainContents,
 	}
 
 	pageData.processPageData()
-
+	pageData.PrettyStringArr = pageData.GetPageDataPrettyString()
+	pageData.SaveResource()
 	return pageData
 }
 
@@ -84,30 +99,37 @@ var (
 )
 
 func (p *PageData) GetPageDataPrettyString() []string {
+	if len(p.PrettyStringArr) != 0 {
+		return p.PrettyStringArr
+	}
+
 	p.processPageData()
 
 	sOut := printArticle(p.articleOneSel)
 
-	if p.answerOne != "" {
-		sOut = append(sOut, p.answerOne)
+	if p.AnswerOne != "" {
+		sOut = append(sOut, p.AnswerOne)
 	}
 
-	if p.articleTwoSel != nil {
+	if len(p.articleTwoSel.Nodes) != 0 {
 		sOut = append(sOut, "\n"+titleStyle.Render("--- Part Two ---"))
 		sOut = append(sOut, printArticle(p.articleTwoSel)...)
 
-		if p.answerTwo != "" {
-			sOut = append(sOut, p.answerTwo)
+		if p.AnswerTwo != "" {
+			sOut = append(sOut, p.AnswerTwo)
 		}
 	}
 
 	// wrappedText := wrapText(sOut, tui.ViewportWidth)
 	// return wrappedText
 
+	p.PrettyStringArr = sOut
+	p.SaveResource()
+
 	return sOut
 }
 
-func printArticle(article *goquery.Selection) []string {
+func printArticle(article goquery.Selection) []string {
 	var articleOut []string
 
 	article.Contents().Each(func(i int, sel *goquery.Selection) {
@@ -152,26 +174,26 @@ func printArticle(article *goquery.Selection) []string {
 }
 
 func (p *PageData) processPageData() {
-	p.answerOne = ""
-	p.answerTwo = ""
-	p.articleOneSel = nil
-	p.articleTwoSel = nil
+	p.AnswerOne = ""
+	p.AnswerTwo = ""
+	p.articleOneSel = goquery.Selection{}
+	p.articleTwoSel = goquery.Selection{}
 
 	p.mainContents.Find("article").Each(func(i int, s *goquery.Selection) {
-		if p.articleOneSel == nil {
-			p.articleOneSel = s
+		if len(p.articleOneSel.Nodes) == 0 {
+			p.articleOneSel = *s
 		} else {
-			p.articleTwoSel = s
+			p.articleTwoSel = *s
 		}
 	})
 
 	// This should only grab "Your puzzle answer was: " tags
 	p.mainContents.Find("article + p").Each(func(i int, s *goquery.Selection) {
 		outStr := s.Text()
-		if p.answerOne == "" {
-			p.answerOne = outStr
+		if p.AnswerOne == "" {
+			p.AnswerOne = outStr
 		} else {
-			p.answerTwo = outStr
+			p.AnswerTwo = outStr
 		}
 	})
 }

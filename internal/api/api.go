@@ -46,7 +46,7 @@ func (c *httpClient) Do(req *http.Request) (*http.Response, error) {
 }
 
 func InitClient(userSessionToken string) {
-	log.Debug("Initiating API client.", "sessionToken", userSessionToken)
+	// log.Debug("Initiating API client.", "sessionToken", userSessionToken)
 	limiter := rate.NewLimiter(rate.Every(time.Second), REQS_PER_SEC)
 	client := httpClient{
 		client:       http.Client{},

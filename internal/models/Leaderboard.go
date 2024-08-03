@@ -47,7 +47,7 @@ func (l *Leaderboard) MarshalData() ([]byte, error) { return json.Marshal(l) }
 func (l *Leaderboard) SaveResource()                { cache.SaveResource(l) }
 
 func NewLeaderboard(year, day int) *Leaderboard {
-	bucketID := strconv.Itoa(day) + strconv.Itoa(year)
+	bucketID := strconv.Itoa(year) + strconv.Itoa(day)
 	data := cache.LoadResource(cache.LEADERBOARDS, bucketID)
 	var lb *Leaderboard
 	if data != nil {

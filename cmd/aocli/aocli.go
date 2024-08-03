@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"time"
 
 	// "dalton.dog/aocgo/internal/dirparse"
 	"dalton.dog/aocgo/internal/cache"
@@ -29,6 +30,9 @@ var User *models.User
 
 func main() {
 	log.SetLevel(log.DebugLevel)
+	log.SetReportCaller(true)
+	log.SetTimeFormat(time.TimeOnly)
+	log.SetPrefix("\n")
 
 	args := os.Args
 	if len(args) == 1 {
@@ -143,7 +147,7 @@ func get(args []string) {
 	year, _ := strconv.Atoi(args[2])
 	day, _ := strconv.Atoi(args[3])
 
-	puzzle := models.NewPuzzle(year, day)
+	puzzle := models.NewPuzzle(year, day, user.GetToken())
 	if err != nil {
 		log.Fatal("Unable to load puzzle data!", "year", year, "day", day, "err", err)
 	}
@@ -190,7 +194,6 @@ func run(args []string) {
 // `view [year] [day]` command
 // Desc: Pretty-prints the puzzle's page data
 func view(args []string) {
-	// TODO: Load user since it needs the token to know whether or not to include Part B
 	// TODO: Validate input
 	if len(args) < 4 {
 		return
@@ -206,15 +209,10 @@ func view(args []string) {
 	year, _ := strconv.Atoi(args[2])
 	day, _ := strconv.Atoi(args[3])
 
-	puzzle := models.NewPuzzle(year, day)
-	pageData := puzzle.GetPuzzlePageData(user.GetToken())
-	pageDataContent := pageData.GetPageDataPrettyString()
+	puzzle := models.LoadOrCreatePuzzle(year, day, user.GetToken())
+	pageData := puzzle.PageData
 
-	for pageDataStr := range pageDataContent {
-		fmt.Println(pageDataStr)
-	}
-
-	tui.StartViewportWithArr(pageDataContent, pageData.PuzzleTitle)
+	tui.StartViewportWithArr(pageData.GetPageDataPrettyString(), pageData.PuzzleTitle)
 }
 
 // `health` command
@@ -233,9 +231,8 @@ func health() {
 // Desc:	Does whatever I need to test at the time :)
 func test() {
 	user, _ := models.NewUser("")
-	puzzle := models.NewPuzzle(2023, 1)
-	pageData := puzzle.GetPuzzlePageData(user.GetToken())
-	pageDataStringArr := pageData.GetPageDataPrettyString()
+	puzzle := models.LoadOrCreatePuzzle(2023, 1, user.GetToken())
+	pageData := puzzle.PageData
 
-	tui.StartViewportWithArr(pageDataStringArr, pageData.PuzzleTitle)
+	tui.StartViewportWithArr(pageData.GetPageDataPrettyString(), pageData.PuzzleTitle)
 }

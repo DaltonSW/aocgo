@@ -6,7 +6,7 @@ import (
 
 	"dalton.dog/aocgo/internal/api"
 	"dalton.dog/aocgo/internal/session"
-	"github.com/charmbracelet/log"
+	// "github.com/charmbracelet/log"
 )
 
 type User struct {
@@ -21,7 +21,7 @@ func (u *User) GetToken() string {
 
 func NewUser(token string) (*User, error) {
 	var err error
-	log.Debug("Trying to create user", "tokenParam", token)
+	// log.Debug("Trying to create user", "tokenParam", token)
 	if token == "" {
 		token, err = session.GetSessionToken()
 		if err != nil {

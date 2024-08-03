@@ -35,7 +35,7 @@ func getData(year int, day int) []byte {
 	if err != nil {
 		log.Fatal(err)
 	}
-	puzzle := models.NewPuzzle(year, day)
+	puzzle := models.NewPuzzle(year, day, userToken)
 	input, err := puzzle.GetUserPuzzleInput(userToken)
 	if err != nil {
 		log.Fatal(err)

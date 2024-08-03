@@ -14,31 +14,44 @@ import (
 const PUZZLE_URL = "https://adventofcode.com/%v/day/%v"
 
 type Puzzle struct {
-	day      int
-	year     int
-	bucketID string
-	pageData *PageData
+	Day      int
+	Year     int
+	BucketID string
+	PageData *PageData
 	partA    PuzzlePart
 	partB    PuzzlePart
 	URL      string
 }
 
-func (p *Puzzle) GetID() string                { return p.bucketID }
-func (p *Puzzle) GetBucketName() string        { return cache.PUZZLES }
-func (p *Puzzle) MarshalData() ([]byte, error) { return json.Marshal(p) }
-func (p *Puzzle) SaveResource()                { cache.SaveResource(p) }
+func (p *Puzzle) GetID() string               { return p.BucketID }
+func (p *Puzzle) GetBucketName() string       { return cache.PUZZLES }
+func (p Puzzle) MarshalData() ([]byte, error) { return json.Marshal(p) }
+func (p *Puzzle) SaveResource()               { cache.SaveResource(p) }
 
-// func LoadOrCreatePuzzle(year int, day int) *Puzzle {
-// 	puzzleData := cache.LoadResource(cache.USER)
-//
-// }
+func LoadOrCreatePuzzle(year int, day int, userSession string) *Puzzle {
+	bucketID := strconv.Itoa(year) + strconv.Itoa(day)
+	puzzleData := cache.LoadResource(cache.PUZZLES, bucketID)
+	if puzzleData != nil {
+		var puzzle *Puzzle
+		json.Unmarshal(puzzleData, &puzzle)
+		pageData := LoadOrCreatePageData(year, day, userSession, puzzle.URL)
+		puzzle.PageData = pageData
+		return puzzle
+	}
 
-func NewPuzzle(year int, day int) *Puzzle {
+	return NewPuzzle(year, day, userSession)
+}
+
+func NewPuzzle(year int, day int, userSession string) *Puzzle {
+	URL := fmt.Sprintf(PUZZLE_URL, year, day)
+	puzzlePageData := LoadOrCreatePageData(year, day, userSession, URL)
+
 	newPuzzle := &Puzzle{
-		day:      day,
-		year:     year,
-		bucketID: strconv.Itoa(day) + strconv.Itoa(year),
-		URL:      fmt.Sprintf(PUZZLE_URL, year, day),
+		Day:      day,
+		Year:     year,
+		BucketID: strconv.Itoa(year) + strconv.Itoa(day),
+		PageData: puzzlePageData,
+		URL:      URL,
 	}
 
 	newPuzzle.SaveResource()
@@ -46,33 +59,12 @@ func NewPuzzle(year int, day int) *Puzzle {
 	return newPuzzle
 }
 
-func (p *Puzzle) GetPuzzlePageData(userSession string) PageData {
-	if p.pageData != nil {
-		return *p.pageData
-	}
-	// TODO: Try load from disk
-	resp, err := api.NewGetReq(p.URL, userSession)
-	if err != nil {
-		panic(err)
-	}
-
-	defer resp.Body.Close()
-
-	rawPage, err := io.ReadAll(resp.Body)
-	if err != nil {
-		panic(err)
-	}
-
-	pageData := NewPageData(rawPage)
-
-	p.pageData = pageData
-
-	// TODO: Save to disk
-	return *pageData
+func (p *Puzzle) GetPageDataContent() []string {
+	return p.PageData.GetPageDataPrettyString()
 }
 
 func (p *Puzzle) GetUserPuzzleInput(userSession string) ([]byte, error) {
-	data := cache.LoadResource(cache.USER_INPUTS, p.bucketID)
+	data := cache.LoadResource(cache.USER_INPUTS, p.BucketID)
 
 	if data != nil {
 		return data, nil
@@ -89,7 +81,7 @@ func (p *Puzzle) GetUserPuzzleInput(userSession string) ([]byte, error) {
 		return nil, err
 	}
 
-	cache.SaveGenericResource(cache.USER_INPUTS, p.bucketID, inputData)
+	cache.SaveGenericResource(cache.USER_INPUTS, p.BucketID, inputData)
 
 	return inputData, nil
 }
