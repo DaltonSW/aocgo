@@ -127,7 +127,7 @@ func help(args []string) {
 }
 
 // `get [year] [day]` command
-// Desc: Gets input data for a specific day
+// Desc: Gets input data for a specific day, outputting it to the current directory as `input.txt`
 // Params:
 //
 //	[year] - 2 or 4 digit year (16 or 2016)
@@ -152,7 +152,9 @@ func get(args []string) {
 		log.Fatal("Unable to load puzzle data!", "year", year, "day", day, "err", err)
 	}
 	userInput, err := puzzle.GetUserPuzzleInput(user.GetToken())
-	fmt.Print(string(userInput))
+
+	out, err := os.Create("./input.txt")
+	out.Write(userInput)
 	return
 }
 
