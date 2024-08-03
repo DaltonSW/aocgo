@@ -46,10 +46,17 @@ func main() {
 	defer cache.Shutdown()
 
 	switch args[1] {
-	case "help":
-		help(args)
+	case "check-update":
+		update := checkForUpdate()
+		if update {
+			fmt.Printf("New version available! Run `aocli update` to get the new version.")
+		}
 	case "get":
 		get(args)
+	case "health":
+		health()
+	case "help":
+		help(args)
 	// case "submit":
 	// 	submit(args)
 	case "lb":
@@ -59,8 +66,6 @@ func main() {
 	// 	run(args)
 	case "view":
 		view(args)
-	case "health":
-		health()
 	case "test":
 		test()
 	default:
