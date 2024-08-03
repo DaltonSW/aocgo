@@ -12,6 +12,7 @@ import (
 	"golang.org/x/mod/semver"
 )
 
+// Internally tracked version to compare against GitHub releases
 const currentVersion = "v0.0.0"
 const repoURL = "https://api.github.com/repos/DaltonSW/aocGo/releases/latest"
 

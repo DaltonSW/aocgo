@@ -59,7 +59,6 @@ func main() {
 		help(args)
 	// case "submit":
 	// 	submit(args)
-	case "lb":
 	case "leaderboard":
 		leaderboard(args)
 	// case "run":
@@ -68,6 +67,8 @@ func main() {
 		view(args)
 	case "test":
 		test()
+	case "update":
+		update()
 	default:
 		fmt.Println("Not a valid command! Run `aocli help` to see valid commands.")
 	}
