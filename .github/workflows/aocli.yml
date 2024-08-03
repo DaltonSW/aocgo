@@ -42,10 +42,8 @@ jobs:
       - name: Build aocli
         run: go build -v ./cmd/aocli
         
-      - name: Upload binaries to release
-        uses: svenstaro/upload-release-action@v2
+      - name: Upload binaries to artifact 
+        uses: actions/upload-artifact@v3
         with:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: ./${{ matrix.artifact_name }}
-          asset_name: ${{ matrix.asset_name }}
-          tag: ${{ github.ref }}
+          name: ${{ matrix.asset_name }} -- $ {{ github.ref }}
+          path: ./${{ matrix.artifact_name }}
