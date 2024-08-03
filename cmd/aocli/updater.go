@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"runtime"
+	"strings"
 
 	"github.com/charmbracelet/log"
 	"golang.org/x/mod/semver"
@@ -28,6 +29,12 @@ func checkForUpdate() bool {
 	latestVersion, err := getLatestRelease()
 	if err != nil {
 		log.Error("Error checking for updates!", "error", err)
+	}
+
+	if !strings.Contains(latestVersion.TagName, "aocli-") {
+		return false
+	} else {
+		latestVersion.TagName = strings.Replace(latestVersion.TagName, "aocli-", "", 1)
 	}
 
 	latestSemVer := semver.Canonical(latestVersion.TagName)
