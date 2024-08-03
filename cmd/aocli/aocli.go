@@ -1,4 +1,3 @@
-// Copyright 2024 Dalton Williams
 package main
 
 import (
