@@ -2,7 +2,6 @@ package models
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -16,28 +15,6 @@ import (
 	"github.com/charmbracelet/log"
 )
 
-type Leaderboard struct {
-	year   int
-	day    int
-	places []*Placing
-}
-
-type Placing struct {
-	score       int
-	displayName string
-	userID      string
-	href        string
-	placement   int
-}
-
-func NewLeaderboard(year, day int) *Leaderboard {
-	return &Leaderboard{
-		year:   year,
-		day:    day,
-		places: []*Placing{},
-	}
-}
-
 var (
 	HeaderStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("99")).Bold(true).Align(lipgloss.Center)
 	BorderStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("99"))
@@ -47,11 +24,54 @@ var (
 	CellStyle   = lipgloss.NewStyle().Width(12)
 )
 
+// Leaderboard is a representation of a year or year+day leaderboard
+type Leaderboard struct {
+	year     int
+	day      int
+	bucketID string
+	places   []*Placing
+}
+
+// Placing represents a single placing on a leaderboard
+type Placing struct {
+	score       int
+	displayName string
+	userID      string
+	href        string
+	placement   int
+}
+
+func (l *Leaderboard) GetID() string                { return l.bucketID }
+func (l *Leaderboard) GetBucketName() string        { return cache.LEADERBOARDS }
+func (l *Leaderboard) MarshalData() ([]byte, error) { return json.Marshal(l) }
+func (l *Leaderboard) SaveResource()                { cache.SaveResource(l) }
+
+func NewLeaderboard(year, day int) *Leaderboard {
+	bucketID := strconv.Itoa(day) + strconv.Itoa(year)
+	data := cache.LoadResource(cache.LEADERBOARDS, bucketID)
+	var lb *Leaderboard
+	if data != nil {
+		json.Unmarshal(data, &lb)
+		return lb
+	}
+	lb = &Leaderboard{
+		year:     year,
+		day:      day,
+		bucketID: strconv.Itoa(day) + strconv.Itoa(year),
+		places:   []*Placing{},
+	}
+
+	lb.loadPlacements()
+	lb.SaveResource()
+
+	return lb
+}
+
+// Attempts to display a leaderboard for a given year or year+day
 func (l *Leaderboard) Display() {
 	// Try load from storage. If can't, load from API
-	err := l.EnsureDataLoaded()
-	if err != nil {
-		log.Error("Unable to load leaderboard data", "err", err)
+	if len(l.places) == 0 {
+		l.loadPlacements()
 	}
 
 	log.Debug("Leaderboard data loaded")
@@ -82,46 +102,11 @@ func (l *Leaderboard) Display() {
 	for _, p := range l.places {
 		t.Row(strconv.Itoa(p.placement), strconv.Itoa(p.score), p.displayName)
 	}
+
 	// fmt.Println(t.Render())
 }
 
-func (l *Leaderboard) EnsureDataLoaded() error {
-	diskErr := l.tryLoadFromDisk()
-	if diskErr == nil {
-		return nil
-	}
-
-	webErr := l.tryLoadFromWeb()
-	if webErr == nil {
-		l.saveToDisk()
-		return nil
-	}
-
-	return errors.New(fmt.Sprintf("Disk Err: %v -- Web Err: %v", diskErr, webErr))
-
-}
-
-func (l *Leaderboard) tryLoadFromDisk() error {
-	ID := strconv.Itoa(l.year) + strconv.Itoa(l.day)
-	bytes := cache.LoadResource(cache.LEADERBOARDS, ID)
-
-	log.Debug("Trying to load leaderboard", "data", bytes)
-
-	if bytes == nil {
-		return errors.New("Unable to load from storage")
-	}
-
-	var placings []*Placing
-	err := json.Unmarshal(bytes, &placings)
-	if err != nil {
-		return err
-	}
-
-	l.places = placings
-	return nil
-}
-
-func (l *Leaderboard) tryLoadFromWeb() error {
+func (l *Leaderboard) loadPlacements() error {
 	URL := fmt.Sprintf("https://adventofcode.com/%v/leaderboard", l.year)
 	if l.day != 0 {
 		URL += fmt.Sprintf("/day/%v", l.day)
@@ -202,5 +187,5 @@ func (l *Leaderboard) saveToDisk() {
 	if err != nil {
 		log.Error("Unable to save leaderboard to disk", "err", err)
 	}
-	cache.SaveResource(cache.LEADERBOARDS, ID, dataToSave)
+	cache.SaveGenericResource(cache.LEADERBOARDS, ID, dataToSave)
 }

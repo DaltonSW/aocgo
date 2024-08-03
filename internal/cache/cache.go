@@ -40,6 +40,7 @@ type Resource interface {
 	GetID() string                // ID is used as key for storage
 	GetBucketName() string        // Returns the name of the bucket the resource is stored in
 	MarshalData() ([]byte, error) // Returns the resources data in a savable format
+	SaveResource()
 }
 
 var masterDBM *DatabaseManager
@@ -120,8 +121,20 @@ func (dbm *DatabaseManager) Shutdown() {
 	log.Debug("Database closed")
 }
 
+func SaveResource(r Resource) {
+	masterDBM.sessionDB.Update(func(tx *bolt.Tx) error {
+		bucket := tx.Bucket([]byte(r.GetBucketName()))
+		resourceData, err := r.MarshalData()
+		if err != nil {
+			return err
+		}
+		bucket.Put([]byte(r.GetID()), resourceData)
+		return nil
+	})
+}
+
 // Save resource to database
-func SaveResource(bucketName, idToSave string, dataToSave []byte) {
+func SaveGenericResource(bucketName, idToSave string, dataToSave []byte) {
 	log.Debug("Saving resource", "bucket", bucketName, "id", idToSave, "data", dataToSave)
 	masterDBM.sessionDB.Update(func(tx *bolt.Tx) error {
 		bucket := tx.Bucket([]byte(bucketName))

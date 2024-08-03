@@ -1,6 +1,7 @@
 package models
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"strconv"
@@ -22,6 +23,11 @@ type Puzzle struct {
 	URL      string
 }
 
+func (p *Puzzle) GetID() string                { return p.bucketID }
+func (p *Puzzle) GetBucketName() string        { return cache.PUZZLES }
+func (p *Puzzle) MarshalData() ([]byte, error) { return json.Marshal(p) }
+func (p *Puzzle) SaveResource()                { cache.SaveResource(p) }
+
 // func LoadOrCreatePuzzle(year int, day int) *Puzzle {
 // 	puzzleData := cache.LoadResource(cache.USER)
 //
@@ -34,6 +40,8 @@ func NewPuzzle(year int, day int) *Puzzle {
 		bucketID: strconv.Itoa(day) + strconv.Itoa(year),
 		URL:      fmt.Sprintf(PUZZLE_URL, year, day),
 	}
+
+	newPuzzle.SaveResource()
 
 	return newPuzzle
 }
@@ -81,7 +89,7 @@ func (p *Puzzle) GetUserPuzzleInput(userSession string) ([]byte, error) {
 		return nil, err
 	}
 
-	cache.SaveResource(cache.USER_INPUTS, p.bucketID, inputData)
+	cache.SaveGenericResource(cache.USER_INPUTS, p.bucketID, inputData)
 
 	return inputData, nil
 }

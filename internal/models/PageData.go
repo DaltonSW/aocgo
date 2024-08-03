@@ -2,10 +2,12 @@ package models
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"strconv"
 	"strings"
 
+	"dalton.dog/aocgo/internal/cache"
 	"dalton.dog/aocgo/internal/tui"
 	"github.com/PuerkitoBio/goquery" // Bless this package
 	"github.com/charmbracelet/lipgloss"
@@ -16,6 +18,8 @@ type PageData struct {
 	// Both of these two can be found in the page's <head>'s <title> tag
 	day  int
 	year int
+
+	bucketID string
 
 	answerOne string
 	answerTwo string
@@ -31,6 +35,11 @@ type PageData struct {
 
 	mainContents *goquery.Selection
 }
+
+func (p *PageData) GetID() string                { return p.bucketID }
+func (p *PageData) GetBucketName() string        { return cache.PAGE_DATA }
+func (p *PageData) MarshalData() ([]byte, error) { return json.Marshal(p) }
+func (p *PageData) SaveResource()                { cache.SaveResource(p) }
 
 func NewPageData(raw []byte) *PageData {
 	reader := bytes.NewReader(raw)
@@ -52,6 +61,7 @@ func NewPageData(raw []byte) *PageData {
 		PuzzleTitle:  titleStyle.Render(puzzleTitle),
 		day:          day,
 		year:         year,
+		bucketID:     strconv.Itoa(day) + strconv.Itoa(year),
 		mainContents: mainContents,
 	}
 
