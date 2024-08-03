@@ -7,6 +7,10 @@ type Number interface {
 
 // AverageListOfNums takes a list of Number elements and returns the average of all of them.
 func AverageListOfNums[n Number](elements []n) n {
+	if len(elements) == 0 {
+		return 0
+	}
+
 	var total n
 	for _, num := range elements {
 		total += num
