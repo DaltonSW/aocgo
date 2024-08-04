@@ -6,8 +6,6 @@ import (
 	"strconv"
 	"time"
 
-	// "dalton.dog/aocgo/internal/dirparse"
-	"dalton.dog/aocgo/internal/cache"
 	"dalton.dog/aocgo/internal/models"
 	"dalton.dog/aocgo/internal/session"
 	"dalton.dog/aocgo/internal/tui"
@@ -29,10 +27,16 @@ var testStyle = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("#FF000
 var User *models.User
 
 func main() {
+	debugFile, err := os.Create("./debug.log")
+	if err != nil {
+		log.Fatal("Unable to create debug file.", "error", err)
+	}
+	defer debugFile.Close()
+
+	log.SetOutput(debugFile)
 	log.SetLevel(log.DebugLevel)
 	log.SetReportCaller(true)
-	log.SetTimeFormat(time.TimeOnly)
-	log.SetPrefix("\n")
+	log.SetTimeFormat(time.StampMicro)
 
 	args := os.Args
 	if len(args) == 1 {
@@ -40,13 +44,19 @@ func main() {
 		os.Exit(0)
 	}
 
-	User, err := models.NewUser("")
+	log.Debug("Trying to create user")
+	user, err := models.NewUser("")
 	if err != nil {
 		log.Error("Unable to create user to run requests as. Try running `aocli health`.")
 	}
+	log.Debug("Created user")
 
-	cache.StartupDBM(User.GetToken())
-	defer cache.ShutdownDBM()
+	// log.Debug("Trying to startup database")
+	// cache.StartupDBM(user.GetToken())
+	// defer cache.ShutdownDBM()
+	// log.Debug("Database started")
+
+	log.Debug("Args parsed", "args", args[1:])
 
 	switch args[1] {
 	case "check-update":
@@ -55,7 +65,7 @@ func main() {
 			fmt.Printf("New version available! Run `aocli update` to get the new version.")
 		}
 	case "get":
-		get(args)
+		get(args, user)
 	case "health":
 		health()
 	case "help":
@@ -67,11 +77,13 @@ func main() {
 	// case "run":
 	// 	run(args)
 	case "view":
-		view(args)
+		view(args, user)
 	case "test":
-		test()
+		test(user)
 	case "update":
 		update()
+	case "slowdown":
+		slowdown()
 	default:
 		fmt.Println("Not a valid command! Run `aocli help` to see valid commands.")
 	}
@@ -132,28 +144,21 @@ func help(args []string) {
 //
 //	[year] - 2 or 4 digit year (16 or 2016)
 //	[day]  - 1 or 2 digit day (1, 01, 21)
-func get(args []string) {
+func get(args []string, user *models.User) {
 	// TODO: Validate input
 	if len(args) < 4 {
 		return
 		// TODO: Try loading with today
 		// TODO: Print `get` help message
 	}
-	user, err := models.NewUser("")
-	if err != nil {
-		log.Fatal("Unable to load/create user!", "err", err)
-	}
 
 	year, _ := strconv.Atoi(args[2])
 	day, _ := strconv.Atoi(args[3])
 
 	puzzle := models.NewPuzzle(year, day, user.GetToken())
-	if err != nil {
-		log.Fatal("Unable to load puzzle data!", "year", year, "day", day, "err", err)
-	}
-	userInput, err := puzzle.GetUserPuzzleInput(user.GetToken())
+	userInput, _ := puzzle.GetUserPuzzleInput(user.GetToken())
 
-	out, err := os.Create("./input.txt")
+	out, _ := os.Create("./input.txt")
 	out.Write(userInput)
 	return
 }
@@ -195,7 +200,7 @@ func run(args []string) {
 
 // `view [year] [day]` command
 // Desc: Pretty-prints the puzzle's page data
-func view(args []string) {
+func view(args []string, user *models.User) {
 	// TODO: Validate input
 	if len(args) < 4 {
 		return
@@ -231,10 +236,20 @@ func health() {
 
 // Command:	`test`
 // Desc:	Does whatever I need to test at the time :)
-func test() {
-	user, _ := models.NewUser("")
+func test(user *models.User) {
 	puzzle := models.LoadOrCreatePuzzle(2023, 1, user.GetToken())
 	pageData := puzzle.PageData
 
 	tui.StartViewportWithArr(pageData.GetPageDataPrettyString(), pageData.PuzzleTitle, true)
+}
+
+func slowdown() {
+	lb := models.NewLeaderboard(2020, 0)
+
+	if lb == nil {
+		log.Fatal("Unable to load/create leaderboard!")
+		return
+	}
+
+	lb.Display()
 }

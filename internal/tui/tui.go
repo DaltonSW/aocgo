@@ -10,7 +10,7 @@ import (
 	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	// "github.com/charmbracelet/log"
+	"github.com/charmbracelet/log"
 )
 
 const useHighPerformanceRenderer = true
@@ -40,7 +40,7 @@ type keymap struct {
 }
 
 func (k keymap) ShortHelp() []key.Binding {
-	return []key.Binding{k.Up, k.Down, k.Quit, k.Input, k.Submit}
+	return []key.Binding{k.Input, k.Submit, k.Quit}
 }
 
 func (k keymap) FullHelp() [][]key.Binding {
@@ -60,16 +60,16 @@ var keys = keymap{
 		key.WithHelp("↓/j", "move down"),
 	),
 	Submit: key.NewBinding(
-		key.WithKeys("s"),
-		key.WithHelp("s", "submit answer"),
+		key.WithKeys("a"),
+		key.WithHelp("a", "[A]nswer Puzzle"),
 	),
 	Input: key.NewBinding(
-		key.WithKeys("i"),
-		key.WithHelp("i", "download input"),
+		key.WithKeys("s"),
+		key.WithHelp("s", "[S]ave Input"),
 	),
 	Quit: key.NewBinding(
 		key.WithKeys("q", "esc", "ctrl+c"),
-		key.WithHelp("q/esc", "quit"),
+		key.WithHelp("q/esc", "[Q]uit"),
 	),
 }
 
@@ -84,11 +84,13 @@ type model struct {
 }
 
 func StartViewportWithArr(input []string, title string, showHelp bool) {
+	log.Debug("Trying to start viewport with string array")
 	contentStr := strings.Join(input, "")
 	StartViewportWithString(contentStr, title, showHelp)
 }
 
 func StartViewportWithString(input string, title string, showHelp bool) {
+	log.Debug("Starting viewport, now creating model")
 	m := model{
 		content:   input,
 		viewTitle: title,
@@ -96,8 +98,9 @@ func StartViewportWithString(input string, title string, showHelp bool) {
 		help:      help.New(),
 		showHelp:  showHelp,
 	}
+	log.Debug("Model created, now creating program")
 	p := tea.NewProgram(m, tea.WithAltScreen(), tea.WithMouseCellMotion())
-
+	log.Debug("Created program, now starting run")
 	if _, err := p.Run(); err != nil {
 		fmt.Println("Couldn't run viewport:", err)
 		os.Exit(1)
@@ -107,6 +110,7 @@ func StartViewportWithString(input string, title string, showHelp bool) {
 // TODO: Add commands for submitting and downloading input
 
 func (m model) Init() tea.Cmd {
+	log.Debug("'Init' function")
 	return nil
 }
 
@@ -118,8 +122,13 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
-		if k := msg.String(); k == "ctrl+c" || k == "q" || k == "esc" {
+		switch msg.String() {
+		case "esc", "q", "ctrl+c":
 			return m, tea.Quit
+		case "s":
+			// TODO: Save input
+		case "a":
+			// TODO: Answer question
 		}
 
 	case tea.WindowSizeMsg:
@@ -128,6 +137,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		verticalMarginHeight := headerHeight + footerHeight
 
 		if !m.ready {
+			log.Debug("Begin 'Update' init")
 			// Since this program is using the full size of the viewport we
 			// need to wait until we've received the window dimensions before
 			// we can initialize the viewport. The initial dimensions come in
@@ -139,6 +149,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.viewport.SetContent(m.content)
 			m.ready = true
 			m.viewport.YPosition = headerHeight + 1
+			log.Debug("Finished 'Update' init")
 
 		} else {
 			m.viewport.Width = min(ViewportWidth, msg.Width)

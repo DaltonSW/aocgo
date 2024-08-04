@@ -121,8 +121,9 @@ func (dbm *DatabaseManager) Shutdown() {
 }
 
 func SaveResource(r Resource) {
-	// resourceData, _ := r.MarshalData()
-	//
+	if masterDBM == nil {
+		return
+	}
 	// log.Debug("Saving resource", "bucket", r.GetBucketName(), "id", r.GetID(), "data", resourceData)
 	masterDBM.sessionDB.Update(func(tx *bolt.Tx) error {
 		bucket := tx.Bucket([]byte(r.GetBucketName()))
@@ -148,6 +149,10 @@ func SaveGenericResource(bucketName, idToSave string, dataToSave []byte) {
 
 // Load resource from database by ID
 func LoadResource(bucketName, idToLoad string) []byte {
+	if masterDBM == nil {
+		return nil
+	}
+
 	var output []byte
 	masterDBM.sessionDB.View(func(tx *bolt.Tx) error {
 		bucket := tx.Bucket([]byte(bucketName))
