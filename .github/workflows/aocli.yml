@@ -16,13 +16,13 @@ jobs:
         include:
           - os: ubuntu-latest
             artifact_name: aocli
-            asset_name: aocli-linux-amd64
+            asset_name: linux-amd64-${{ github.ref_name }}
           - os: windows-latest
             artifact_name: aocli.exe
-            asset_name: aocli-windows-amd64
+            asset_name: windows-amd64-${{ github.ref_name }}
           - os: macos-latest
             artifact_name: aocli
-            asset_name: aocli-darwin-amd64
+            asset_name: darwin-amd64-${{ github.ref_name }}
 
     steps:
       - name: Checkout
@@ -40,10 +40,10 @@ jobs:
         run: go test -v ./...
 
       - name: Build aocli
-        run: go build -v ./cmd/aocli
+        run: go build -v -o ./${{ matrix.artifact_name }} ./cmd/aocli
         
       - name: Upload binaries to artifact 
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.asset_name }} -- $ {{ github.ref }}
+          name: ${{ matrix.asset_name }}
           path: ./${{ matrix.artifact_name }}
