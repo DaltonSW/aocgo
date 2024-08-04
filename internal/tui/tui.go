@@ -76,19 +76,25 @@ var keys = keymap{
 type model struct {
 	content   string
 	ready     bool
+	showHelp  bool
 	keys      keymap
 	viewport  viewport.Model
 	help      help.Model
 	viewTitle string
 }
 
-func StartViewportWithArr(input []string, title string) {
+func StartViewportWithArr(input []string, title string, showHelp bool) {
 	contentStr := strings.Join(input, "")
+	StartViewportWithString(contentStr, title, showHelp)
+}
+
+func StartViewportWithString(input string, title string, showHelp bool) {
 	m := model{
-		content:   contentStr,
+		content:   input,
 		viewTitle: title,
 		keys:      keys,
 		help:      help.New(),
+		showHelp:  showHelp,
 	}
 	p := tea.NewProgram(m, tea.WithAltScreen(), tea.WithMouseCellMotion())
 
@@ -164,9 +170,13 @@ func (m model) headerView() string {
 	return lipgloss.JoinHorizontal(lipgloss.Center, title, line)
 }
 
-// TODO: Make this print the help information
 func (m model) footerView() string {
 	info := infoStyle.Render(fmt.Sprintf("%3.f%%", m.viewport.ScrollPercent()*100))
 	line := strings.Repeat("─", max(0, m.viewport.Width-lipgloss.Width(info)))
-	return lipgloss.JoinHorizontal(lipgloss.Center, line, info) + "\n" + lipgloss.JoinHorizontal(lipgloss.Center, m.help.View(m.keys))
+	sOut := lipgloss.JoinHorizontal(lipgloss.Center, line, info)
+	if m.showHelp {
+		sOut += "\n" + lipgloss.JoinHorizontal(lipgloss.Center, m.help.View(m.keys))
+	}
+
+	return sOut
 }

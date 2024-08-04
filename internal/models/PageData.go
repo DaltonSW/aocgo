@@ -108,12 +108,15 @@ func (p *PageData) GetPageDataPrettyString() []string {
 	sOut := printArticle(p.articleOneSel)
 
 	if p.AnswerOne != "" {
-		sOut = append(sOut, p.AnswerOne)
+		sOut = append(sOut, "\n"+p.AnswerOne)
 	}
 
 	if len(p.articleTwoSel.Nodes) != 0 {
+		sOut = append(sOut, "\n\n")
 		sOut = append(sOut, "\n"+titleStyle.Render("--- Part Two ---"))
+		sOut = append(sOut, "\n")
 		sOut = append(sOut, printArticle(p.articleTwoSel)...)
+		sOut = append(sOut, "\n")
 
 		if p.AnswerTwo != "" {
 			sOut = append(sOut, p.AnswerTwo)

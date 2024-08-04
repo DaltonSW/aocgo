@@ -154,7 +154,7 @@ func LoadResource(bucketName, idToLoad string) []byte {
 		output = bucket.Get([]byte(idToLoad))
 		return nil
 	})
-	log.Debug("Loading resource", "bucket", bucketName, "id", idToLoad, "data", output)
+	// log.Debug("Loading resource", "bucket", bucketName, "id", idToLoad, "data", output)
 	return output
 }
 

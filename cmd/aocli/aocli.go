@@ -214,7 +214,7 @@ func view(args []string) {
 	puzzle := models.LoadOrCreatePuzzle(year, day, user.GetToken())
 	pageData := puzzle.PageData
 
-	tui.StartViewportWithArr(pageData.GetPageDataPrettyString(), pageData.PuzzleTitle)
+	tui.StartViewportWithArr(pageData.GetPageDataPrettyString(), pageData.PuzzleTitle, true)
 }
 
 // `health` command
@@ -236,5 +236,5 @@ func test() {
 	puzzle := models.LoadOrCreatePuzzle(2023, 1, user.GetToken())
 	pageData := puzzle.PageData
 
-	tui.StartViewportWithArr(pageData.GetPageDataPrettyString(), pageData.PuzzleTitle)
+	tui.StartViewportWithArr(pageData.GetPageDataPrettyString(), pageData.PuzzleTitle, true)
 }
