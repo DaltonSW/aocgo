@@ -1,9 +1,5 @@
 package models
 
-type Calendar struct {
-	years []*Year
-}
-
 type Year struct {
 	numStars    int
 	days        []*Day

@@ -13,6 +13,8 @@ import (
 
 const PUZZLE_URL = "https://adventofcode.com/%v/day/%v"
 
+// Puzzle represents a single day's puzzle.
+// It consists of the URL's page data and two correct answers, if they exist.
 type Puzzle struct {
 	Day      int
 	Year     int
@@ -23,11 +25,14 @@ type Puzzle struct {
 	URL      string
 }
 
-func (p *Puzzle) GetID() string               { return p.BucketID }
-func (p *Puzzle) GetBucketName() string       { return cache.PUZZLES }
-func (p Puzzle) MarshalData() ([]byte, error) { return json.Marshal(p) }
-func (p *Puzzle) SaveResource()               { cache.SaveResource(p) }
+func (p *Puzzle) GetID() string                { return p.BucketID }
+func (p *Puzzle) GetBucketName() string        { return cache.PUZZLES }
+func (p *Puzzle) MarshalData() ([]byte, error) { return json.Marshal(p) }
+func (p *Puzzle) SaveResource()                { cache.SaveResource(p) }
 
+// LoadOrCreatePuzzle attempts to load the requested puzzle from
+// storage. If it's unable to be loaded, it will attempt to be
+// created, loading the information from the website.
 func LoadOrCreatePuzzle(year int, day int, userSession string) *Puzzle {
 	bucketID := strconv.Itoa(year) + strconv.Itoa(day)
 	puzzleData := cache.LoadResource(cache.PUZZLES, bucketID)
@@ -91,22 +96,22 @@ type PuzzlePart struct {
 	example       string
 	isPartB       bool
 	submissions   []*Submission
-	correctAnswer SubValue
+	CorrectAnswer Value
 }
 
 type Submission struct {
-	submissionVal SubValue
+	submissionVal Value
 	correct       bool
 	timeSubmitted time.Time
 	feedback      string
 }
 
-type SubValue struct {
+type Value struct {
 	number int
 	string string
 }
 
-func (v SubValue) GetValue() string {
+func (v Value) GetValue() string {
 	if v.string != "" {
 		return v.string
 	}
