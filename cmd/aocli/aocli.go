@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"time"
 
+	"dalton.dog/aocgo/internal/cache"
 	"dalton.dog/aocgo/internal/models"
 	"dalton.dog/aocgo/internal/session"
 	"dalton.dog/aocgo/internal/tui"
@@ -80,12 +81,18 @@ func main() {
 		view(args, user)
 	case "test":
 		test(user)
+	case "clear-data":
+		clearData(user)
 	case "update":
 		update()
 	default:
 		fmt.Println("Not a valid command! Run `aocli help` to see valid commands.")
 	}
 	return
+}
+
+func clearData(user *models.User) {
+	cache.ClearUserDatabase(user.SessionTok)
 }
 
 // `help [command]` command
