@@ -163,6 +163,11 @@ func LoadResource(bucketName, idToLoad string) []byte {
 	return output
 }
 
+// Clear database file for a certain user
+func ClearUserDatabase(sessionToken string) {
+	os.Remove(fmt.Sprintf(CacheFile, sessionToken))
+}
+
 func checkErr(err error) {
 	if err != nil {
 		log.Error("Database error!", "err", err)

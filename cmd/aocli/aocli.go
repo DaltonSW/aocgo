@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"time"
 
+	"dalton.dog/aocgo/internal/cache"
 	"dalton.dog/aocgo/internal/models"
 	"dalton.dog/aocgo/internal/session"
 	"dalton.dog/aocgo/internal/tui"
@@ -80,14 +81,18 @@ func main() {
 		view(args, user)
 	case "test":
 		test(user)
+	case "clear-data":
+		clearData(user)
 	case "update":
 		update()
-	case "slowdown":
-		slowdown()
 	default:
 		fmt.Println("Not a valid command! Run `aocli help` to see valid commands.")
 	}
 	return
+}
+
+func clearData(user *models.User) {
+	cache.ClearUserDatabase(user.SessionTok)
 }
 
 // `help [command]` command
@@ -155,8 +160,8 @@ func get(args []string, user *models.User) {
 	year, _ := strconv.Atoi(args[2])
 	day, _ := strconv.Atoi(args[3])
 
-	puzzle := models.NewPuzzle(year, day, user.GetToken())
-	userInput, _ := puzzle.GetUserPuzzleInput(user.GetToken())
+	puzzle := models.LoadOrCreatePuzzle(year, day, user.GetToken())
+	userInput, _ := puzzle.GetUserInput()
 
 	out, _ := os.Create("./input.txt")
 	out.Write(userInput)
@@ -217,14 +222,11 @@ func view(args []string, user *models.User) {
 	day, _ := strconv.Atoi(args[3])
 
 	puzzle := models.LoadOrCreatePuzzle(year, day, user.GetToken())
-	pageData := puzzle.PageData
-
-	tui.StartViewportWithArr(pageData.GetPageDataPrettyString(), pageData.PuzzleTitle, true)
+	tui.StartViewportWithArr(puzzle.GetPrettyPageData(), puzzle.Title, true)
 }
 
 // `health` command
 // Desc: Checks if a session key is available
-
 func health() {
 	sessionKey, err := session.GetSessionToken()
 	if err != nil {
@@ -238,18 +240,5 @@ func health() {
 // Desc:	Does whatever I need to test at the time :)
 func test(user *models.User) {
 	puzzle := models.LoadOrCreatePuzzle(2023, 1, user.GetToken())
-	pageData := puzzle.PageData
-
-	tui.StartViewportWithArr(pageData.GetPageDataPrettyString(), pageData.PuzzleTitle, true)
-}
-
-func slowdown() {
-	lb := models.NewLeaderboard(2020, 0)
-
-	if lb == nil {
-		log.Fatal("Unable to load/create leaderboard!")
-		return
-	}
-
-	lb.Display()
+	tui.StartViewportWithArr(puzzle.GetPrettyPageData(), puzzle.Title, true)
 }
