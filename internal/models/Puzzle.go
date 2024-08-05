@@ -106,7 +106,7 @@ func (p *Puzzle) GetPrettyPageData() []string {
 
 	if len(p.ArticleTwo) != 0 {
 		sOut = append(sOut, "\n\n")
-		sOut = append(sOut, "\n"+titleStyle.Render("--- Part Two ---"))
+		sOut = append(sOut, "\n"+lipgloss.NewStyle().BorderStyle(lipgloss.RoundedBorder()).Render(" --- Part Two --- "))
 		sOut = append(sOut, "\n")
 		sOut = append(sOut, p.ArticleTwo...)
 		sOut = append(sOut, "\n")
