@@ -82,8 +82,6 @@ func main() {
 		test(user)
 	case "update":
 		update()
-	case "slowdown":
-		slowdown()
 	default:
 		fmt.Println("Not a valid command! Run `aocli help` to see valid commands.")
 	}
@@ -217,14 +215,11 @@ func view(args []string, user *models.User) {
 	day, _ := strconv.Atoi(args[3])
 
 	puzzle := models.LoadOrCreatePuzzle(year, day, user.GetToken())
-	pageData := puzzle.PageData
-
-	tui.StartViewportWithArr(pageData.GetPageDataPrettyString(), pageData.PuzzleTitle, true)
+	tui.StartViewportWithArr(puzzle.GetPrettyPageData(), puzzle.Title, true)
 }
 
 // `health` command
 // Desc: Checks if a session key is available
-
 func health() {
 	sessionKey, err := session.GetSessionToken()
 	if err != nil {
@@ -238,18 +233,5 @@ func health() {
 // Desc:	Does whatever I need to test at the time :)
 func test(user *models.User) {
 	puzzle := models.LoadOrCreatePuzzle(2023, 1, user.GetToken())
-	pageData := puzzle.PageData
-
-	tui.StartViewportWithArr(pageData.GetPageDataPrettyString(), pageData.PuzzleTitle, true)
-}
-
-func slowdown() {
-	lb := models.NewLeaderboard(2020, 0)
-
-	if lb == nil {
-		log.Fatal("Unable to load/create leaderboard!")
-		return
-	}
-
-	lb.Display()
+	tui.StartViewportWithArr(puzzle.GetPrettyPageData(), puzzle.Title, true)
 }
