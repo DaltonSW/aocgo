@@ -155,8 +155,8 @@ func get(args []string, user *models.User) {
 	year, _ := strconv.Atoi(args[2])
 	day, _ := strconv.Atoi(args[3])
 
-	puzzle := models.NewPuzzle(year, day, user.GetToken())
-	userInput, _ := puzzle.GetUserPuzzleInput(user.GetToken())
+	puzzle := models.LoadOrCreatePuzzle(year, day, user.GetToken())
+	userInput, _ := puzzle.GetUserInput()
 
 	out, _ := os.Create("./input.txt")
 	out.Write(userInput)
