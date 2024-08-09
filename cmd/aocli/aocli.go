@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"runtime/pprof"
 	"strconv"
 	"time"
 
@@ -34,6 +35,15 @@ func main() {
 	}
 	defer debugFile.Close()
 
+	profFile, err := os.Create("./aoc.prof")
+	if err != nil {
+		log.Fatal("Unable to create profiling file.", "error", err)
+	}
+	defer profFile.Close()
+
+	pprof.StartCPUProfile(profFile)
+	defer pprof.StopCPUProfile()
+
 	log.SetOutput(debugFile)
 	log.SetLevel(log.DebugLevel)
 	log.SetReportCaller(true)
@@ -52,10 +62,10 @@ func main() {
 	}
 	log.Debug("Created user")
 
-	// log.Debug("Trying to startup database")
-	// cache.StartupDBM(user.GetToken())
-	// defer cache.ShutdownDBM()
-	// log.Debug("Database started")
+	log.Debug("Trying to startup database")
+	cache.StartupDBM(user.GetToken())
+	defer cache.ShutdownDBM()
+	log.Debug("Database started")
 
 	log.Debug("Args parsed", "args", args[1:])
 
@@ -211,11 +221,6 @@ func view(args []string, user *models.User) {
 		return
 		// TODO: Try loading with today
 		// TODO: Print `get` help message
-	}
-
-	user, err := models.NewUser("")
-	if err != nil {
-		log.Error("Unable to load/create user!", "err", err)
 	}
 
 	year, _ := strconv.Atoi(args[2])
