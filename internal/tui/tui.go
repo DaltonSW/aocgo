@@ -11,9 +11,10 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/charmbracelet/log"
+	"golang.org/x/term"
 )
 
-const useHighPerformanceRenderer = true
+const useHighPerformanceRenderer = false
 
 const ViewportWidth = 80
 
@@ -111,6 +112,21 @@ func StartViewportWithString(input string, title string, showHelp bool) {
 
 func (m model) Init() tea.Cmd {
 	log.Debug("'Init' function")
+	width, height, err := term.GetSize(int(os.Stdout.Fd()))
+	if err != nil {
+		return nil
+	}
+
+	headerHeight := lipgloss.Height(m.headerView())
+	footerHeight := lipgloss.Height(m.footerView())
+	verticalMarginHeight := headerHeight + footerHeight
+
+	m.viewport = viewport.New(min(ViewportWidth, width), height-verticalMarginHeight)
+	m.viewport.YPosition = headerHeight
+	m.viewport.HighPerformanceRendering = useHighPerformanceRenderer
+	m.viewport.SetContent(m.content)
+	m.ready = true
+	m.viewport.YPosition = headerHeight + 1
 	return nil
 }
 
