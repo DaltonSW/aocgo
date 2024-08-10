@@ -228,7 +228,7 @@ func view(args []string, user *resources.User) {
 
 	puzzle := resources.LoadOrCreatePuzzle(year, day, user.GetToken())
 	userInput, _ := puzzle.GetUserInput()
-	tui.StartViewportWithArr(puzzle.GetPrettyPageData(), puzzle.Title, userInput, true)
+	tui.NewPuzzleViewport(puzzle.GetPrettyPageData(), puzzle.Title, puzzle.URL, userInput)
 }
 
 // `health` command
@@ -247,5 +247,5 @@ func health() {
 func test(user *resources.User) {
 	puzzle := resources.LoadOrCreatePuzzle(2023, 1, user.GetToken())
 	userInput, _ := puzzle.GetUserInput()
-	tui.StartViewportWithArr(puzzle.GetPrettyPageData(), puzzle.Title, userInput, true)
+	tui.NewPuzzleViewport(puzzle.GetPrettyPageData(), puzzle.Title, puzzle.URL, userInput)
 }
