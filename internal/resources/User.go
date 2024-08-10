@@ -13,7 +13,7 @@ import (
 // User represents a session token and accompanying puzzles.
 type User struct {
 	NumStars   int
-	Years      map[int][]Puzzle
+	Years      map[int][]*Puzzle
 	SessionTok string
 }
 
@@ -37,12 +37,13 @@ func NewUser(token string) (*User, error) {
 	if token == "" {
 		return nil, errors.New("Token was still empty after load attempts.")
 	}
+
 	token = strings.TrimSpace(token)
 	api.InitClient(token)
 
-	yearMap := make(map[int][]Puzzle)
+	yearMap := make(map[int][]*Puzzle)
 	for i := 2015; i <= time.Now().Year(); i++ {
-		yearMap[i] = make([]Puzzle, 25)
+		yearMap[i] = make([]*Puzzle, 26)
 	}
 
 	return &User{

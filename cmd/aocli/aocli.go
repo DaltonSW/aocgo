@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"dalton.dog/aocgo/internal/cache"
+	"dalton.dog/aocgo/internal/dirparse"
 	"dalton.dog/aocgo/internal/resources"
 	"dalton.dog/aocgo/internal/session"
 	"dalton.dog/aocgo/internal/tui"
@@ -85,14 +86,16 @@ func main() {
 	// 	submit(args)
 	case "leaderboard":
 		leaderboard(args)
+	case "load-user":
+		loadUser(args, user)
 	// case "run":
 	// 	run(args)
 	case "view":
 		view(args, user)
 	case "test":
 		test(user)
-	case "clear-data":
-		clearData(user)
+	case "clear-user":
+		clearUser(user)
 	case "update":
 		update()
 	default:
@@ -101,7 +104,7 @@ func main() {
 	return
 }
 
-func clearData(user *resources.User) {
+func clearUser(user *resources.User) {
 	cache.ClearUserDatabase(user.SessionTok)
 }
 
@@ -202,6 +205,67 @@ func leaderboard(args []string) {
 	}
 
 	lb.Display()
+}
+
+func loadUser(args []string, user *resources.User) {
+	logger := log.New(os.Stdout)
+	year := 2015
+	var maxYear int
+	if time.Now().Month() == time.December {
+		maxYear = time.Now().Year()
+	} else {
+		maxYear = time.Now().Year() - 1
+	}
+
+	if len(args) > 2 {
+		parseYear, err := dirparse.ParseYear(args[2])
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		year = parseYear
+		maxYear = parseYear
+	}
+
+	numStars := make(map[int]int)
+
+	for year <= maxYear {
+		logger.Info("Loading year", "year", year)
+		numStars[year] = 0
+		day := 1
+		for day <= 25 {
+			logger.Info("Loading day", "day", day)
+			puzzle := resources.LoadOrCreatePuzzle(year, day, user.GetToken())
+
+			user.Years[year][day] = puzzle
+
+			if puzzle.AnswerOne != "" {
+				logger.Info("Answer one found!", "year", year, "day", day, "answer", puzzle.AnswerOne)
+				user.NumStars++
+				numStars[year]++
+				if puzzle.AnswerTwo != "" {
+					logger.Info("Answer two found!", "year", year, "day", day, "answer", puzzle.AnswerTwo)
+					user.NumStars++
+					numStars[year]++
+				}
+			}
+
+			day++
+		}
+
+		// There's only 1 puzzle on Day 25, so if they've earned 49 stars, they get the 50th for free
+		if numStars[year] == 49 {
+			user.NumStars++
+			numStars[year]++
+		}
+		logger.Info("Ending year", "Stars found", numStars[year])
+
+		year++
+	}
+
+	for val, key := range numStars {
+		fmt.Printf("%d -- %d\n", key, val)
+	}
 }
 
 // `submit [year] [day] [part] [answer]` command

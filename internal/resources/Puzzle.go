@@ -101,7 +101,7 @@ func (p *Puzzle) GetPrettyPageData() []string {
 	sOut := p.ArticleOne
 
 	if p.AnswerOne != "" {
-		sOut = append(sOut, "\n"+p.AnswerOne)
+		sOut = append(sOut, "Answer: "+p.AnswerOne)
 	}
 
 	if len(p.ArticleTwo) != 0 {
@@ -112,7 +112,7 @@ func (p *Puzzle) GetPrettyPageData() []string {
 		sOut = append(sOut, "\n")
 
 		if p.AnswerTwo != "" {
-			sOut = append(sOut, p.AnswerTwo)
+			sOut = append(sOut, "Answer: "+p.AnswerTwo)
 		}
 	}
 	return sOut
@@ -174,11 +174,17 @@ func (p *Puzzle) processPageContents(mainContents *goquery.Selection) {
 
 	// This should only grab "Your puzzle answer was: " tags
 	mainContents.Find("article + p").Each(func(i int, s *goquery.Selection) {
-		outStr := s.Text()
-		if p.AnswerOne == "" {
-			p.AnswerOne = outStr
-		} else {
-			p.AnswerTwo = outStr
+		if strings.Contains(s.Text(), "answer") {
+			outStr := s.Find("code").Text()
+			if outStr != "" {
+				if p.AnswerOne == "" {
+					log.Debug("Answer found!", "year", p.Year, "day", p.Day, "answer", outStr)
+					p.AnswerOne = outStr
+				} else {
+					log.Debug("Answer found!", "year", p.Year, "day", p.Day, "answer", outStr)
+					p.AnswerTwo = outStr
+				}
+			}
 		}
 	})
 }
