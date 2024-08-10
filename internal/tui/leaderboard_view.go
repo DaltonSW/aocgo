@@ -5,8 +5,6 @@ import (
 	"os"
 	"strings"
 
-	"dalton.dog/aocgo/internal/utils"
-	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
@@ -14,26 +12,16 @@ import (
 	"golang.org/x/term"
 )
 
-type PuzzleModel struct {
-	userInput []byte
-	title     string
-	content   string
-	url       string
-	viewport  viewport.Model
-	help      help.Model
-	keys      helpKeymap
+type LeaderboardModel struct {
+	content  string
+	viewport viewport.Model
+	title    string
 }
 
-func NewPuzzleViewport(content []string, title, url string, userInput []byte) {
-
-	contentStr := strings.Join(content, "")
-	m := PuzzleModel{
-		content:   contentStr,
-		title:     title,
-		keys:      helpKeys,
-		help:      help.New(),
-		userInput: userInput,
-		url:       url,
+func NewLeaderboardViewport(content, title string) {
+	m := LeaderboardModel{
+		content: content,
+		title:   title,
 	}
 
 	p := tea.NewProgram(m, tea.WithAltScreen(), tea.WithMouseCellMotion())
@@ -42,12 +30,14 @@ func NewPuzzleViewport(content []string, title, url string, userInput []byte) {
 		os.Exit(1)
 	}
 }
-func (m PuzzleModel) Init() tea.Cmd {
+
+func (m LeaderboardModel) Init() tea.Cmd {
 	log.Debug("'Init' function")
 
 	return func() tea.Msg { return initMsg(0) }
 }
-func (m PuzzleModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+
+func (m LeaderboardModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var (
 		cmd  tea.Cmd
 		cmds []tea.Cmd
@@ -74,16 +64,6 @@ func (m PuzzleModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		switch msg.String() {
 		case "esc", "q", "ctrl+c":
 			return m, tea.Quit
-		case "b":
-			utils.LaunchURL(m.url)
-			return m, nil
-		case "s":
-			out, _ := os.Create("./input.txt")
-			out.Write(m.userInput)
-			out.Close()
-			return m, nil
-		case "a":
-			// TODO: Answer question
 		}
 
 	case tea.WindowSizeMsg:
@@ -106,21 +86,20 @@ func (m PuzzleModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, tea.Batch(cmds...)
 }
 
-func (m PuzzleModel) View() string {
+func (m LeaderboardModel) View() string {
 	return fmt.Sprintf("%s\n%s\n%s", m.headerView(), m.viewport.View(), m.footerView())
 }
 
-func (m PuzzleModel) headerView() string {
+func (m LeaderboardModel) headerView() string {
 	title := titleStyle.Render(m.title)
 	line := strings.Repeat("─", max(0, m.viewport.Width-lipgloss.Width(title)))
 	return lipgloss.JoinHorizontal(lipgloss.Center, title, line)
 }
 
-func (m PuzzleModel) footerView() string {
+func (m LeaderboardModel) footerView() string {
 	info := infoStyle.Render(fmt.Sprintf("%3.f%%", m.viewport.ScrollPercent()*100))
 	line := strings.Repeat("─", max(0, m.viewport.Width-lipgloss.Width(info)))
 	sOut := lipgloss.JoinHorizontal(lipgloss.Center, line, info)
-	sOut += "\n" + lipgloss.JoinHorizontal(lipgloss.Center, m.help.View(m.keys))
 
 	return sOut
 }
