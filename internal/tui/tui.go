@@ -5,6 +5,7 @@ import (
 	"os"
 	"strings"
 
+	// "dalton.dog/aocgo/internal/utils"
 	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/viewport"
@@ -33,21 +34,23 @@ var (
 )
 
 type keymap struct {
-	Up     key.Binding
-	Down   key.Binding
-	Submit key.Binding
-	Input  key.Binding
-	Quit   key.Binding
+	Up      key.Binding
+	Down    key.Binding
+	Browser key.Binding
+	Refresh key.Binding
+	Submit  key.Binding
+	Input   key.Binding
+	Quit    key.Binding
 }
 
 func (k keymap) ShortHelp() []key.Binding {
-	return []key.Binding{k.Input, k.Submit, k.Quit}
+	return []key.Binding{k.Input, k.Browser, k.Refresh, k.Quit}
 }
 
 func (k keymap) FullHelp() [][]key.Binding {
 	return [][]key.Binding{
 		{k.Up, k.Down, k.Quit},
-		{k.Input, k.Submit},
+		{k.Input, k.Browser, k.Refresh},
 	}
 }
 
@@ -60,10 +63,18 @@ var keys = keymap{
 		key.WithKeys("down", "j"),
 		key.WithHelp("↓/j", "move down"),
 	),
-	Submit: key.NewBinding(
-		key.WithKeys("a"),
-		key.WithHelp("a", "[A]nswer Puzzle"),
+	Browser: key.NewBinding(
+		key.WithKeys("b"),
+		key.WithHelp("b", "[B]rowser"),
 	),
+	Refresh: key.NewBinding(
+		key.WithKeys("r"),
+		key.WithHelp("r", "[R]efresh Page"),
+	),
+	// Submit: key.NewBinding(
+	// 	key.WithKeys("a"),
+	// 	key.WithHelp("a", "[A]nswer Puzzle"),
+	// ),
 	Input: key.NewBinding(
 		key.WithKeys("s"),
 		key.WithHelp("s", "[S]ave Input"),
@@ -82,15 +93,16 @@ type model struct {
 	viewport  viewport.Model
 	help      help.Model
 	viewTitle string
+	userInput []byte
 }
 
-func StartViewportWithArr(input []string, title string, showHelp bool) {
+func StartViewportWithArr(input []string, title string, userInput []byte, showHelp bool) {
 	log.Debug("Trying to start viewport with string array")
 	contentStr := strings.Join(input, "")
-	StartViewportWithString(contentStr, title, showHelp)
+	StartViewportWithString(contentStr, title, userInput, showHelp)
 }
 
-func StartViewportWithString(input string, title string, showHelp bool) {
+func StartViewportWithString(input string, title string, userInput []byte, showHelp bool) {
 	log.Debug("Starting viewport, now creating model")
 	m := model{
 		content:   input,
@@ -98,6 +110,7 @@ func StartViewportWithString(input string, title string, showHelp bool) {
 		keys:      keys,
 		help:      help.New(),
 		showHelp:  showHelp,
+		userInput: userInput,
 	}
 	log.Debug("Model created, now creating program")
 	p := tea.NewProgram(m, tea.WithAltScreen(), tea.WithMouseCellMotion())
@@ -141,8 +154,11 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		switch msg.String() {
 		case "esc", "q", "ctrl+c":
 			return m, tea.Quit
+		case "b":
+			// utils.LaunchURL()
 		case "s":
-			// TODO: Save input
+			out, _ := os.Create("./input.txt")
+			out.Write(m.userInput)
 		case "a":
 			// TODO: Answer question
 		}

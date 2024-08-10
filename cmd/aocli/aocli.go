@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"dalton.dog/aocgo/internal/cache"
-	"dalton.dog/aocgo/internal/models"
+	"dalton.dog/aocgo/internal/resources"
 	"dalton.dog/aocgo/internal/session"
 	"dalton.dog/aocgo/internal/tui"
 	"github.com/charmbracelet/lipgloss"
@@ -26,7 +26,7 @@ var helpBodyStyle = lipgloss.NewStyle().Width(70)
 var helpTitleStyle = lipgloss.NewStyle().Width(70)
 var testStyle = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("#FF0000"))
 
-var User *models.User
+var User *resources.User
 
 func main() {
 	debugFile, err := os.Create("./debug.log")
@@ -56,7 +56,7 @@ func main() {
 	}
 
 	log.Debug("Trying to create user")
-	user, err := models.NewUser("")
+	user, err := resources.NewUser("")
 	if err != nil {
 		log.Error("Unable to create user to run requests as. Try running `aocli health`.")
 	}
@@ -101,7 +101,7 @@ func main() {
 	return
 }
 
-func clearData(user *models.User) {
+func clearData(user *resources.User) {
 	cache.ClearUserDatabase(user.SessionTok)
 }
 
@@ -159,7 +159,7 @@ func help(args []string) {
 //
 //	[year] - 2 or 4 digit year (16 or 2016)
 //	[day]  - 1 or 2 digit day (1, 01, 21)
-func get(args []string, user *models.User) {
+func get(args []string, user *resources.User) {
 	// TODO: Validate input
 	if len(args) < 4 {
 		return
@@ -170,7 +170,7 @@ func get(args []string, user *models.User) {
 	year, _ := strconv.Atoi(args[2])
 	day, _ := strconv.Atoi(args[3])
 
-	puzzle := models.LoadOrCreatePuzzle(year, day, user.GetToken())
+	puzzle := resources.LoadOrCreatePuzzle(year, day, user.GetToken())
 	userInput, _ := puzzle.GetUserInput()
 
 	out, _ := os.Create("./input.txt")
@@ -194,7 +194,7 @@ func leaderboard(args []string) {
 	// 	day, _ = strconv.Atoi(args[3])
 	// }
 
-	lb := models.NewLeaderboard(year, day)
+	lb := resources.NewLeaderboard(year, day)
 
 	if lb == nil {
 		log.Fatal("Unable to load/create leaderboard!")
@@ -215,7 +215,7 @@ func run(args []string) {
 
 // `view [year] [day]` command
 // Desc: Pretty-prints the puzzle's page data
-func view(args []string, user *models.User) {
+func view(args []string, user *resources.User) {
 	// TODO: Validate input
 	if len(args) < 4 {
 		return
@@ -226,8 +226,9 @@ func view(args []string, user *models.User) {
 	year, _ := strconv.Atoi(args[2])
 	day, _ := strconv.Atoi(args[3])
 
-	puzzle := models.LoadOrCreatePuzzle(year, day, user.GetToken())
-	tui.StartViewportWithArr(puzzle.GetPrettyPageData(), puzzle.Title, true)
+	puzzle := resources.LoadOrCreatePuzzle(year, day, user.GetToken())
+	userInput, _ := puzzle.GetUserInput()
+	tui.StartViewportWithArr(puzzle.GetPrettyPageData(), puzzle.Title, userInput, true)
 }
 
 // `health` command
@@ -243,7 +244,8 @@ func health() {
 
 // Command:	`test`
 // Desc:	Does whatever I need to test at the time :)
-func test(user *models.User) {
-	puzzle := models.LoadOrCreatePuzzle(2023, 1, user.GetToken())
-	tui.StartViewportWithArr(puzzle.GetPrettyPageData(), puzzle.Title, true)
+func test(user *resources.User) {
+	puzzle := resources.LoadOrCreatePuzzle(2023, 1, user.GetToken())
+	userInput, _ := puzzle.GetUserInput()
+	tui.StartViewportWithArr(puzzle.GetPrettyPageData(), puzzle.Title, userInput, true)
 }

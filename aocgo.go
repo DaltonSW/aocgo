@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	"dalton.dog/aocgo/internal/dirparse"
-	"dalton.dog/aocgo/internal/models"
+	"dalton.dog/aocgo/internal/resources"
 	"dalton.dog/aocgo/internal/session"
 	"github.com/charmbracelet/log"
 )
@@ -35,7 +35,7 @@ func getData(year int, day int) []byte {
 	if err != nil {
 		log.Fatal(err)
 	}
-	puzzle := models.LoadOrCreatePuzzle(year, day, userToken)
+	puzzle := resources.LoadOrCreatePuzzle(year, day, userToken)
 	input, err := puzzle.GetUserInput()
 	if err != nil {
 		log.Fatal(err)
