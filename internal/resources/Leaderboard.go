@@ -1,4 +1,4 @@
-package models
+package resources
 
 import (
 	"encoding/json"
@@ -9,7 +9,7 @@ import (
 
 	"dalton.dog/aocgo/internal/api"
 	"dalton.dog/aocgo/internal/cache"
-	"dalton.dog/aocgo/internal/tui"
+	// "dalton.dog/aocgo/internal/tui"
 	"github.com/PuerkitoBio/goquery"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/charmbracelet/lipgloss/table"
@@ -104,7 +104,7 @@ func (l *Leaderboard) Display() {
 		t.Row(strconv.Itoa(p.placement), strconv.Itoa(p.score), p.displayName)
 	}
 
-	tui.StartViewportWithString(t.Render(), fmt.Sprintf("Leaderboard - %d", l.year), false)
+	// tui.StartViewportWithString(t.Render(), fmt.Sprintf("Leaderboard - %d", l.year), false)
 }
 
 func (l *Leaderboard) loadPlacements() error {

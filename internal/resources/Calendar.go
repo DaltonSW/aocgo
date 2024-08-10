@@ -1,4 +1,4 @@
-package models
+package resources
 
 type Year struct {
 	numStars    int
