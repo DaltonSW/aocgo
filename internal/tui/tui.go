@@ -13,13 +13,13 @@ var (
 	titleStyle = func() lipgloss.Style {
 		b := lipgloss.RoundedBorder()
 		b.Right = "├"
-		return lipgloss.NewStyle().BorderStyle(b).Padding(0, 1)
+		return lipgloss.NewStyle().BorderStyle(b).Padding(0, 1).Foreground(lipgloss.Color("#FFFF00")).Underline(true)
 	}()
 
 	infoStyle = func() lipgloss.Style {
 		b := lipgloss.RoundedBorder()
 		b.Left = "┤"
-		return titleStyle.BorderStyle(b)
+		return lipgloss.NewStyle().BorderStyle(b).Padding(0, 1)
 	}()
 )
 
@@ -29,20 +29,20 @@ type helpKeymap struct {
 	Up      key.Binding
 	Down    key.Binding
 	Browser key.Binding
-	Refresh key.Binding
-	Submit  key.Binding
-	Input   key.Binding
-	Quit    key.Binding
+	// Refresh key.Binding
+	// Submit  key.Binding
+	Input key.Binding
+	Quit  key.Binding
 }
 
 func (k helpKeymap) ShortHelp() []key.Binding {
-	return []key.Binding{k.Input, k.Browser, k.Refresh, k.Quit}
+	return []key.Binding{k.Input, k.Browser, k.Quit}
 }
 
 func (k helpKeymap) FullHelp() [][]key.Binding {
 	return [][]key.Binding{
 		{k.Up, k.Down, k.Quit},
-		{k.Input, k.Browser, k.Refresh},
+		{k.Input, k.Browser},
 	}
 }
 
@@ -59,10 +59,10 @@ var helpKeys = helpKeymap{
 		key.WithKeys("b"),
 		key.WithHelp("b", "[B]rowser"),
 	),
-	Refresh: key.NewBinding(
-		key.WithKeys("r"),
-		key.WithHelp("r", "[R]efresh Page"),
-	),
+	// Refresh: key.NewBinding(
+	// 	key.WithKeys("r"),
+	// 	key.WithHelp("r", "[R]efresh Page"),
+	// ),
 	// Submit: key.NewBinding(
 	// 	key.WithKeys("a"),
 	// 	key.WithHelp("a", "[A]nswer Puzzle"),

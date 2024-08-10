@@ -51,10 +51,8 @@ func (m LeaderboardModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 
 		headerHeight := lipgloss.Height(m.headerView())
-		footerHeight := lipgloss.Height(m.footerView())
-		verticalMarginHeight := headerHeight + footerHeight
 
-		m.viewport = viewport.New(min(ViewportWidth, width), height-verticalMarginHeight)
+		m.viewport = viewport.New(min(ViewportWidth, width), height-headerHeight)
 		m.viewport.YPosition = headerHeight
 		m.viewport.HighPerformanceRendering = useHighPerformanceRenderer
 		m.viewport.SetContent(m.content)
@@ -68,11 +66,9 @@ func (m LeaderboardModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case tea.WindowSizeMsg:
 		headerHeight := lipgloss.Height(m.headerView())
-		footerHeight := lipgloss.Height(m.footerView())
-		verticalMarginHeight := headerHeight + footerHeight
 
 		m.viewport.Width = min(ViewportWidth, msg.Width)
-		m.viewport.Height = msg.Height - verticalMarginHeight
+		m.viewport.Height = msg.Height - headerHeight
 
 		if useHighPerformanceRenderer {
 			cmds = append(cmds, viewport.Sync(m.viewport))
@@ -87,19 +83,11 @@ func (m LeaderboardModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m LeaderboardModel) View() string {
-	return fmt.Sprintf("%s\n%s\n%s", m.headerView(), m.viewport.View(), m.footerView())
+	return fmt.Sprintf("%s\n%s", m.headerView(), m.viewport.View())
 }
 
 func (m LeaderboardModel) headerView() string {
 	title := titleStyle.Render(m.title)
 	line := strings.Repeat("─", max(0, m.viewport.Width-lipgloss.Width(title)))
 	return lipgloss.JoinHorizontal(lipgloss.Center, title, line)
-}
-
-func (m LeaderboardModel) footerView() string {
-	info := infoStyle.Render(fmt.Sprintf("%3.f%%", m.viewport.ScrollPercent()*100))
-	line := strings.Repeat("─", max(0, m.viewport.Width-lipgloss.Width(info)))
-	sOut := lipgloss.JoinHorizontal(lipgloss.Center, line, info)
-
-	return sOut
 }

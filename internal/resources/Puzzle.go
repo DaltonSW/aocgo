@@ -249,21 +249,6 @@ func wrapText(line string, width int) string {
 	return result
 }
 
-// type PuzzlePart struct {
-// 	starObtained  bool
-// 	example       string
-// 	isPartB       bool
-// 	submissions   []*Submission
-// 	CorrectAnswer Value
-// }
-//
-// type Submission struct {
-// 	submissionVal Value
-// 	correct       bool
-// 	timeSubmitted time.Time
-// 	feedback      string
-// }
-
 type Value struct {
 	number int
 	string string
