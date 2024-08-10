@@ -14,7 +14,7 @@ import (
 )
 
 // Internally tracked version to compare against GitHub releases
-const currentVersion = "v0.0.0"
+const currentVersion = "v0.9.1"
 const repoURL = "https://api.github.com/repos/DaltonSW/aocGo/releases/latest"
 
 type githubRelease struct {
