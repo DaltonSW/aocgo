@@ -36,7 +36,7 @@ func getTokenFromFile(path string) (string, error) {
 		if err != nil {
 			return "", err
 		}
-		filePath = filepath.Join(userHomeDir, ".config", "aocutil", "session.token")
+		filePath = filepath.Join(userHomeDir, ".config", "aocgo", "session.token")
 
 	} else {
 		filePath = path
