@@ -9,9 +9,9 @@ import (
 	"time"
 
 	"dalton.dog/aocgo/internal/cache"
-	"dalton.dog/aocgo/internal/dirparse"
 	"dalton.dog/aocgo/internal/resources"
 	"dalton.dog/aocgo/internal/session"
+	"dalton.dog/aocgo/internal/utils"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/charmbracelet/log"
 )
@@ -184,18 +184,18 @@ func get(args []string, user *resources.User) {
 	var err error
 
 	if len(args) < 4 {
-		year, day, err = dirparse.GetYearAndDayFromCWD()
+		year, day, err = utils.GetYearAndDayFromCWD()
 		if err != nil {
 			log.Fatal(err)
 		}
 	} else {
 
-		year, err = dirparse.ParseYear(args[2])
+		year, err = utils.ParseYear(args[2])
 		if err != nil {
 			log.Fatal(err)
 		}
 
-		day, err = dirparse.ParseDay(args[3])
+		day, err = utils.ParseDay(args[3])
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -249,7 +249,7 @@ func loadUser(args []string, user *resources.User) {
 	}
 
 	if len(args) > 2 {
-		parseYear, err := dirparse.ParseYear(args[2])
+		parseYear, err := utils.ParseYear(args[2])
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -301,7 +301,7 @@ func loadUser(args []string, user *resources.User) {
 
 // `submit [answer] -y <yyyy> -d <dd>` command
 func submit(args []string, user *resources.User) {
-	year, day, err := dirparse.GetYearAndDayFromCWD()
+	year, day, err := utils.GetYearAndDayFromCWD()
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -310,17 +310,21 @@ func submit(args []string, user *resources.User) {
 
 	puzzle := resources.LoadOrCreatePuzzle(year, day, user.SessionTok)
 
-	correct, message := puzzle.SubmitAnswer(answer)
+	answerResp, message := puzzle.SubmitAnswer(answer)
 
-	if correct {
+	if answerResp == resources.CorrectAnswer {
 		correctStyle := lipgloss.NewStyle().Background(lipgloss.Color("34"))
 		fmt.Println(correctStyle.Render("Correct answer!"))
 		fmt.Println(correctStyle.Render(message))
 		user.NumStars++
-	} else {
+	} else if answerResp == resources.IncorrectAnswer {
 		incorrectStyle := lipgloss.NewStyle().Background(lipgloss.Color("124"))
 		fmt.Println(incorrectStyle.Render("Incorrect answer!"))
 		fmt.Println(incorrectStyle.Render(message))
+	} else if answerResp == resources.WarningAnswer {
+
+	} else {
+
 	}
 
 }
@@ -337,17 +341,17 @@ func view(args []string, user *resources.User) {
 	var err error
 
 	if len(args) < 4 {
-		year, day, err = dirparse.GetYearAndDayFromCWD()
+		year, day, err = utils.GetYearAndDayFromCWD()
 		if err != nil {
 			log.Fatal("Unable to parse year/day from current directory.")
 		}
 	} else {
-		year, err = dirparse.ParseYear(args[2])
+		year, err = utils.ParseYear(args[2])
 		if err != nil {
 			log.Fatal("Unable to parse year from current directory.")
 		}
 
-		day, err = dirparse.ParseDay(args[3])
+		day, err = utils.ParseDay(args[3])
 		if err != nil {
 			log.Fatal("Unable to parse day from current directory.")
 		}

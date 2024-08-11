@@ -4,15 +4,15 @@ package aocgo
 import (
 	"strings"
 
-	"dalton.dog/aocgo/internal/dirparse"
 	"dalton.dog/aocgo/internal/resources"
 	"dalton.dog/aocgo/internal/session"
+	"dalton.dog/aocgo/internal/utils"
 	"github.com/charmbracelet/log"
 )
 
 // GetInputAsByteArray will return the user's puzzle input, as determined by the file's working directory, as an array of bytes.
 func GetInputAsByteArray() []byte {
-	year, day, err := dirparse.GetYearAndDayFromCWD()
+	year, day, err := utils.GetYearAndDayFromCWD()
 	if err != nil {
 		log.Fatal(err)
 	}
