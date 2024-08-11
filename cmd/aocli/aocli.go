@@ -12,7 +12,6 @@ import (
 	"dalton.dog/aocgo/internal/dirparse"
 	"dalton.dog/aocgo/internal/resources"
 	"dalton.dog/aocgo/internal/session"
-	"dalton.dog/aocgo/internal/tui"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/charmbracelet/log"
 )
@@ -330,8 +329,9 @@ func view(args []string, user *resources.User) {
 	}
 
 	puzzle := resources.LoadOrCreatePuzzle(year, day, user.GetToken())
-	userInput, _ := puzzle.GetUserInput()
-	tui.NewPuzzleViewport(puzzle.GetPrettyPageData(), puzzle.Title, puzzle.URL, userInput)
+	// userInput, _ := puzzle.GetUserInput()
+	puzzle.Display()
+	// tui.NewPuzzleViewport(puzzle.GetPrettyPageData(), puzzle.Title, puzzle.URL, userInput)
 }
 
 // `health` command
@@ -349,6 +349,5 @@ func health() {
 // Desc:	Does whatever I need to test at the time :)
 func test(user *resources.User) {
 	puzzle := resources.LoadOrCreatePuzzle(2023, 1, user.GetToken())
-	userInput, _ := puzzle.GetUserInput()
-	tui.NewPuzzleViewport(puzzle.GetPrettyPageData(), puzzle.Title, puzzle.URL, userInput)
+	puzzle.Display()
 }

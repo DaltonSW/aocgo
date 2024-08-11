@@ -9,9 +9,7 @@ import (
 
 	"dalton.dog/aocgo/internal/api"
 	"dalton.dog/aocgo/internal/cache"
-	"dalton.dog/aocgo/internal/tui"
 
-	// "dalton.dog/aocgo/internal/tui"
 	"github.com/PuerkitoBio/goquery"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/charmbracelet/lipgloss/table"
@@ -33,6 +31,7 @@ type Leaderboard struct {
 	day      int
 	bucketID string
 	places   []*Placing
+	table    *table.Table
 }
 
 // Placing represents a single placing on a leaderboard
@@ -106,7 +105,9 @@ func (l *Leaderboard) Display() {
 		t.Row(strconv.Itoa(p.placement), strconv.Itoa(p.score), p.displayName)
 	}
 
-	tui.NewLeaderboardViewport(t.Render(), fmt.Sprintf("Leaderboard - %d", l.year))
+	l.table = t
+
+	NewLeaderboardViewport(l)
 }
 
 func (l *Leaderboard) loadPlacements() error {

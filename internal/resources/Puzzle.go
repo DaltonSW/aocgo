@@ -58,6 +58,10 @@ func LoadOrCreatePuzzle(year int, day int, userSession string) *Puzzle {
 	return newPuzzle(year, day, userSession)
 }
 
+func (p *Puzzle) Display() {
+	NewPuzzleViewport(p)
+}
+
 func newPuzzle(year int, day int, userSession string) *Puzzle {
 	URL := fmt.Sprintf(PUZZLE_URL, year, day)
 	bucketID := strconv.Itoa(year) + strconv.Itoa(day)
@@ -269,10 +273,10 @@ func (v Value) GetValue() string {
 
 // // TODO: answerStyle
 var (
-	titleStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("#000000")).Background(lipgloss.Color("#FFFF00"))
-	italStyle  = lipgloss.NewStyle().Foreground(lipgloss.Color("#FF3374"))
-	starStyle  = lipgloss.NewStyle().Foreground(lipgloss.Color("#F1FA8C"))
-	linkStyle  = lipgloss.NewStyle().Foreground(lipgloss.Color("#8BE9FD")).Underline(true)
-	codeStyle  = lipgloss.NewStyle().Foreground(lipgloss.Color("#FAC3D5")).Bold(true)
-	wordWrap   = lipgloss.NewStyle().Width(tui.ViewportWidth)
+	puzzleTitleStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("#000000")).Background(lipgloss.Color("#FFFF00"))
+	italStyle        = lipgloss.NewStyle().Foreground(lipgloss.Color("#FF3374"))
+	starStyle        = lipgloss.NewStyle().Foreground(lipgloss.Color("#F1FA8C"))
+	linkStyle        = lipgloss.NewStyle().Foreground(lipgloss.Color("#8BE9FD")).Underline(true)
+	codeStyle        = lipgloss.NewStyle().Foreground(lipgloss.Color("#FAC3D5")).Bold(true)
+	wordWrap         = lipgloss.NewStyle().Width(tui.ViewportWidth)
 )

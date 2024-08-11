@@ -1,4 +1,4 @@
-package tui
+package resources
 
 import (
 	"fmt"
@@ -18,10 +18,10 @@ type LeaderboardModel struct {
 	title    string
 }
 
-func NewLeaderboardViewport(content, title string) {
+func NewLeaderboardViewport(lb *Leaderboard) {
 	m := LeaderboardModel{
-		content: content,
-		title:   title,
+		content: lb.table.Render(),
+		title:   fmt.Sprintf("%v -- Leaderboard", lb.year),
 	}
 
 	p := tea.NewProgram(m, tea.WithAltScreen(), tea.WithMouseCellMotion())
@@ -54,7 +54,7 @@ func (m LeaderboardModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		m.viewport = viewport.New(min(ViewportWidth, width), height-headerHeight)
 		m.viewport.YPosition = headerHeight
-		m.viewport.HighPerformanceRendering = useHighPerformanceRenderer
+		m.viewport.HighPerformanceRendering = UseHighPerformanceRenderer
 		m.viewport.SetContent(m.content)
 		m.viewport.YPosition = headerHeight + 1
 
@@ -70,7 +70,7 @@ func (m LeaderboardModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.viewport.Width = min(ViewportWidth, msg.Width)
 		m.viewport.Height = msg.Height - headerHeight
 
-		if useHighPerformanceRenderer {
+		if UseHighPerformanceRenderer {
 			cmds = append(cmds, viewport.Sync(m.viewport))
 		}
 	}

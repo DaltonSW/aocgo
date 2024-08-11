@@ -1,4 +1,4 @@
-package tui
+package resources
 
 import (
 	"fmt"
@@ -7,6 +7,7 @@ import (
 
 	"dalton.dog/aocgo/internal/utils"
 	"github.com/charmbracelet/bubbles/help"
+	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
@@ -15,25 +16,21 @@ import (
 )
 
 type PuzzleModel struct {
-	userInput []byte
-	title     string
-	content   string
-	url       string
-	viewport  viewport.Model
-	help      help.Model
-	keys      helpKeymap
+	puzzle   *Puzzle
+	content  string
+	viewport viewport.Model
+	help     help.Model
+	keys     helpKeymap
 }
 
-func NewPuzzleViewport(content []string, title, url string, userInput []byte) {
-
+func NewPuzzleViewport(puzzle *Puzzle) {
+	content := puzzle.GetPrettyPageData()
 	contentStr := strings.Join(content, "")
 	m := PuzzleModel{
-		content:   contentStr,
-		title:     title,
-		keys:      helpKeys,
-		help:      help.New(),
-		userInput: userInput,
-		url:       url,
+		puzzle:  puzzle,
+		content: contentStr,
+		keys:    helpKeys,
+		help:    help.New(),
 	}
 
 	p := tea.NewProgram(m, tea.WithAltScreen(), tea.WithMouseCellMotion())
@@ -66,7 +63,7 @@ func (m PuzzleModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		m.viewport = viewport.New(min(ViewportWidth, width), height-verticalMarginHeight)
 		m.viewport.YPosition = headerHeight
-		m.viewport.HighPerformanceRendering = useHighPerformanceRenderer
+		m.viewport.HighPerformanceRendering = UseHighPerformanceRenderer
 		m.viewport.SetContent(m.content)
 		m.viewport.YPosition = headerHeight + 1
 
@@ -75,11 +72,18 @@ func (m PuzzleModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "esc", "q", "ctrl+c":
 			return m, tea.Quit
 		case "b":
-			utils.LaunchURL(m.url)
+			utils.LaunchURL(m.puzzle.URL)
 			return m, nil
 		case "s":
-			out, _ := os.Create("./input.txt")
-			out.Write(m.userInput)
+			out, err := os.Create("./input.txt")
+			if err != nil {
+				log.Fatal(err)
+			}
+			userInput, err := m.puzzle.GetUserInput()
+			if err != nil {
+				log.Fatal(err)
+			}
+			out.Write(userInput)
 			out.Close()
 			return m, nil
 		case "a":
@@ -94,7 +98,7 @@ func (m PuzzleModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.viewport.Width = min(ViewportWidth, msg.Width)
 		m.viewport.Height = msg.Height - verticalMarginHeight
 
-		if useHighPerformanceRenderer {
+		if UseHighPerformanceRenderer {
 			cmds = append(cmds, viewport.Sync(m.viewport))
 		}
 	}
@@ -111,7 +115,7 @@ func (m PuzzleModel) View() string {
 }
 
 func (m PuzzleModel) headerView() string {
-	title := titleStyle.Render(m.title)
+	title := puzzleTitleStyle.Render(m.puzzle.Title)
 	line := strings.Repeat("─", max(0, m.viewport.Width-lipgloss.Width(title)))
 	return lipgloss.JoinHorizontal(lipgloss.Center, title, line)
 }
@@ -123,4 +127,56 @@ func (m PuzzleModel) footerView() string {
 	sOut += "\n" + lipgloss.JoinHorizontal(lipgloss.Center, m.help.View(m.keys))
 
 	return sOut
+}
+
+type helpKeymap struct {
+	Up      key.Binding
+	Down    key.Binding
+	Browser key.Binding
+	// Refresh key.Binding
+	// Submit  key.Binding
+	Input key.Binding
+	Quit  key.Binding
+}
+
+func (k helpKeymap) ShortHelp() []key.Binding {
+	return []key.Binding{k.Input, k.Browser, k.Quit}
+}
+
+func (k helpKeymap) FullHelp() [][]key.Binding {
+	return [][]key.Binding{
+		{k.Up, k.Down, k.Quit},
+		{k.Input, k.Browser},
+	}
+}
+
+var helpKeys = helpKeymap{
+	Up: key.NewBinding(
+		key.WithKeys("up", "k"),
+		key.WithHelp("↑/k", "move up"),
+	),
+	Down: key.NewBinding(
+		key.WithKeys("down", "j"),
+		key.WithHelp("↓/j", "move down"),
+	),
+	Browser: key.NewBinding(
+		key.WithKeys("b"),
+		key.WithHelp("b", "[B]rowser"),
+	),
+	// Refresh: key.NewBinding(
+	// 	key.WithKeys("r"),
+	// 	key.WithHelp("r", "[R]efresh Page"),
+	// ),
+	// Submit: key.NewBinding(
+	// 	key.WithKeys("a"),
+	// 	key.WithHelp("a", "[A]nswer Puzzle"),
+	// ),
+	Input: key.NewBinding(
+		key.WithKeys("s"),
+		key.WithHelp("s", "[S]ave Input"),
+	),
+	Quit: key.NewBinding(
+		key.WithKeys("q", "esc", "ctrl+c"),
+		key.WithHelp("q/esc", "[Q]uit"),
+	),
 }
