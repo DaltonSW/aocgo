@@ -31,11 +31,13 @@ var testStyle = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("#FF000
 var User *resources.User
 
 func main() {
+
+	// Flag Parsing
 	debugFlag := flag.Bool("debug", false, "Use to enable debug logging")
 	profFlag := flag.Bool("prof", false, "Use to enable performance profiling")
-
 	flag.Parse()
 
+	// Debug Logging
 	if *debugFlag {
 		debugFile, err := os.Create("./debug.log")
 		if err != nil {
@@ -70,7 +72,7 @@ func main() {
 	log.Debug("Trying to create user")
 	user, err := resources.NewUser("")
 	if err != nil {
-		log.Error("Unable to create user to run requests as. Try running `aocli health`.")
+		log.Fatal("Unable to create user to run requests as. Check the README to ensure you have the proper setup. Then try running `aocli health`.")
 	}
 	log.Debug("Created user")
 
