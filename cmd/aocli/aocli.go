@@ -322,11 +322,10 @@ func submit(args []string, user *resources.User) {
 		fmt.Println(incorrectStyle.Render("Incorrect answer!"))
 		fmt.Println(incorrectStyle.Render(message))
 	} else if answerResp == resources.WarningAnswer {
-
-	} else {
-
+		incorrectStyle := lipgloss.NewStyle().Background(lipgloss.Color("184"))
+		fmt.Println(incorrectStyle.Render("Answer not submitted!"))
+		fmt.Println(incorrectStyle.Render(message))
 	}
-
 }
 
 func run(args []string) {
