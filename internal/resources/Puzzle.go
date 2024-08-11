@@ -9,7 +9,6 @@ import (
 
 	"dalton.dog/aocgo/internal/api"
 	"dalton.dog/aocgo/internal/cache"
-	"dalton.dog/aocgo/internal/tui"
 	"github.com/PuerkitoBio/goquery"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/charmbracelet/log"
@@ -85,6 +84,18 @@ func newPuzzle(year int, day int, userSession string) *Puzzle {
 	newPuzzle.SaveResource()
 
 	return newPuzzle
+}
+
+func (p *Puzzle) ReloadPage() error {
+	newInput, err := loadUserInputFromSite(p.URL, p.SessionToken)
+	if err != nil {
+		return err
+	}
+
+	p.UserInput = newInput
+	p.loadPageData()
+	p.SaveResource()
+	return nil
 }
 
 // GetUserInput returns the input for the associated puzzle.
@@ -231,7 +242,7 @@ func getPrettyArticle(article *goquery.Selection) []string {
 			}
 		})
 
-		articleOut = append(articleOut, wrapText(loopContents, tui.ViewportWidth)+"\n")
+		articleOut = append(articleOut, wrapText(loopContents, ViewportWidth)+"\n")
 	})
 
 	return articleOut
@@ -278,5 +289,5 @@ var (
 	starStyle        = lipgloss.NewStyle().Foreground(lipgloss.Color("#F1FA8C"))
 	linkStyle        = lipgloss.NewStyle().Foreground(lipgloss.Color("#8BE9FD")).Underline(true)
 	codeStyle        = lipgloss.NewStyle().Foreground(lipgloss.Color("#FAC3D5")).Bold(true)
-	wordWrap         = lipgloss.NewStyle().Width(tui.ViewportWidth)
+	wordWrap         = lipgloss.NewStyle().Width(ViewportWidth)
 )

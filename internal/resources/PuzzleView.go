@@ -21,6 +21,7 @@ type PuzzleModel struct {
 	viewport viewport.Model
 	help     help.Model
 	keys     helpKeymap
+	status   string
 }
 
 func NewPuzzleViewport(puzzle *Puzzle) {
@@ -70,10 +71,21 @@ func (m PuzzleModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "esc", "q", "ctrl+c":
+			m.status = "Quitting!"
 			return m, tea.Quit
 		case "b":
 			utils.LaunchURL(m.puzzle.URL)
+			m.status = "Page launched in browser!"
 			return m, nil
+
+		case "r":
+			err := m.puzzle.ReloadPage()
+			if err != nil {
+				log.Fatal(err)
+			}
+			m.content = strings.Join(m.puzzle.GetPrettyPageData(), "\n")
+			m.status = "Page refreshed!"
+			return m, func() tea.Msg { return initMsg(1) }
 		case "s":
 			out, err := os.Create("./input.txt")
 			if err != nil {
@@ -85,6 +97,7 @@ func (m PuzzleModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 			out.Write(userInput)
 			out.Close()
+			m.status = "Input saved to 'input.txt'"
 			return m, nil
 		case "a":
 			// TODO: Answer question
@@ -125,6 +138,9 @@ func (m PuzzleModel) footerView() string {
 	line := strings.Repeat("─", max(0, m.viewport.Width-lipgloss.Width(info)))
 	sOut := lipgloss.JoinHorizontal(lipgloss.Center, line, info)
 	sOut += "\n" + lipgloss.JoinHorizontal(lipgloss.Center, m.help.View(m.keys))
+	if m.status != "" {
+		sOut += " -- " + m.status
+	}
 
 	return sOut
 }
