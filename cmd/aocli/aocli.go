@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"os"
 	"runtime/pprof"
@@ -30,25 +31,35 @@ var testStyle = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("#FF000
 var User *resources.User
 
 func main() {
-	debugFile, err := os.Create("./debug.log")
-	if err != nil {
-		log.Fatal("Unable to create debug file.", "error", err)
+	debugFlag := flag.Bool("debug", false, "Use to enable debug logging")
+	profFlag := flag.Bool("prof", false, "Use to enable performance profiling")
+
+	flag.Parse()
+
+	if *debugFlag {
+		debugFile, err := os.Create("./debug.log")
+		if err != nil {
+			log.Fatal("Unable to create debug file.", "error", err)
+		}
+		defer debugFile.Close()
+		log.SetOutput(debugFile)
+		log.SetLevel(log.DebugLevel)
+		log.SetReportCaller(true)
+		log.SetTimeFormat(time.StampMicro)
+	} else {
+		log.SetTimeFormat(time.Kitchen)
 	}
-	defer debugFile.Close()
 
-	profFile, err := os.Create("./aoc.prof")
-	if err != nil {
-		log.Fatal("Unable to create profiling file.", "error", err)
+	if *profFlag {
+		profFile, err := os.Create("./aoc.prof")
+		if err != nil {
+			log.Fatal("Unable to create profiling file.", "error", err)
+		}
+		defer profFile.Close()
+
+		pprof.StartCPUProfile(profFile)
+		defer pprof.StopCPUProfile()
 	}
-	defer profFile.Close()
-
-	pprof.StartCPUProfile(profFile)
-	defer pprof.StopCPUProfile()
-
-	log.SetOutput(debugFile)
-	log.SetLevel(log.DebugLevel)
-	log.SetReportCaller(true)
-	log.SetTimeFormat(time.StampMicro)
 
 	args := os.Args
 	if len(args) == 1 {
@@ -163,21 +174,36 @@ func help(args []string) {
 //	[year] - 2 or 4 digit year (16 or 2016)
 //	[day]  - 1 or 2 digit day (1, 01, 21)
 func get(args []string, user *resources.User) {
-	// TODO: Validate input
-	if len(args) < 4 {
-		return
-		// TODO: Try loading with today
-		// TODO: Print `get` help message
-	}
+	var year int
+	var day int
+	var err error
 
-	year, _ := strconv.Atoi(args[2])
-	day, _ := strconv.Atoi(args[3])
+	if len(args) < 4 {
+		year, day, err = dirparse.GetYearAndDayFromCWD()
+		if err != nil {
+			log.Fatal(err)
+		}
+	} else {
+
+		year, err = dirparse.ParseYear(args[2])
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		day, err = dirparse.ParseDay(args[3])
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
 
 	puzzle := resources.LoadOrCreatePuzzle(year, day, user.GetToken())
 	userInput, _ := puzzle.GetUserInput()
 
 	out, _ := os.Create("./input.txt")
+	defer out.Close()
 	out.Write(userInput)
+
+	log.Info("Input saved to input.txt!")
 	return
 }
 
@@ -186,7 +212,7 @@ func get(args []string, user *resources.User) {
 // `leaderboard [year] [day]` command
 func leaderboard(args []string) {
 	if len(args) != 3 {
-		fmt.Println("Only works with yearly leaderboards for right now. Run `aocli help leaderboard`")
+		log.Error("Only works with yearly leaderboards for right now. Run `aocli help leaderboard`")
 		return
 	}
 
@@ -280,15 +306,26 @@ func run(args []string) {
 // `view [year] [day]` command
 // Desc: Pretty-prints the puzzle's page data
 func view(args []string, user *resources.User) {
-	// TODO: Validate input
-	if len(args) < 4 {
-		return
-		// TODO: Try loading with today
-		// TODO: Print `get` help message
-	}
+	var year int
+	var day int
+	var err error
 
-	year, _ := strconv.Atoi(args[2])
-	day, _ := strconv.Atoi(args[3])
+	if len(args) < 4 {
+		year, day, err = dirparse.GetYearAndDayFromCWD()
+		if err != nil {
+			log.Fatal("Unable to parse year/day from current directory.")
+		}
+	} else {
+		year, err = dirparse.ParseYear(args[2])
+		if err != nil {
+			log.Fatal("Unable to parse year from current directory.")
+		}
+
+		day, err = dirparse.ParseDay(args[3])
+		if err != nil {
+			log.Fatal("Unable to parse day from current directory.")
+		}
+	}
 
 	puzzle := resources.LoadOrCreatePuzzle(year, day, user.GetToken())
 	userInput, _ := puzzle.GetUserInput()

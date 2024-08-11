@@ -76,6 +76,8 @@ func update() {
 	for _, asset := range release.Assets {
 		if asset.Name == fmt.Sprintf("aocli-%v-%v", runtime.GOOS, runtime.GOARCH) {
 			assetURL = asset.DownloadURL
+		} else if asset.Name == fmt.Sprintf("aocli-%v-%v.exe", runtime.GOOS, runtime.GOARCH) {
+			assetURL = asset.DownloadURL
 		}
 	}
 
