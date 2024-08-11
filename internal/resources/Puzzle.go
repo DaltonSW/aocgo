@@ -10,6 +10,7 @@ import (
 
 	"dalton.dog/aocgo/internal/api"
 	"dalton.dog/aocgo/internal/cache"
+	"dalton.dog/aocgo/internal/utils"
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/charmbracelet/lipgloss"
@@ -74,6 +75,10 @@ const (
 )
 
 func (p *Puzzle) SubmitAnswer(answer string) (int, string) {
+	if !time.Now().After(p.LockoutEnd) {
+		return WarningAnswer, fmt.Sprintf("Still within lockout period of last submission. Lockout End: %s", p.LockoutEnd.Format(time.Stamp))
+	}
+
 	var part int
 	if p.AnswerOne == "" {
 		part = 1
@@ -84,9 +89,7 @@ func (p *Puzzle) SubmitAnswer(answer string) (int, string) {
 	}
 
 	// TODO: Check past submissions and lockout period before allowing submission
-	//	- Lockout period
 	//	- Past submissions
-	//		- Equal to
 	//		- Too high / too low
 
 	for _, pastSub := range p.Submissions[part] {
@@ -118,6 +121,7 @@ func (p *Puzzle) SubmitAnswer(answer string) (int, string) {
 
 	p.Submissions[part] = outList
 	if submission.correct {
+		p.ReloadPage()
 
 		if p.AnswerOne == "" {
 			p.AnswerOne = answer
@@ -126,8 +130,15 @@ func (p *Puzzle) SubmitAnswer(answer string) (int, string) {
 			p.AnswerTwo = answer
 			return CorrectAnswer, "Second star obtained! That's all for today, good luck tomorrow!"
 		}
+
 	} else {
 		// TODO: Parse the response message for lockout period
+		lockoutDuration, err := utils.ParseDuration(submission.message)
+		if err != nil {
+			return IncorrectAnswer, submission.message + "\nUnable to parse lockout duration from message."
+		}
+
+		p.LockoutEnd = time.Now().Add(lockoutDuration)
 
 		return IncorrectAnswer, submission.message
 	}
