@@ -78,6 +78,7 @@ func (m PuzzleModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.status = "Page launched in browser!"
 			return m, nil
 
+		// BUG: Refreshing isn't working quite right. Stuff has to scroll before visualizing
 		case "r":
 			err := m.puzzle.ReloadPage()
 			if err != nil {
@@ -85,6 +86,9 @@ func (m PuzzleModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 			m.content = strings.Join(m.puzzle.GetPrettyPageData(), "\n")
 			m.status = "Page refreshed!"
+			// Clear terminal
+			fmt.Print("\033[H\033[2J")
+
 			return m, func() tea.Msg { return initMsg(1) }
 		case "s":
 			out, err := os.Create("./input.txt")

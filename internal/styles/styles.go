@@ -2,13 +2,13 @@ package styles
 
 import "github.com/charmbracelet/lipgloss"
 
+// completeColor = lipgloss.CompleteAdaptiveColor{
+// 	Light: lipgloss.CompleteColor{TrueColor: "", ANSI256: "", ANSI: ""},
+// 	Dark:  lipgloss.CompleteColor{TrueColor: "", ANSI256: "", ANSI: ""},
+// },
+
 var (
 	// Colors
-	// completeColor = lipgloss.CompleteAdaptiveColor{
-	// 	Light: lipgloss.CompleteColor{TrueColor: "", ANSI256: "", ANSI: ""},
-	// 	Dark:  lipgloss.CompleteColor{TrueColor: "", ANSI256: "", ANSI: ""},
-	// },
-
 	goldColor   = lipgloss.CompleteColor{TrueColor: "#D4AF37", ANSI256: "178", ANSI: "11"}
 	silverColor = lipgloss.CompleteColor{TrueColor: "#C0C0C0", ANSI256: "145", ANSI: "7"}
 	bronzeColor = lipgloss.CompleteColor{TrueColor: "#CD7F32", ANSI256: "94", ANSI: "3"}

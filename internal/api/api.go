@@ -3,7 +3,6 @@ package api
 import (
 	"context"
 	"fmt"
-	"io"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -85,10 +84,10 @@ func NewGetReq(url string, sessionToken string) (*http.Response, error) {
 //		`level` : 1 if Part A, 2 if Part B
 //		`answer` : Answer to submit
 
-func SubmitAnswer(year int, day int, part int, userSession string, answer string) error {
+func SubmitAnswer(year int, day int, part int, userSession string, answer string) (*http.Response, error) {
 	URL := PuzzleAnswerURL(year, day)
-	log.Infof("Attempting to submit answer for Day %v (%v) [Part %v] to URL %v", day, year, part, URL)
-	log.Infof("Answer: %v -- User: %v", answer, userSession)
+	log.Debugf("Attempting to submit answer for Day %v (%v) [Part %v] to URL %v", day, year, part, URL)
+	log.Debugf("Answer: %v -- User: %v", answer, userSession)
 
 	formData := url.Values{}
 	formData.Set("level", strconv.Itoa(part))
@@ -98,28 +97,14 @@ func SubmitAnswer(year int, day int, part int, userSession string, answer string
 
 	req, err := http.NewRequest("POST", URL, strings.NewReader(encodedForm))
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	req.Header.Add("User-Agent", USER_AGENT)
 	req.Header.Add("Cookie", fmt.Sprintf("session=%v", userSession))
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
-	resp, err := MasterClient.client.Do(req)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
-
-	data, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return err
-	}
-
-	// TODO: Pass data into Submission
-
-	log.Infof("Response: %v", string(data))
-	return nil
+	return MasterClient.client.Do(req)
 }
 
 // URL Helper Methods

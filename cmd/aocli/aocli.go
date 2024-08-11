@@ -68,6 +68,14 @@ func main() {
 		os.Exit(0)
 	}
 
+	if args[1] == "health" {
+		health()
+		return
+	} else if args[1] == "help" {
+		help(args)
+		return
+	}
+
 	log.Debug("Trying to create user")
 	user, err := resources.NewUser("")
 	if err != nil {
@@ -90,12 +98,8 @@ func main() {
 		}
 	case "get":
 		get(args, user)
-	case "health":
-		health()
-	case "help":
-		help(args)
-	// case "submit":
-	// 	submit(args)
+	case "submit":
+		submit(args, user)
 	case "leaderboard":
 		leaderboard(args)
 	case "load-user":
@@ -295,8 +299,29 @@ func loadUser(args []string, user *resources.User) {
 	}
 }
 
-// `submit [year] [day] [part] [answer]` command
-func submit(args []string) {
+// `submit [answer] -y <yyyy> -d <dd>` command
+func submit(args []string, user *resources.User) {
+	year, day, err := dirparse.GetYearAndDayFromCWD()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	answer := args[2]
+
+	puzzle := resources.LoadOrCreatePuzzle(year, day, user.SessionTok)
+
+	correct, message := puzzle.SubmitAnswer(answer)
+
+	if correct {
+		correctStyle := lipgloss.NewStyle().Background(lipgloss.Color("34"))
+		fmt.Println(correctStyle.Render("Correct answer!"))
+		fmt.Println(correctStyle.Render(message))
+		user.NumStars++
+	} else {
+		incorrectStyle := lipgloss.NewStyle().Background(lipgloss.Color("124"))
+		fmt.Println(incorrectStyle.Render("Incorrect answer!"))
+		fmt.Println(incorrectStyle.Render(message))
+	}
 
 }
 

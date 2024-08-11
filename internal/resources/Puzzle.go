@@ -33,7 +33,8 @@ type Puzzle struct {
 	ArticleTwo []string
 	AnswerTwo  string
 
-	UserInput []byte
+	UserInput   []byte
+	Submissions map[int][]*Submission
 }
 
 func (p *Puzzle) GetID() string                { return p.BucketID }
@@ -61,6 +62,59 @@ func (p *Puzzle) Display() {
 	NewPuzzleViewport(p)
 }
 
+func (p *Puzzle) SubmitAnswer(answer string) (bool, string) {
+	var part int
+	if p.AnswerOne == "" {
+		part = 1
+	} else {
+		part = 2
+	}
+
+	// TODO: Check past submissions and lockout period before allowing submission
+	//	- Lockout period
+	//	- Past submissions
+	//		- Equal to
+	//		- Too high / too low
+
+	submissionData, err := api.SubmitAnswer(p.Year, p.Day, part, p.SessionToken, answer)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	submission, err := NewSubmission(submissionData, answer)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if p.Submissions == nil {
+		p.Submissions = make(map[int][]*Submission)
+	}
+
+	outList, ok := p.Submissions[part]
+	if !ok {
+		outList = make([]*Submission, 0)
+	}
+
+	outList = append(outList, submission)
+
+	p.Submissions[part] = outList
+	if submission.correct {
+
+		if p.AnswerOne == "" {
+			p.AnswerOne = answer
+			return true, "First star obtained! Run `view` again to get part 2."
+		} else {
+			p.AnswerTwo = answer
+			return true, "Second star obtained! That's all for today, good luck tomorrow!"
+		}
+	} else {
+		// TODO: Parse the response message for info about wrong answer
+		//	- Lockout period
+		//	- Too high or too low?
+		return false, submission.message
+	}
+}
+
 func newPuzzle(year int, day int, userSession string) *Puzzle {
 	URL := fmt.Sprintf(PUZZLE_URL, year, day)
 	bucketID := strconv.Itoa(year) + strconv.Itoa(day)
@@ -71,6 +125,10 @@ func newPuzzle(year int, day int, userSession string) *Puzzle {
 		log.Fatal("Unable to load user input for the puzzle.", "error", err)
 	}
 
+	subMap := make(map[int][]*Submission)
+	subMap[1] = make([]*Submission, 0)
+	subMap[2] = make([]*Submission, 0)
+
 	newPuzzle := &Puzzle{
 		Day:          day,
 		Year:         year,
@@ -78,6 +136,7 @@ func newPuzzle(year int, day int, userSession string) *Puzzle {
 		URL:          URL,
 		UserInput:    userInput,
 		SessionToken: userSession,
+		Submissions:  subMap,
 	}
 
 	newPuzzle.loadPageData()
