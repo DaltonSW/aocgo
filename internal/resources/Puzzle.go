@@ -120,6 +120,7 @@ func (p *Puzzle) SubmitAnswer(answer string) (int, string) {
 	outList = append(outList, submission)
 
 	p.Submissions[part] = outList
+	defer p.SaveResource()
 	if submission.correct {
 		p.ReloadPage()
 
