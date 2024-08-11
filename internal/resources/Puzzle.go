@@ -6,9 +6,11 @@ import (
 	"io"
 	"strconv"
 	"strings"
+	"time"
 
 	"dalton.dog/aocgo/internal/api"
 	"dalton.dog/aocgo/internal/cache"
+
 	"github.com/PuerkitoBio/goquery"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/charmbracelet/log"
@@ -35,6 +37,8 @@ type Puzzle struct {
 
 	UserInput   []byte
 	Submissions map[int][]*Submission
+
+	LockoutEnd time.Time
 }
 
 func (p *Puzzle) GetID() string                { return p.BucketID }
@@ -62,12 +66,21 @@ func (p *Puzzle) Display() {
 	NewPuzzleViewport(p)
 }
 
-func (p *Puzzle) SubmitAnswer(answer string) (bool, string) {
+// Answer Response types
+const (
+	IncorrectAnswer int = iota
+	CorrectAnswer
+	WarningAnswer
+)
+
+func (p *Puzzle) SubmitAnswer(answer string) (int, string) {
 	var part int
 	if p.AnswerOne == "" {
 		part = 1
-	} else {
+	} else if p.AnswerTwo == "" {
 		part = 2
+	} else {
+		return WarningAnswer, "You've already gotten both stars for this level."
 	}
 
 	// TODO: Check past submissions and lockout period before allowing submission
@@ -75,6 +88,12 @@ func (p *Puzzle) SubmitAnswer(answer string) (bool, string) {
 	//	- Past submissions
 	//		- Equal to
 	//		- Too high / too low
+
+	for _, pastSub := range p.Submissions[part] {
+		if pastSub.answer == answer {
+			return WarningAnswer, "You've already submitted that answer!"
+		}
+	}
 
 	submissionData, err := api.SubmitAnswer(p.Year, p.Day, part, p.SessionToken, answer)
 	if err != nil {
@@ -102,16 +121,15 @@ func (p *Puzzle) SubmitAnswer(answer string) (bool, string) {
 
 		if p.AnswerOne == "" {
 			p.AnswerOne = answer
-			return true, "First star obtained! Run `view` again to get part 2."
+			return CorrectAnswer, "First star obtained! Run `view` again to get part 2."
 		} else {
 			p.AnswerTwo = answer
-			return true, "Second star obtained! That's all for today, good luck tomorrow!"
+			return CorrectAnswer, "Second star obtained! That's all for today, good luck tomorrow!"
 		}
 	} else {
-		// TODO: Parse the response message for info about wrong answer
-		//	- Lockout period
-		//	- Too high or too low?
-		return false, submission.message
+		// TODO: Parse the response message for lockout period
+
+		return IncorrectAnswer, submission.message
 	}
 }
 

@@ -20,8 +20,6 @@ const DAY_URL = YEAR_URL + "/day/%v"
 
 const REQS_PER_SEC = 10
 
-// TODO: SubmitGuess()
-
 var MasterClient httpClient
 
 type httpClient struct {
