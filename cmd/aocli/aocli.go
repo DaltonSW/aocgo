@@ -16,12 +16,7 @@ import (
 	"github.com/charmbracelet/log"
 )
 
-// TODO: `submit [day] [year]` - if no inputs, tries today's date
-//	Not sure if we're going to need to specifically accept submitting for Part 1 or 2
-
 // TODO: `run` - Will benchmark and run files in current and subdirectory
-
-// TODO: `clear session [year] [day]` - Clears the stored information for a given session
 
 var helpBodyStyle = lipgloss.NewStyle().Width(70)
 var helpTitleStyle = lipgloss.NewStyle().Width(70)
@@ -121,6 +116,8 @@ func main() {
 		leaderboard(args)
 	case "load-user":
 		loadUser(args, user)
+	case "reload":
+		reload(args, user)
 	// case "run":
 	// 	run(args)
 	case "view":
@@ -343,6 +340,33 @@ func submit(args []string, user *resources.User) {
 		fmt.Println(incorrectStyle.Render("Answer not submitted!"))
 		fmt.Println(incorrectStyle.Render(message))
 	}
+}
+
+func reload(args []string, user *resources.User) {
+	var year int
+	var day int
+	var err error
+
+	if len(args) < 4 {
+		year, day, err = utils.GetYearAndDayFromCWD()
+		if err != nil {
+			log.Fatal(err)
+		}
+	} else {
+
+		year, err = utils.ParseYear(args[2])
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		day, err = utils.ParseDay(args[3])
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+
+	puzzle := resources.LoadOrCreatePuzzle(year, day, user.GetToken())
+	puzzle.ReloadPuzzleData()
 }
 
 func run(args []string) {

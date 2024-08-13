@@ -80,7 +80,7 @@ func (m PuzzleModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		// BUG: Refreshing isn't working quite right. Stuff has to scroll before visualizing
 		case "r":
-			err := m.puzzle.ReloadPage()
+			err := m.puzzle.ReloadPuzzleData()
 			if err != nil {
 				log.Fatal(err)
 			}

@@ -122,7 +122,7 @@ func (p *Puzzle) SubmitAnswer(answer string) (int, string) {
 	p.Submissions[part] = outList
 	defer p.SaveResource()
 	if submission.correct {
-		p.ReloadPage()
+		p.ReloadPuzzleData()
 
 		if p.AnswerOne == "" {
 			p.AnswerOne = answer
@@ -175,7 +175,7 @@ func newPuzzle(year int, day int, userSession string) *Puzzle {
 	return newPuzzle
 }
 
-func (p *Puzzle) ReloadPage() error {
+func (p *Puzzle) ReloadPuzzleData() error {
 	newInput, err := loadUserInputFromSite(p.URL, p.SessionToken)
 	if err != nil {
 		return err
