@@ -48,7 +48,24 @@ func main() {
 		log.SetReportCaller(true)
 		log.SetTimeFormat(time.StampMicro)
 	} else {
+		logStyles := log.DefaultStyles()
+		logStyles.Levels[log.FatalLevel] = lipgloss.NewStyle().
+			SetString("FATAL").
+			Padding(0, 1).
+			Background(lipgloss.Color("#af5fd7")).
+			Foreground(lipgloss.Color("0"))
+		logStyles.Levels[log.ErrorLevel] = lipgloss.NewStyle().
+			SetString("ERROR").
+			Padding(0, 1).
+			Background(lipgloss.Color("204")).
+			Foreground(lipgloss.Color("0"))
+		logStyles.Levels[log.ErrorLevel] = lipgloss.NewStyle().
+			SetString("INFO").
+			Padding(0, 1).
+			Background(lipgloss.Color("#42ccd4")).
+			Foreground(lipgloss.Color("0"))
 		log.SetTimeFormat(time.Kitchen)
+		log.SetStyles(logStyles)
 	}
 
 	if *profFlag {
@@ -367,7 +384,7 @@ func view(args []string, user *resources.User) {
 func health() {
 	sessionKey, err := session.GetSessionToken()
 	if err != nil {
-		log.Error("Test failed! Couldn't properly load a session key.", "err", err)
+		log.Fatal("Test failed! Couldn't properly load a session key.", "err", err)
 	}
 
 	log.Info("Test succeeded! Properly loaded session key", "key", sessionKey)
