@@ -7,6 +7,8 @@ import "github.com/charmbracelet/lipgloss"
 // 	Dark:  lipgloss.CompleteColor{TrueColor: "", ANSI256: "", ANSI: ""},
 // },
 
+// TODO: Fix up the colors. The leaderboard ones don't look very good. Not sure they're using TrueColor?
+
 var (
 	// Colors
 	goldColor   = lipgloss.CompleteColor{TrueColor: "#D4AF37", ANSI256: "178", ANSI: "11"}
@@ -41,3 +43,28 @@ var (
 	linkStyle = lipgloss.NewStyle().Foreground(linkColor).Underline(true)
 	codeStyle = lipgloss.NewStyle().Foreground(codeColor).Bold(true)
 )
+
+func GetLeaderboardStyle(row, col int) lipgloss.Style {
+	if row == 0 {
+		return lipgloss.NewStyle().Foreground(lipgloss.Color("99")).Bold(true).Align(lipgloss.Center)
+	}
+
+	var style lipgloss.Style
+	if col == 2 {
+		style = lipgloss.NewStyle().Width(40)
+	} else if col == 0 {
+		style = lipgloss.NewStyle().Width(5).Align(lipgloss.Center)
+	} else {
+		style = lipgloss.NewStyle().Width(17).Align(lipgloss.Center)
+	}
+
+	if row == 1 {
+		return style.Foreground(goldColor)
+	} else if row == 2 {
+		return style.Foreground(silverColor)
+	} else if row == 3 {
+		return style.Foreground(bronzeColor)
+	} else {
+		return style
+	}
+}

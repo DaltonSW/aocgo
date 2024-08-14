@@ -1,12 +1,12 @@
 package resources
 
 import (
-	// "encoding/json"
 	"fmt"
 	"strconv"
+	"strings"
 
 	"dalton.dog/aocgo/internal/api"
-	// "dalton.dog/aocgo/internal/cache"
+	"dalton.dog/aocgo/internal/styles"
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/charmbracelet/lipgloss"
@@ -14,20 +14,11 @@ import (
 	"github.com/charmbracelet/log"
 )
 
-var (
-	HeaderStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("99")).Bold(true).Align(lipgloss.Center)
-	BorderStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("99"))
-	FirstPlace  = lipgloss.NewStyle().Foreground(lipgloss.Color("#d4af37"))
-	SecondPlace = lipgloss.NewStyle().Foreground(lipgloss.Color("#c0c0c0"))
-	ThirdPlace  = lipgloss.NewStyle().Foreground(lipgloss.Color("#cd7f32"))
-	CellStyle   = lipgloss.NewStyle().Width(12)
-)
-
 // Placing represents a single placing on a leaderboard
 type Placing struct {
 	DisplayName string
 	UserID      string
-	Position    string
+	Position    int
 	IsSupporter bool
 
 	// UserLink is the link for the username
@@ -52,27 +43,13 @@ func (l *YearLB) GetTitle() string {
 	return fmt.Sprintf("Leaderboard -- Year: %d", l.Year)
 }
 
-// func (l *YearLB) GetID() string                { return strconv.Itoa(l.Year) + "0" }
-// func (l *YearLB) GetBucketName() string        { return cache.LEADERBOARDS }
-// func (l *YearLB) MarshalData() ([]byte, error) { return json.Marshal(l) }
-// func (l *YearLB) SaveResource()                { cache.SaveResource(l) }
-
 func NewYearLB(year int) *YearLB {
-
-	// data := cache.LoadResource(cache.LEADERBOARDS, strconv.Itoa(year)+"0")
-	// var lb *YearLB
-	// if data != nil {
-	// 	json.Unmarshal(data, &lb)
-	// 	return lb
-	// }
-
 	lb := &YearLB{
 		Year:      year,
 		Positions: make([]*Placing, 0, 100),
 	}
 
 	lb.LoadPositions()
-	// lb.SaveResource()
 
 	return lb
 }
@@ -93,40 +70,44 @@ func (lb *YearLB) LoadPositions() error {
 
 	placings := make([]*Placing, 0, 100)
 
-	bodyDoc.Find("div.leaderboard-entry").Each(func(i int, sel *goquery.Selection) {
-		log.Debug(sel.Text())
-		placing := &Placing{}
+	var intPlace int
 
-		placing.Position = sel.Find(".leaderboard-position").Text()
+	bodyDoc.Find("div.leaderboard-entry").Each(func(i int, s *goquery.Selection) {
+		rowText := s.Text()
+		var remainder string
 
-		s, _ := strconv.Atoi(sel.Find(".leaderboard-totalscore").Text())
-		placing.Score = s
+		if len(rowText) > 4 && rowText[3] == ')' {
+			rowText = strings.TrimSpace(s.Text())
+			splitRow := strings.SplitN(rowText, " ", 2)
 
-		sel.Find("a[target='_blank']").Each(func(j int, aTag *goquery.Selection) {
-			if aTag.HasClass(".sponsor-badge") {
-				link, _ := aTag.Attr("href")
-				placing.SponsorLink = link
-			} else {
-				placing.DisplayName = aTag.Text()
-				link, _ := aTag.Attr("href")
-				placing.UserLink = link
+			placement := splitRow[0]
+			placement = placement[:len(placement)-1]
+
+			intPlace, err = strconv.Atoi(placement)
+			if err != nil {
+				log.Error("Error parsing placement", "err", err)
 			}
+
+			remainder = strings.TrimSpace(splitRow[1])
+		} else {
+			remainder = strings.TrimSpace(s.Text())
+		}
+		splitRemainder := strings.SplitN(remainder, " ", 2)
+		totalScore, err := strconv.Atoi(splitRemainder[0])
+		if err != nil {
+			log.Error("Error parsing score", "err", err)
+		}
+
+		displayName := strings.TrimSpace(splitRemainder[1])
+		userID, _ := s.Attr("data-user-id")
+
+		placings = append(placings, &Placing{
+			Score:       totalScore,
+			UserID:      userID,
+			DisplayName: displayName,
+			Position:    intPlace,
 		})
-
-		if placing.DisplayName == "" {
-			placing.DisplayName = sel.FilterFunction(func(i int, s *goquery.Selection) bool {
-				return goquery.NodeName(s) == "#text"
-			}).Text()
-		}
-
-		if sel.Find(".supporter-badge").Length() > 0 {
-			placing.IsSupporter = true
-		}
-
-		placings = append(placings, placing)
-
 	})
-
 	lb.Positions = placings
 
 	return nil
@@ -137,28 +118,10 @@ func (lb *YearLB) GetContent() string {
 		Border(lipgloss.NormalBorder()).
 		BorderStyle(lipgloss.NewStyle().Foreground(lipgloss.Color("99"))).
 		Headers("Place", "Score", "Display Name").
-		StyleFunc(func(row, col int) lipgloss.Style {
-			switch {
-			case row == 0:
-				return HeaderStyle
-			case row == 1:
-				return FirstPlace
-			case row == 2:
-				return SecondPlace
-			case row == 3:
-				return ThirdPlace
-			default:
-				if col == 2 {
-					return lipgloss.NewStyle().Width(40)
-				} else if col == 0 {
-					return lipgloss.NewStyle().Width(7)
-				}
-				return CellStyle
-			}
-		})
+		StyleFunc(styles.GetLeaderboardStyle)
 
 	for _, p := range lb.Positions {
-		t.Row(p.Position, strconv.Itoa(p.Score), p.DisplayName)
+		t.Row(strconv.Itoa(p.Position), strconv.Itoa(p.Score), p.DisplayName)
 	}
 
 	return t.Render()
@@ -177,19 +140,7 @@ func (l *DayLB) GetTitle() string {
 	return fmt.Sprintf("Leaderboard -- Year: %d, Day: %d", l.Year, l.Day)
 }
 
-// func (l *DayLB) GetID() string                { return strconv.Itoa(l.Year) + strconv.Itoa(l.Day) }
-// func (l *DayLB) GetBucketName() string        { return cache.LEADERBOARDS }
-// func (l *DayLB) MarshalData() ([]byte, error) { return json.Marshal(l) }
-// func (l *DayLB) SaveResource()                { cache.SaveResource(l) }
-
 func NewDayLB(year, day int) *DayLB {
-	// data := cache.LoadResource(cache.LEADERBOARDS, strconv.Itoa(year)+strconv.Itoa(day))
-	// var lb *DayLB
-	// if data != nil {
-	// 	json.Unmarshal(data, &lb)
-	// 	return lb
-	// }
-
 	lb := &DayLB{
 		Year:      year,
 		Day:       day,
@@ -198,11 +149,9 @@ func NewDayLB(year, day int) *DayLB {
 	}
 
 	lb.LoadPositions()
-	// lb.SaveResource()
 
 	return lb
 }
-
 func (lb *DayLB) LoadPositions() error {
 	URL := fmt.Sprintf("https://adventofcode.com/%v/leaderboard/day/%v", lb.Year, lb.Day)
 	resp, err := api.NewGetReq(URL, "")
@@ -218,46 +167,53 @@ func (lb *DayLB) LoadPositions() error {
 	}
 
 	placings := make([]*Placing, 0, 100)
+
 	firstPass := true
+	var intPlace int
 
-	bodyDoc.Find("div.leaderboard-entry").Each(func(i int, sel *goquery.Selection) {
-		placing := &Placing{}
+	bodyDoc.Find("div.leaderboard-entry").Each(func(i int, s *goquery.Selection) {
+		rowText := s.Text()
+		var remainder string
 
-		placing.Position = sel.Find(".leaderboard-position").Text()
-		if placing.Position == "1)" {
+		if len(rowText) > 4 && rowText[3] == ')' {
+			rowText = strings.TrimSpace(s.Text())
+			splitRow := strings.SplitN(rowText, " ", 2)
+
+			placement := splitRow[0]
+			placement = placement[:len(placement)-1] // This trims the lingering parenthesis
+
+			intPlace, err = strconv.Atoi(placement)
+			if err != nil {
+				log.Error("Error parsing placement", "err", err)
+				return
+			}
+
+			remainder = strings.TrimSpace(splitRow[1])
+		} else {
+			remainder = strings.TrimSpace(s.Text())
+		}
+
+		splitRemainder := strings.SplitN(remainder, "  ", 3)
+		finishTime := splitRemainder[0] + " " + splitRemainder[1]
+
+		displayName := strings.TrimSpace(splitRemainder[2])
+		userID, _ := s.Attr("data-user-id")
+
+		if intPlace == 1 {
 			if firstPass {
 				firstPass = false
 			} else {
 				lb.BothStars = placings
-				placings = make([]*Placing, 0, 100)
+				placings = make([]*Placing, 0)
 			}
 		}
 
-		placing.FinishTime = sel.Find(".leaderboard-time").Text()
-
-		sel.Find("a[target='_blank']").Each(func(j int, aTag *goquery.Selection) {
-			if aTag.HasClass(".sponsor-badge") {
-				link, _ := aTag.Attr("href")
-				placing.SponsorLink = link
-			} else {
-				placing.DisplayName = aTag.Text()
-				link, _ := aTag.Attr("href")
-				placing.UserLink = link
-			}
+		placings = append(placings, &Placing{
+			FinishTime:  finishTime,
+			UserID:      userID,
+			DisplayName: displayName,
+			Position:    intPlace,
 		})
-
-		if placing.DisplayName == "" {
-			placing.DisplayName = sel.FilterFunction(func(i int, s *goquery.Selection) bool {
-				return goquery.NodeName(s) == "#text"
-			}).Text()
-		}
-
-		if sel.Find(".supporter-badge").Length() > 0 {
-			placing.IsSupporter = true
-		}
-
-		placings = append(placings, placing)
-
 	})
 
 	lb.FirstStar = placings
@@ -266,49 +222,35 @@ func (lb *DayLB) LoadPositions() error {
 }
 
 func (lb *DayLB) GetContent() string {
-	t := table.New().
+	tOne := table.New().
 		Border(lipgloss.NormalBorder()).
 		BorderStyle(lipgloss.NewStyle().Foreground(lipgloss.Color("99"))).
-		Headers("Place", "Time Finished (EST)", "Display Name").
-		StyleFunc(func(row, col int) lipgloss.Style {
-			switch {
-			case row == 0:
-				return HeaderStyle
-			case row == 1:
-				return FirstPlace
-			case row == 2:
-				return SecondPlace
-			case row == 3:
-				return ThirdPlace
-			default:
-				if col == 2 {
-					return lipgloss.NewStyle().Width(40)
-				} else if col == 0 {
-					return lipgloss.NewStyle().Width(7)
-				}
-				return CellStyle
-			}
-		})
+		Headers("Place", "Time Done (EST)", "Display Name").
+		StyleFunc(styles.GetLeaderboardStyle)
 
 	for _, p := range lb.BothStars {
-		pos := p.Position
+		pos := strconv.Itoa(p.Position)
 		ft := p.FinishTime
 		name := p.DisplayName
-		t.Row(pos, ft, name)
+		tOne.Row(pos, ft, name)
 	}
 
-	sOut := "First People to Obtain Both Stars\n" + t.Render()
+	sOut := "First People to Obtain Both Stars\n" + tOne.Render()
 
-	t.ClearRows()
+	tTwo := table.New().
+		Border(lipgloss.NormalBorder()).
+		BorderStyle(lipgloss.NewStyle().Foreground(lipgloss.Color("99"))).
+		Headers("Place", "Time Done (EST)", "Display Name").
+		StyleFunc(styles.GetLeaderboardStyle)
 
 	for _, p := range lb.FirstStar {
-		pos := p.Position
+		pos := strconv.Itoa(p.Position)
 		ft := p.FinishTime
 		name := p.DisplayName
-		t.Row(pos, ft, name)
+		tTwo.Row(pos, ft, name)
 	}
 
-	sOut += "First People to Obtain The First Star\n" + t.Render()
+	sOut += "\nFirst People to Obtain The First Star\n" + tTwo.Render()
 
 	return sOut
 }
