@@ -10,16 +10,13 @@ import (
 	"dalton.dog/aocgo/internal/cache"
 	"dalton.dog/aocgo/internal/resources"
 	"dalton.dog/aocgo/internal/session"
+	"dalton.dog/aocgo/internal/styles"
 	"dalton.dog/aocgo/internal/utils"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/charmbracelet/log"
 )
 
 // TODO: `run` - Will benchmark and run files in current and subdirectory
-
-var helpBodyStyle = lipgloss.NewStyle().Width(70)
-var helpTitleStyle = lipgloss.NewStyle().Width(70)
-var testStyle = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("#FF0000"))
 
 var User *resources.User
 
@@ -75,16 +72,24 @@ func main() {
 
 	args := os.Args
 	if len(args) == 1 {
-		fmt.Println(helpBodyStyle.Render("Welcome to aocli! Try running `aocli help` for a list of available commands."))
+		fmt.Println(styles.HelpTextStyle.Render("Welcome to aocli! Try running `aocli help` for a list of available commands."))
 		os.Exit(0)
 	}
 
+	log.Debug("Args parsed", "args", args[1:])
+
+	// User agnostic commands
 	if args[1] == "health" {
 		health()
 		return
 	} else if args[1] == "help" {
 		help(args)
 		return
+	} else if args[1] == "update" {
+		update()
+		return
+	} else if args[1] == "leaderboard" {
+		leaderboard(args)
 	}
 
 	log.Debug("Trying to create user")
@@ -99,20 +104,17 @@ func main() {
 	defer cache.ShutdownDBM()
 	log.Debug("Database started")
 
-	log.Debug("Args parsed", "args", args[1:])
-
+	// User dependent functions. I recognize that I used if/else above and switch statement here, oh well
 	switch args[1] {
 	case "check-update":
 		update := checkForUpdate()
 		if update {
-			fmt.Printf("New version available! Run `aocli update` to get the new version.")
+			fmt.Printf("New version available! Run `sudo aocli update` to get the new version.")
 		}
 	case "get":
 		get(args, user)
 	case "submit":
 		submit(args, user)
-	case "leaderboard":
-		leaderboard(args)
 	// case "load-user":
 	//	 loadUser(args, user)
 	case "reload":
@@ -125,8 +127,6 @@ func main() {
 	// 	test(user)
 	case "clear-user":
 		clearUser(user)
-	case "update":
-		update()
 	default:
 		fmt.Println("Not a valid command! Run `aocli help` to see valid commands.")
 	}
@@ -148,7 +148,7 @@ func help(args []string) {
 
 	// Too many args
 	if len(args) > 3 {
-		fmt.Println(helpBodyStyle.Render("Too many arguments passed!"))
+		fmt.Println(styles.HelpTextStyle.Render("Too many arguments passed!"))
 		return
 	}
 
@@ -159,7 +159,7 @@ func help(args []string) {
 		if ok {
 			helptext.Print()
 		} else {
-			fmt.Println(helpBodyStyle.Render("Not a valid command!"))
+			fmt.Println(styles.HelpTextStyle.Render("Not a valid command!"))
 		}
 		return
 	}

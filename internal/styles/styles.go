@@ -36,6 +36,8 @@ var (
 	starStyle = lipgloss.NewStyle().Foreground(starColor)
 	linkStyle = lipgloss.NewStyle().Foreground(linkColor).Underline(true)
 	codeStyle = lipgloss.NewStyle().Foreground(codeColor).Bold(true)
+
+	HelpTextStyle = lipgloss.NewStyle().MaxWidth(70)
 )
 
 func GetLeaderboardStyle(row, col int) lipgloss.Style {
