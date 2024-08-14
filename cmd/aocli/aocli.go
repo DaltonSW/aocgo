@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"os"
 	"runtime/pprof"
-	"strconv"
 	"time"
 
 	"dalton.dog/aocgo/internal/cache"
@@ -124,6 +123,8 @@ func main() {
 		view(args, user)
 	case "test":
 		test(user)
+	case "testTwo":
+		testTwo()
 	case "clear-user":
 		clearUser(user)
 	case "update":
@@ -230,26 +231,21 @@ func get(args []string, user *resources.User) {
 
 // `leaderboard [year] [day]` command
 func leaderboard(args []string) {
-	if len(args) != 3 {
-		log.Error("Only works with yearly leaderboards for right now. Run `aocli help leaderboard`")
-		return
+	year, _ := utils.ParseYear(args[2])
+	var lb resources.ViewableLB
+	if len(args) == 4 {
+		day, _ := utils.ParseDay(args[3])
+		lb = resources.NewDayLB(year, day)
+	} else {
+		lb = resources.NewYearLB(year)
 	}
-
-	// Ensure that the API is initialized. We don't actually need the user
-	year, _ := strconv.Atoi(args[2])
-	var day int
-	// if len(args) == 4 {
-	// 	day, _ = strconv.Atoi(args[3])
-	// }
-
-	lb := resources.NewLeaderboard(year, day)
 
 	if lb == nil {
 		log.Fatal("Unable to load/create leaderboard!")
 		return
 	}
 
-	lb.Display()
+	resources.NewLeaderboardViewport(lb.GetContent(), lb.GetTitle())
 }
 
 func loadUser(args []string, user *resources.User) {
@@ -417,6 +413,11 @@ func health() {
 // Command:	`test`
 // Desc:	Does whatever I need to test at the time :)
 func test(user *resources.User) {
-	puzzle := resources.LoadOrCreatePuzzle(2023, 1, user.GetToken())
-	puzzle.Display()
+	lb := resources.NewDayLB(2016, 1)
+	resources.NewLeaderboardViewport(lb.GetContent(), lb.GetTitle())
+}
+
+func testTwo() {
+	lb := resources.NewYearLB(2016)
+	resources.NewLeaderboardViewport(lb.GetContent(), lb.GetTitle())
 }

@@ -18,10 +18,15 @@ type LeaderboardModel struct {
 	title    string
 }
 
-func NewLeaderboardViewport(lb *Leaderboard) {
+type ViewableLB interface {
+	GetTitle() string
+	GetContent() string
+}
+
+func NewLeaderboardViewport(content, title string) {
 	m := LeaderboardModel{
-		content: lb.table.Render(),
-		title:   fmt.Sprintf("%v -- Leaderboard", lb.year),
+		content: content,
+		title:   title,
 	}
 
 	p := tea.NewProgram(m, tea.WithAltScreen(), tea.WithMouseCellMotion())
