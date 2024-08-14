@@ -2,26 +2,20 @@ package styles
 
 import "github.com/charmbracelet/lipgloss"
 
-// completeColor = lipgloss.CompleteAdaptiveColor{
-// 	Light: lipgloss.CompleteColor{TrueColor: "", ANSI256: "", ANSI: ""},
-// 	Dark:  lipgloss.CompleteColor{TrueColor: "", ANSI256: "", ANSI: ""},
-// },
-
-// TODO: Fix up the colors. The leaderboard ones don't look very good. Not sure they're using TrueColor?
-
+// TODO: Actually differentiate between light and dark. I just don't wanna delve into this right now
 var (
 	// Colors
-	goldColor   = lipgloss.CompleteColor{TrueColor: "#D4AF37", ANSI256: "178", ANSI: "11"}
-	silverColor = lipgloss.CompleteColor{TrueColor: "#C0C0C0", ANSI256: "145", ANSI: "7"}
-	bronzeColor = lipgloss.CompleteColor{TrueColor: "#CD7F32", ANSI256: "94", ANSI: "3"}
+	goldColor   = lipgloss.AdaptiveColor{Light: "#D4AF37", Dark: "#D4AF37"}
+	silverColor = lipgloss.AdaptiveColor{Light: "#C0C0C0", Dark: "#C0C0C0"}
+	bronzeColor = lipgloss.AdaptiveColor{Light: "#CD7F32", Dark: "#CD7F32"}
 
-	lbBorderColor  = lipgloss.CompleteColor{TrueColor: "#8787FF", ANSI256: "99", ANSI: "13"}
-	viewTitleColor = lipgloss.CompleteColor{TrueColor: "#FFFF00", ANSI256: "184", ANSI: "11"}
+	lbBorderColor  = lipgloss.AdaptiveColor{Light: "#8787FF", Dark: "#8787FF"}
+	viewTitleColor = lipgloss.AdaptiveColor{Light: "#FFFF00", Dark: "#FFFF00"}
 
-	italColor = lipgloss.CompleteColor{TrueColor: "#FF3374", ANSI256: "197", ANSI: "13"}
-	starColor = lipgloss.CompleteColor{TrueColor: "#F1FA8C", ANSI256: "228", ANSI: "11"}
-	linkColor = lipgloss.CompleteColor{TrueColor: "#8BE9FD", ANSI256: "117", ANSI: "14"}
-	codeColor = lipgloss.CompleteColor{TrueColor: "#FAC3D5", ANSI256: "102", ANSI: "7"}
+	italColor = lipgloss.AdaptiveColor{Light: "#FF3374", Dark: "#FF3374"}
+	starColor = lipgloss.AdaptiveColor{Light: "#F1FA8C", Dark: "#F1FA8C"}
+	linkColor = lipgloss.AdaptiveColor{Light: "#8BE9FD", Dark: "#8BE9FD"}
+	codeColor = lipgloss.AdaptiveColor{Light: "#FAC3D5", Dark: "#FAC3D5"}
 )
 
 var (
