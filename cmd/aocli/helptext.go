@@ -6,6 +6,10 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
+// TODO: Move styles to 'styles' package
+
+// TODO: Make sure documentation here is accurate as of v1.0
+
 var NameStyle = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("#FF0000"))
 var UseStyle = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("#00FFFF"))
 var DescStyle = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("#FFFF00"))

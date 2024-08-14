@@ -113,18 +113,16 @@ func main() {
 		submit(args, user)
 	case "leaderboard":
 		leaderboard(args)
-	case "load-user":
-		loadUser(args, user)
+	// case "load-user":
+	//	 loadUser(args, user)
 	case "reload":
 		reload(args, user)
 	// case "run":
 	// 	run(args)
 	case "view":
 		view(args, user)
-	case "test":
-		test(user)
-	case "testTwo":
-		testTwo()
+	// case "test":
+	// 	test(user)
 	case "clear-user":
 		clearUser(user)
 	case "update":
@@ -227,11 +225,19 @@ func get(args []string, user *resources.User) {
 	return
 }
 
-// TODO: Handle days as well
-
-// `leaderboard [year] [day]` command
+// `leaderboard year [day]` command
+// Desc: Gets leaderboard information for a specific year or day
+// Params:
+//
+//	year  - 2 or 4 digit year (16 or 2016)
+//	[day] - 1 or 2 digit day (1, 01, 21)
 func leaderboard(args []string) {
-	year, _ := utils.ParseYear(args[2])
+	// TODO: Validation and help message
+	year, err := utils.ParseYear(args[2])
+	if err != nil {
+		log.Fatal("Error parsing year!", "err", err)
+	}
+
 	var lb resources.ViewableLB
 	if len(args) == 4 {
 		day, _ := utils.ParseDay(args[3])
@@ -309,6 +315,8 @@ func loadUser(args []string, user *resources.User) {
 	}
 }
 
+// TODO: Document
+
 // `submit [answer] -y <yyyy> -d <dd>` command
 func submit(args []string, user *resources.User) {
 	year, day, err := utils.GetYearAndDayFromCWD()
@@ -322,6 +330,7 @@ func submit(args []string, user *resources.User) {
 
 	answerResp, message := puzzle.SubmitAnswer(answer)
 
+	// TODO: Move these styles to the 'styles' package
 	if answerResp == resources.CorrectAnswer {
 		correctStyle := lipgloss.NewStyle().Background(lipgloss.Color("34"))
 		fmt.Println(correctStyle.Render("Correct answer!"))
@@ -338,6 +347,7 @@ func submit(args []string, user *resources.User) {
 	}
 }
 
+// TODO: Document
 func reload(args []string, user *resources.User) {
 	var year int
 	var day int
@@ -365,6 +375,7 @@ func reload(args []string, user *resources.User) {
 	puzzle.ReloadPuzzleData()
 }
 
+// TODO: Implement
 func run(args []string) {
 
 }
@@ -379,24 +390,22 @@ func view(args []string, user *resources.User) {
 	if len(args) < 4 {
 		year, day, err = utils.GetYearAndDayFromCWD()
 		if err != nil {
-			log.Fatal("Unable to parse year/day from current directory.")
+			log.Fatal("Unable to parse year/day from current directory.", "err", err)
 		}
 	} else {
 		year, err = utils.ParseYear(args[2])
 		if err != nil {
-			log.Fatal("Unable to parse year from current directory.")
+			log.Fatal("Unable to parse year from current directory.", "err", err)
 		}
 
 		day, err = utils.ParseDay(args[3])
 		if err != nil {
-			log.Fatal("Unable to parse day from current directory.")
+			log.Fatal("Unable to parse day from current directory.", "err", err)
 		}
 	}
 
 	puzzle := resources.LoadOrCreatePuzzle(year, day, user.GetToken())
-	// userInput, _ := puzzle.GetUserInput()
 	puzzle.Display()
-	// tui.NewPuzzleViewport(puzzle.GetPrettyPageData(), puzzle.Title, puzzle.URL, userInput)
 }
 
 // `health` command
@@ -412,12 +421,7 @@ func health() {
 
 // Command:	`test`
 // Desc:	Does whatever I need to test at the time :)
-func test(user *resources.User) {
-	lb := resources.NewDayLB(2016, 1)
-	resources.NewLeaderboardViewport(lb.GetContent(), lb.GetTitle())
-}
-
-func testTwo() {
-	lb := resources.NewYearLB(2016)
-	resources.NewLeaderboardViewport(lb.GetContent(), lb.GetTitle())
-}
+// func test(user *resources.User) {
+// 	lb := resources.NewDayLB(2016, 1)
+// 	resources.NewLeaderboardViewport(lb.GetContent(), lb.GetTitle())
+// }
