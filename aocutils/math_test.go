@@ -1,6 +1,7 @@
 package aocutils
 
 import (
+	"math"
 	"reflect"
 	"testing"
 )
@@ -76,5 +77,77 @@ func TestAverageListOfNums(t *testing.T) {
 				}
 			}
 		})
+	}
+}
+
+func TestDistance2D(t *testing.T) {
+	tests := []struct {
+		x1, y1, x2, y2 int
+		expected       float64
+	}{
+		{0, 0, 3, 4, 5},
+		{1, 1, 4, 5, 5},
+		{-1, -1, -4, -5, 5},
+	}
+
+	for _, test := range tests {
+		result := Distance2D(test.x1, test.y1, test.x2, test.y2)
+		if math.Abs(result-test.expected) > 1e-9 {
+			t.Errorf("Distance2D(%d, %d, %d, %d) = %f; expected %f", test.x1, test.y1, test.x2, test.y2, result, test.expected)
+		}
+	}
+}
+
+func TestDistance3D(t *testing.T) {
+	tests := []struct {
+		x1, y1, z1, x2, y2, z2 int
+		expected               float64
+	}{
+		{0, 0, 0, 1, 1, 1, math.Sqrt(3)},
+		{1, 1, 1, 4, 5, 6, math.Sqrt(50)},
+		{-1, -1, -1, -4, -5, -6, math.Sqrt(50)},
+	}
+
+	for _, test := range tests {
+		result := Distance3D(test.x1, test.y1, test.z1, test.x2, test.y2, test.z2)
+		if math.Abs(result-test.expected) > 1e-9 {
+			t.Errorf("Distance3D(%d, %d, %d, %d, %d, %d) = %f; expected %f", test.x1, test.y1, test.z1, test.x2, test.y2, test.z2, result, test.expected)
+		}
+	}
+}
+
+func TestManhattanDistance2D(t *testing.T) {
+	tests := []struct {
+		x1, y1, x2, y2 int
+		expected       int
+	}{
+		{0, 0, 3, 4, 7},
+		{1, 1, 4, 5, 7},
+		{-1, -1, -4, -5, 7},
+	}
+
+	for _, test := range tests {
+		result := ManhattanDistance2D(test.x1, test.y1, test.x2, test.y2)
+		if result != test.expected {
+			t.Errorf("ManhattanDistance2D(%d, %d, %d, %d) = %d; expected %d", test.x1, test.y1, test.x2, test.y2, result, test.expected)
+		}
+	}
+}
+
+func TestManhattanDistance3D(t *testing.T) {
+	tests := []struct {
+		x1, y1, z1, x2, y2, z2 int
+		expected               int
+	}{
+		{0, 0, 0, 1, 1, 1, 3},
+		{1, 1, 1, 4, 5, 6, 12},
+		{-1, -1, -1, -4, -5, -6, 12},
+	}
+
+	for _, test := range tests {
+		result := ManhattanDistance3D(test.x1, test.y1, test.z1, test.x2, test.y2, test.z2)
+		if result != test.expected {
+			t.Errorf("ManhattanDistance3D(%d, %d, %d, %d, %d, %d) = %d; expected %d", test.x1, test.y1, test.z1, test.x2, test.y2, test.z2, result, test.expected)
+		}
 	}
 }

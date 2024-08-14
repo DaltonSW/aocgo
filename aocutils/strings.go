@@ -18,3 +18,24 @@ func ExtractIntsFromString(input string) []int {
 
 	return numbers
 }
+
+// FindSubstringsOfLength takes a string and a desired length, and returns all unique substrings of that length.
+// Returns a slice of substrings.
+func FindSubstringsOfLength(s string, length int) []string {
+	if length <= 0 || length > len(s) {
+		return []string{}
+	}
+
+	substrings := make(map[string]bool)
+	for i := 0; i <= len(s)-length; i++ {
+		substr := s[i : i+length]
+		substrings[substr] = true
+	}
+
+	uniqueSubstrings := make([]string, 0, len(substrings))
+	for substr := range substrings {
+		uniqueSubstrings = append(uniqueSubstrings, substr)
+	}
+
+	return uniqueSubstrings
+}

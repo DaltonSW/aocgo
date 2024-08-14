@@ -1,6 +1,7 @@
 package aocutils
 
 import (
+	"reflect"
 	"testing"
 )
 
@@ -56,5 +57,26 @@ func TestExtractIntsFromString(t *testing.T) {
 				}
 			}
 		})
+	}
+}
+
+func TestFindSubstringsOfLength(t *testing.T) {
+	tests := []struct {
+		input    string
+		length   int
+		expected []string
+	}{
+		{"abcdef", 3, []string{"abc", "bcd", "cde", "def"}},
+		{"aaaaa", 2, []string{"aa"}},
+		{"hello", 4, []string{"hell", "ello"}},
+		{"abcdef", 7, []string{}},
+		{"abcdef", 0, []string{}},
+	}
+
+	for _, test := range tests {
+		result := FindSubstringsOfLength(test.input, test.length)
+		if !reflect.DeepEqual(result, test.expected) {
+			t.Errorf("FindSubstringsOfLength(%q, %d) = %v; expected %v", test.input, test.length, result, test.expected)
+		}
 	}
 }

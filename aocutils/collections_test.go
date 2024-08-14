@@ -159,3 +159,95 @@ func TestNthElements(t *testing.T) {
 		})
 	}
 }
+
+func TestNumOccurrences(t *testing.T) {
+	tests := []struct {
+		input    []int
+		target   int
+		expected int
+	}{
+		{[]int{1, 2, 3, 4, 2, 1, 2}, 2, 3},
+		{[]int{1, 1, 1, 1}, 1, 4},
+		{[]int{5, 6, 7, 8}, 9, 0},
+	}
+
+	for _, test := range tests {
+		result := NumOccurrences(test.input, test.target)
+		if result != test.expected {
+			t.Errorf("NumOccurrences(%v, %d) = %d; expected %d", test.input, test.target, result, test.expected)
+		}
+	}
+}
+
+func TestTransposeMatrix(t *testing.T) {
+	tests := []struct {
+		input    [][]int
+		expected [][]int
+	}{
+		{
+			[][]int{
+				{1, 2, 3},
+				{4, 5, 6},
+				{7, 8, 9},
+			},
+			[][]int{
+				{1, 4, 7},
+				{2, 5, 8},
+				{3, 6, 9},
+			},
+		},
+		{
+			[][]int{
+				{1, 2},
+				{3, 4},
+			},
+			[][]int{
+				{1, 3},
+				{2, 4},
+			},
+		},
+	}
+
+	for _, test := range tests {
+		result := TransposeMatrix(test.input)
+		if !reflect.DeepEqual(result, test.expected) {
+			t.Errorf("TransposeMatrix(%v) = %v; expected %v", test.input, result, test.expected)
+		}
+	}
+}
+
+func TestRemoveDuplicates(t *testing.T) {
+	tests := []struct {
+		input    []int
+		expected []int
+	}{
+		{[]int{1, 2, 3, 4, 2, 1, 2}, []int{1, 2, 3, 4}},
+		{[]int{5, 5, 5, 5}, []int{5}},
+		{[]int{1, 2, 3, 4}, []int{1, 2, 3, 4}},
+	}
+
+	for _, test := range tests {
+		result := RemoveDuplicates(test.input)
+		if !reflect.DeepEqual(result, test.expected) {
+			t.Errorf("RemoveDuplicates(%v) = %v; expected %v", test.input, result, test.expected)
+		}
+	}
+}
+
+func TestReverseSlice(t *testing.T) {
+	tests := []struct {
+		input    []int
+		expected []int
+	}{
+		{[]int{1, 2, 3, 4}, []int{4, 3, 2, 1}},
+		{[]int{5, 6, 7, 8}, []int{8, 7, 6, 5}},
+		{[]int{9}, []int{9}},
+	}
+
+	for _, test := range tests {
+		result := ReverseSlice(test.input)
+		if !reflect.DeepEqual(result, test.expected) {
+			t.Errorf("ReverseSlice(%v) = %v; expected %v", test.input, result, test.expected)
+		}
+	}
+}
