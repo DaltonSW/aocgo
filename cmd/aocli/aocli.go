@@ -40,21 +40,11 @@ func main() {
 		log.SetTimeFormat(time.StampMicro)
 	} else {
 		logStyles := log.DefaultStyles()
-		logStyles.Levels[log.FatalLevel] = lipgloss.NewStyle().
-			SetString("FATAL").
-			Padding(0, 1).
-			Background(lipgloss.Color("#af5fd7")).
-			Foreground(lipgloss.Color("0"))
-		logStyles.Levels[log.ErrorLevel] = lipgloss.NewStyle().
-			SetString("ERROR").
-			Padding(0, 1).
-			Background(lipgloss.Color("204")).
-			Foreground(lipgloss.Color("0"))
-		logStyles.Levels[log.ErrorLevel] = lipgloss.NewStyle().
-			SetString("INFO").
-			Padding(0, 1).
-			Background(lipgloss.Color("#42ccd4")).
-			Foreground(lipgloss.Color("0"))
+
+		logStyles.Levels[log.FatalLevel] = styles.LoggerFatalStyle
+		logStyles.Levels[log.ErrorLevel] = styles.LoggerErrorStyle
+		logStyles.Levels[log.InfoLevel] = styles.LoggerInfoStyle
+
 		log.SetTimeFormat(time.Kitchen)
 		log.SetStyles(logStyles)
 	}
@@ -86,7 +76,7 @@ func main() {
 		help(args)
 		return
 	} else if args[1] == "update" {
-		update()
+		Update()
 		return
 	} else if args[1] == "leaderboard" {
 		leaderboard(args)
@@ -107,9 +97,9 @@ func main() {
 	// User dependent functions. I recognize that I used if/else above and switch statement here, oh well
 	switch args[1] {
 	case "check-update":
-		update := checkForUpdate()
+		update := CheckForUpdate()
 		if update {
-			fmt.Printf("New version available! Run `sudo aocli update` to get the new version.")
+			fmt.Printf("New version available! Run `aocli update` to get the new version (or `sudo aocli update` if your executable is in a protected location)")
 		}
 	case "get":
 		get(args, user)

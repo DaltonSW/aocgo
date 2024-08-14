@@ -1,6 +1,12 @@
 package styles
 
-import "github.com/charmbracelet/lipgloss"
+import (
+	"os"
+	"time"
+
+	"github.com/charmbracelet/lipgloss"
+	"github.com/charmbracelet/log"
+)
 
 // TODO: Actually differentiate between light and dark. I just don't wanna delve into this right now
 var (
@@ -38,7 +44,41 @@ var (
 	codeStyle = lipgloss.NewStyle().Foreground(codeColor).Bold(true)
 
 	HelpTextStyle = lipgloss.NewStyle().MaxWidth(70)
+
+	LoggerFatalStyle = lipgloss.NewStyle().
+				SetString("FATAL").
+				Padding(0, 1).
+				Foreground(lipgloss.Color("0")).
+				Background(lipgloss.Color("#FF5F5F"))
+
+	LoggerInfoStyle = lipgloss.NewStyle().
+			SetString("INFO").
+			Padding(0, 1).
+			Foreground(lipgloss.Color("0")).
+			Background(lipgloss.Color("#5FFFD7"))
+
+	LoggerErrorStyle = lipgloss.NewStyle().
+				SetString("ERROR").
+				Padding(0, 1).
+				Background(lipgloss.Color("204")).
+				Foreground(lipgloss.Color("0"))
 )
+
+func GetStdoutLogger() *log.Logger {
+	logger := log.New(os.Stdout)
+
+	logger.SetReportTimestamp(true)
+	logger.SetTimeFormat(time.Stamp)
+
+	logStyles := log.DefaultStyles()
+
+	logStyles.Levels[log.FatalLevel] = LoggerFatalStyle
+	logStyles.Levels[log.ErrorLevel] = LoggerErrorStyle
+	logStyles.Levels[log.InfoLevel] = LoggerInfoStyle
+	logger.SetStyles(logStyles)
+
+	return logger
+}
 
 func GetLeaderboardStyle(row, col int) lipgloss.Style {
 	if row == 0 {

@@ -9,6 +9,7 @@ import (
 	"runtime"
 	"strings"
 
+	"dalton.dog/aocgo/internal/styles"
 	"github.com/charmbracelet/log"
 	"golang.org/x/mod/semver"
 )
@@ -25,10 +26,12 @@ type githubRelease struct {
 	} `json:"assets"`
 }
 
-func checkForUpdate() bool {
+// CheckForUpdate will get the latest release and compare the program versions.
+// Associated command: `check-update`
+func CheckForUpdate() bool {
 	latestVersion, err := getLatestRelease()
 	if err != nil {
-		log.Error("Error checking for updates!", "error", err)
+		log.Fatal("Error checking for updates!", "error", err)
 	}
 
 	if !strings.Contains(latestVersion.TagName, "aocli-") {
@@ -65,11 +68,16 @@ func getLatestRelease() (*githubRelease, error) {
 	return &release, nil
 }
 
-// Performs the update. Downloads the file and replaces the executable in place
-func update() {
+// Update downloads the newest version of aocli and replaces the executable in place
+// Associated command: `update`
+func Update() {
+	logger := styles.GetUpdateLogger()
+
+	logger.Info("Querying for latest release")
+
 	release, err := getLatestRelease()
 	if err != nil {
-		log.Error("Error checking for updates.", "error", err)
+		logger.Fatal("Error checking for updates.", "error", err)
 	}
 
 	var assetURL string
@@ -82,44 +90,49 @@ func update() {
 	}
 
 	if assetURL == "" {
-		log.Error("Error obtaining a valid download URL.", "error", err)
+		logger.Fatal("Error obtaining a valid download URL.", "error", err)
 	}
+
+	logger.Info("Attempting to download latest asset")
 
 	resp, err := http.Get(assetURL)
 	if err != nil {
-		log.Error("Error downloading the new version.", "error", err)
+		logger.Fatal("Error downloading the new version.", "error", err)
 	}
 	defer resp.Body.Close()
 
+	logger.Info("Successfully downloaded")
+
 	curExec, err := os.Executable()
 	if err != nil {
-		log.Error("Error obtaining current executable info.", "error", err)
+		logger.Fatal("Error obtaining current executable info.", "error", err)
 	}
 
 	tmpFile, err := os.CreateTemp("", "aocli-update-")
 	if err != nil {
-		log.Error("Error creating temp file.", "error", err)
+		logger.Fatal("Error creating temp file.", "error", err)
 	}
 	defer os.Remove(tmpFile.Name())
 
+	logger.Info("Writing downloaded content to temp file")
+
 	// Write the downloaded content to the temporary file
 	if _, err := io.Copy(tmpFile, resp.Body); err != nil {
-		fmt.Println("Error writing to temporary file:", err)
+		logger.Fatal("Error writing to temporary file:", err)
 		return
 	}
 
 	// Close the file to flush the content
 	if err := tmpFile.Close(); err != nil {
-		fmt.Println("Error closing temporary file:", err)
+		logger.Fatal("Error closing temporary file:", err)
 		return
 	}
 
 	// Replace the current executable with the new one
 	if err := os.Rename(tmpFile.Name(), curExec); err != nil {
-		fmt.Println("Error replacing the executable:", err)
+		logger.Fatal("Error replacing the executable, maybe try sudo: ", err)
 		return
 	}
 
-	fmt.Println("Updated successfully to version", release.TagName)
-
+	logger.Infof("Updated successfully to version %v", release.TagName)
 }
