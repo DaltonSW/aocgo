@@ -2,6 +2,7 @@ package aocutils
 
 import (
 	"reflect"
+	"slices"
 	"testing"
 )
 
@@ -75,6 +76,8 @@ func TestFindSubstringsOfLength(t *testing.T) {
 
 	for _, test := range tests {
 		result := FindSubstringsOfLength(test.input, test.length)
+		slices.Sort(result)
+		slices.Sort(test.expected)
 		if !reflect.DeepEqual(result, test.expected) {
 			t.Errorf("FindSubstringsOfLength(%q, %d) = %v; expected %v", test.input, test.length, result, test.expected)
 		}
