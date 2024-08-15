@@ -15,7 +15,7 @@ import (
 )
 
 // Internally tracked version to compare against GitHub releases
-const currentVersion = "v0.9.3"
+const currentVersion = "v0.9.4"
 const repoURL = "https://api.github.com/repos/DaltonSW/aocGo/releases/latest"
 
 type githubRelease struct {
@@ -71,7 +71,7 @@ func getLatestRelease() (*githubRelease, error) {
 // Update downloads the newest version of aocli and replaces the executable in place
 // Associated command: `update`
 func Update() {
-	logger := styles.GetUpdateLogger()
+	logger := styles.GetStdoutLogger()
 
 	logger.Info("Querying for latest release")
 

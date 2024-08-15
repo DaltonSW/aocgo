@@ -73,13 +73,13 @@ func main() {
 		health()
 		return
 	} else if args[1] == "help" {
-		help(args)
+		Help(args)
 		return
 	} else if args[1] == "update" {
 		Update()
 		return
 	} else if args[1] == "leaderboard" {
-		leaderboard(args)
+		Leaderboard(args)
 	}
 
 	log.Debug("Trying to create user")
@@ -102,13 +102,13 @@ func main() {
 			fmt.Printf("New version available! Run `aocli update` to get the new version (or `sudo aocli update` if your executable is in a protected location)")
 		}
 	case "get":
-		get(args, user)
+		Get(args, user)
 	case "submit":
 		submit(args, user)
 	// case "load-user":
 	//	 loadUser(args, user)
 	case "reload":
-		reload(args, user)
+		Reload(args, user)
 	// case "run":
 	// 	run(args)
 	case "view":
@@ -127,12 +127,12 @@ func clearUser(user *resources.User) {
 	cache.ClearUserDatabase(user.SessionTok)
 }
 
-// `help [command]` command
-// Desc: Prints info and a list of commands
+// Help prints info and a list of commands
+// Associated command: `help`
 // Params:
 //
-//	[command] - command name to print help for
-func help(args []string) {
+//	[command] - command name to print Help for
+func Help(args []string) {
 	// Clear terminal
 	fmt.Print("\033[H\033[2J")
 
@@ -175,13 +175,13 @@ func help(args []string) {
 
 }
 
-// `get [year] [day]` command
-// Desc: Gets input data for a specific day, outputting it to the current directory as `input.txt`
+// Get obtains input data for a specific day, outputting it to the current directory as `input.txt`
+// Command: `get [year] [day]`
 // Params:
 //
 //	[year] - 2 or 4 digit year (16 or 2016)
 //	[day]  - 1 or 2 digit day (1, 01, 21)
-func get(args []string, user *resources.User) {
+func Get(args []string, user *resources.User) {
 	var year int
 	var day int
 	var err error
@@ -215,13 +215,13 @@ func get(args []string, user *resources.User) {
 	return
 }
 
-// `leaderboard year [day]` command
-// Desc: Gets leaderboard information for a specific year or day
+// Leaderboard obtains and displays Leaderboard information for a specific year or day
+// Command: `Leaderboard year [day]`
 // Params:
 //
 //	year  - 2 or 4 digit year (16 or 2016)
 //	[day] - 1 or 2 digit day (1, 01, 21)
-func leaderboard(args []string) {
+func Leaderboard(args []string) {
 	// TODO: Validation and help message
 	year, err := utils.ParseYear(args[2])
 	if err != nil {
@@ -337,8 +337,13 @@ func submit(args []string, user *resources.User) {
 	}
 }
 
-// TODO: Document
-func reload(args []string, user *resources.User) {
+// Reload will force reload the puzzle data for a specific day
+// Command: `reload [year] [day]`
+// Params:
+//
+//	[year] - 2 or 4 digit year (16 or 2016)
+//	[day]  - 1 or 2 digit day (1, 01, 21)
+func Reload(args []string, user *resources.User) {
 	var year int
 	var day int
 	var err error
