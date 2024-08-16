@@ -4,6 +4,7 @@ package aocgo
 import (
 	"strings"
 
+	"dalton.dog/aocgo/internal/cache"
 	"dalton.dog/aocgo/internal/resources"
 	"dalton.dog/aocgo/internal/session"
 	"dalton.dog/aocgo/internal/utils"
@@ -35,6 +36,17 @@ func getData(year int, day int) []byte {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	_, err = resources.NewUser(userToken)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	err = cache.StartupDBM(userToken)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	puzzle := resources.LoadOrCreatePuzzle(year, day, userToken)
 	input, err := puzzle.GetUserInput()
 	if err != nil {
