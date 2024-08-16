@@ -10,6 +10,9 @@ import (
 	"strings"
 
 	"dalton.dog/aocgo/internal/styles"
+	"github.com/charmbracelet/bubbles/spinner"
+	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
 	"github.com/charmbracelet/log"
 	"golang.org/x/mod/semver"
 )
@@ -145,4 +148,175 @@ func Update() {
 	}
 
 	logger.Infof("Updated successfully to version %v", release.TagName)
+}
+
+type initMsg int
+type doneMsg string
+type urlMsg struct {
+	assetURL string
+	version  string
+}
+
+type fileMsg struct {
+	curFile string
+	tmpFile *os.File
+}
+
+type errMsg struct{ err error }
+
+type updateModel struct {
+	spinner spinner.Model
+	status  string
+	done    bool
+	err     error
+
+	version  string
+	assetURL string
+	curFile  string
+	tmpFile  *os.File
+}
+
+func RunUpdateModel() {
+	s := spinner.New()
+	s.Spinner = spinner.Dot
+	s.Style = lipgloss.NewStyle().Foreground(lipgloss.Color(styles.UpdateSpinnerColor))
+
+	model := updateModel{
+		spinner: s,
+		status:  "Starting up!",
+		done:    false,
+	}
+
+	p := tea.NewProgram(model)
+
+	if _, err := p.Run(); err != nil {
+		log.Fatal(err)
+	}
+
+}
+
+func (m updateModel) Init() tea.Cmd {
+	initCmd := func() tea.Msg { return initMsg(1) }
+
+	return tea.Batch(initCmd, m.spinner.Tick)
+}
+
+func (m updateModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	var cmds []tea.Cmd
+	switch msg := msg.(type) {
+	case initMsg:
+		m.status = "Querying for latest release"
+		cmds = append(cmds, func() tea.Msg {
+			release, err := getLatestRelease()
+			if err != nil {
+				return errMsg{err}
+			}
+
+			var assetURL string
+			for _, asset := range release.Assets {
+				if asset.Name == fmt.Sprintf("aocli-%v-%v", runtime.GOOS, runtime.GOARCH) {
+					assetURL = asset.DownloadURL
+				} else if asset.Name == fmt.Sprintf("aocli-%v-%v.exe", runtime.GOOS, runtime.GOARCH) {
+					assetURL = asset.DownloadURL
+				}
+			}
+
+			if assetURL == "" {
+				return errMsg{err}
+			}
+
+			return urlMsg{assetURL: assetURL, version: release.TagName}
+		})
+
+	case urlMsg:
+		m.status = "Downloading latest release to temp file"
+		url := msg.assetURL
+		m.version = msg.version
+
+		cmds = append(cmds, urlCmd(url))
+
+	case fileMsg:
+		m.status = "Replacing current file with new version, then cleaning up"
+		cur := msg.curFile
+		tmp := msg.tmpFile
+
+		cmds = append(cmds, fileCmd(cur, tmp))
+	case doneMsg:
+		m.done = true
+		m.status = fmt.Sprintf("Successfully updated to version %s", m.version)
+		return m, tea.Quit
+	}
+
+	var cmd tea.Cmd
+	m.spinner, cmd = m.spinner.Update(msg)
+	cmds = append(cmds, cmd)
+
+	return m, tea.Batch(cmds...)
+}
+
+func (m updateModel) View() string {
+	var symbol string
+	var status string
+
+	if m.err != nil {
+		symbol = lipgloss.NewStyle().Foreground(lipgloss.Color("#FF0000")).Render("")
+		status = m.err.Error()
+	} else if m.done {
+		symbol = lipgloss.NewStyle().Foreground(lipgloss.Color("#00FF00")).Render("󰸞")
+		status = m.status
+	} else {
+		symbol = m.spinner.View()
+		status = m.status
+	}
+
+	return fmt.Sprintf("\n %s %s\n", symbol, status)
+}
+
+func urlCmd(assetURL string) tea.Cmd {
+	return func() tea.Msg {
+		resp, err := http.Get(assetURL)
+		if err != nil {
+			return errMsg{err}
+		}
+		defer resp.Body.Close()
+
+		curExec, err := os.Executable()
+		if err != nil {
+			return errMsg{err}
+		}
+
+		tmpFile, err := os.CreateTemp("", "aocli-update-")
+		if err != nil {
+			return errMsg{err}
+		}
+
+		// Write the downloaded content to the temporary file
+		if _, err := io.Copy(tmpFile, resp.Body); err != nil {
+			return errMsg{err}
+		}
+
+		return fileMsg{curFile: curExec, tmpFile: tmpFile}
+	}
+}
+
+func fileCmd(curFile string, tmpFile *os.File) tea.Cmd {
+	return func() tea.Msg {
+		// Close the file to flush the content
+		if err := tmpFile.Close(); err != nil {
+			return errMsg{err}
+		}
+
+		// Make the temp file executable
+		if err := os.Chmod(tmpFile.Name(), 0700); err != nil {
+			return errMsg{err}
+		}
+
+		// Replace the current executable with the new one
+		if err := os.Rename(tmpFile.Name(), curFile); err != nil {
+			return errMsg{err}
+		}
+
+		os.Remove(tmpFile.Name())
+		return doneMsg(1)
+	}
 }

@@ -76,7 +76,8 @@ func main() {
 		Help(args)
 		return
 	} else if args[1] == "update" {
-		Update()
+		// Update()
+		RunUpdateModel()
 		return
 	} else if args[1] == "leaderboard" {
 		Leaderboard(args)
