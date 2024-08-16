@@ -151,7 +151,7 @@ func Update() {
 }
 
 type initMsg int
-type doneMsg string
+type doneMsg int
 type urlMsg struct {
 	assetURL string
 	version  string
