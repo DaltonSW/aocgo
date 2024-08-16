@@ -15,7 +15,7 @@ import (
 )
 
 // Internally tracked version to compare against GitHub releases
-const currentVersion = "v0.9.4"
+const currentVersion = "v0.9.5"
 const repoURL = "https://api.github.com/repos/DaltonSW/aocGo/releases/latest"
 
 type githubRelease struct {
@@ -26,9 +26,13 @@ type githubRelease struct {
 	} `json:"assets"`
 }
 
-// CheckForUpdate will get the latest release and compare the program versions.
-// Associated command: `check-update`
-func CheckForUpdate() bool {
+// Version will print the current version of the program.
+// It will also check for any updates available.
+// Associated command: `version`
+func Version() bool {
+	// TODO: Reorder the printing of this to make it "current version" focused at first
+
+	// TODO: Some styling too
 	latestVersion, err := getLatestRelease()
 	if err != nil {
 		log.Fatal("Error checking for updates!", "error", err)
@@ -101,7 +105,7 @@ func Update() {
 	}
 	defer resp.Body.Close()
 
-	logger.Info("Successfully downloaded")
+	logger.Info("Request successful")
 
 	curExec, err := os.Executable()
 	if err != nil {
@@ -114,7 +118,7 @@ func Update() {
 	}
 	defer os.Remove(tmpFile.Name())
 
-	logger.Info("Writing downloaded content to temp file")
+	logger.Info("Downloading content to temp file")
 
 	// Write the downloaded content to the temporary file
 	if _, err := io.Copy(tmpFile, resp.Body); err != nil {
@@ -125,6 +129,12 @@ func Update() {
 	// Close the file to flush the content
 	if err := tmpFile.Close(); err != nil {
 		logger.Fatal("Error closing temporary file:", err)
+		return
+	}
+
+	// Make the temp file executable
+	if err := os.Chmod(tmpFile.Name(), 0700); err != nil {
+		logger.Fatal("Error changing mode to allow execution: ", err)
 		return
 	}
 

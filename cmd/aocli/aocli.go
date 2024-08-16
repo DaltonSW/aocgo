@@ -96,8 +96,8 @@ func main() {
 
 	// User dependent functions. I recognize that I used if/else above and switch statement here, oh well
 	switch args[1] {
-	case "check-update":
-		update := CheckForUpdate()
+	case "version":
+		update := Version()
 		if update {
 			fmt.Printf("New version available! Run `aocli update` to get the new version (or `sudo aocli update` if your executable is in a protected location)")
 		}
