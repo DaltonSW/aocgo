@@ -13,6 +13,10 @@ import (
 	"github.com/charmbracelet/log"
 )
 
+// TODO: Load user's name from a page
+// Attempt and do it bespokely on user creation
+// so we don't need to rely on other requests for it
+
 // User represents a session token and accompanying puzzles.
 type User struct {
 	NumStars   int
@@ -96,6 +100,7 @@ func (u *User) LoadUser() {
 
 		// There's only 1 puzzle on Day 25, so if they've earned 49 stars, they get the 50th for free
 		if numStars[year] == 49 {
+			u.Years[year][25].AnswerTwo = "Merry Christmas!"
 			u.NumStars++
 			numStars[year]++
 		}
