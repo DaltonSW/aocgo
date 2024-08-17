@@ -18,7 +18,7 @@ const BASE_URL = "https://adventofcode.com"
 const YEAR_URL = BASE_URL + "/%v"
 const DAY_URL = YEAR_URL + "/day/%v"
 
-const REQS_PER_SEC = 10
+const REQS_PER_SEC = 20
 
 var MasterClient httpClient
 

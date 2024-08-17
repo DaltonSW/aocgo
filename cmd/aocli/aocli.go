@@ -16,11 +16,11 @@ import (
 	"github.com/charmbracelet/log"
 )
 
-// TODO: `run` - Will benchmark and run files in current and subdirectory
-
-var User *resources.User
-
 func main() {
+	// HACK: Triggering this immediately so it doesn't run into
+	// a possible race condition with BubbleTea competing for stdout
+	// https://github.com/charmbracelet/bubbletea/issues/1071
+	_ = lipgloss.DefaultRenderer().HasDarkBackground()
 
 	// Flag Parsing
 	debugFlag := flag.Bool("debug", false, "Use to enable debug logging")
@@ -116,6 +116,8 @@ func main() {
 		view(args, user)
 	// case "test":
 	// 	test(user)
+	case "user":
+		User(args, user)
 	case "clear-user":
 		clearUser(user)
 	default:
@@ -374,6 +376,11 @@ func Reload(args []string, user *resources.User) {
 // TODO: Implement
 func run(args []string) {
 
+}
+
+func User(args []string, user *resources.User) {
+	user.LoadUser()
+	user.Display()
 }
 
 // `view [year] [day]` command

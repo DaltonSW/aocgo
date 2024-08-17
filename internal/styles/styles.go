@@ -24,6 +24,10 @@ var (
 	codeColor = lipgloss.AdaptiveColor{Light: "#FAC3D5", Dark: "#FAC3D5"}
 
 	UpdateSpinnerColor = lipgloss.Color("#FB25A0")
+
+	BothStarsColor = lipgloss.Color("#FFFF66")
+	FirstStarColor = lipgloss.Color("#9999CC")
+	NoStarsColor   = lipgloss.Color("#0F0F23")
 )
 
 var (

@@ -5,6 +5,7 @@ import (
 	"os/exec"
 	"runtime"
 	"strings"
+	"time"
 
 	"github.com/charmbracelet/log"
 	"golang.org/x/term"
@@ -16,6 +17,19 @@ func GetTerminalSize() (int, int, error) {
 		return 0, 0, err
 	}
 	return width, height, nil
+}
+
+func GetCurrentMaxYearAndDay() (int, int) {
+	nowYear, nowMonth, nowDay := time.Now().Date()
+	if nowMonth != time.December {
+		return nowYear - 1, 25
+	} else {
+		if nowDay > 24 {
+			return nowYear, 25
+		} else {
+			return nowYear, nowDay
+		}
+	}
 }
 
 func LaunchURL(url string) error {

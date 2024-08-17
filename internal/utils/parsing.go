@@ -11,7 +11,9 @@ import (
 	// "github.com/charmbracelet/log"
 )
 
-const ()
+const (
+	FIRST_YEAR = 2015
+)
 
 func GetYearAndDayFromCWD() (int, int, error) {
 	cwd, err := os.Getwd()
@@ -58,7 +60,7 @@ func ParseYear(yearStr string) (int, error) {
 		}
 	}
 
-	if outYear < 2015 {
+	if outYear < FIRST_YEAR {
 		return 0, errors.New("Year parsed to be earlier than 2016.")
 	}
 
