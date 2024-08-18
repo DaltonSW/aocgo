@@ -18,7 +18,7 @@ import (
 )
 
 // Internally tracked version to compare against GitHub releases
-const currentVersion = "v0.9.5"
+const currentVersion = "v0.9.6"
 const repoURL = "https://api.github.com/repos/DaltonSW/aocGo/releases/latest"
 
 type githubRelease struct {
@@ -32,17 +32,15 @@ type githubRelease struct {
 // Version will print the current version of the program.
 // It will also check for any updates available.
 // Associated command: `version`
-func Version() bool {
-	// TODO: Reorder the printing of this to make it "current version" focused at first
-
-	// TODO: Some styling too
+func Version() {
+	// TODO: I think this won't work offline
 	latestVersion, err := getLatestRelease()
 	if err != nil {
 		log.Fatal("Error checking for updates!", "error", err)
 	}
 
 	if !strings.Contains(latestVersion.TagName, "aocli-") {
-		return false
+		return
 	} else {
 		latestVersion.TagName = strings.Replace(latestVersion.TagName, "aocli-", "", 1)
 	}
@@ -50,9 +48,15 @@ func Version() bool {
 	latestSemVer := semver.Canonical(latestVersion.TagName)
 	currentSemVer := semver.Canonical(currentVersion)
 
-	fmt.Printf("Current version: %v -- Latest version: %v\n", currentSemVer, latestSemVer)
-
-	return semver.Compare(latestSemVer, currentSemVer) > 0
+	if semver.Compare(latestSemVer, currentSemVer) > 0 {
+		fmt.Println(fmt.Sprintf("%v %v", styles.NormalTextStyle.Render("Current version       : "), styles.RedTextStyle.Render(currentVersion)))
+		fmt.Println(fmt.Sprintf("%v %v", styles.NormalTextStyle.Render("Latest release version: "), styles.GreenTextStyle.Render(latestSemVer)))
+		fmt.Println(styles.NormalTextStyle.Render("\nNew version available! Run `aocli update` to get the new version (or `sudo aocli update` if your executable is in a protected location)"))
+	} else {
+		fmt.Println(fmt.Sprintf("%v %v", styles.NormalTextStyle.Render("Current version       : "), styles.BlueTextStyle.Render(currentVersion)))
+		fmt.Println(fmt.Sprintf("%v %v", styles.NormalTextStyle.Render("Latest release version: "), styles.BlueTextStyle.Render(latestSemVer)))
+		fmt.Println(styles.NormalTextStyle.Render("\nYou're up-to-date!"))
+	}
 }
 
 // Gets the latest GitHub release's tag name (version number) and asset info
@@ -73,81 +77,6 @@ func getLatestRelease() (*githubRelease, error) {
 	}
 
 	return &release, nil
-}
-
-// Update downloads the newest version of aocli and replaces the executable in place
-// Associated command: `update`
-func Update() {
-	logger := styles.GetStdoutLogger()
-
-	logger.Info("Querying for latest release")
-
-	release, err := getLatestRelease()
-	if err != nil {
-		logger.Fatal("Error checking for updates.", "error", err)
-	}
-
-	var assetURL string
-	for _, asset := range release.Assets {
-		if asset.Name == fmt.Sprintf("aocli-%v-%v", runtime.GOOS, runtime.GOARCH) {
-			assetURL = asset.DownloadURL
-		} else if asset.Name == fmt.Sprintf("aocli-%v-%v.exe", runtime.GOOS, runtime.GOARCH) {
-			assetURL = asset.DownloadURL
-		}
-	}
-
-	if assetURL == "" {
-		logger.Fatal("Error obtaining a valid download URL.", "error", err)
-	}
-
-	logger.Info("Attempting to download latest asset")
-
-	resp, err := http.Get(assetURL)
-	if err != nil {
-		logger.Fatal("Error downloading the new version.", "error", err)
-	}
-	defer resp.Body.Close()
-
-	logger.Info("Request successful")
-
-	curExec, err := os.Executable()
-	if err != nil {
-		logger.Fatal("Error obtaining current executable info.", "error", err)
-	}
-
-	tmpFile, err := os.CreateTemp("", "aocli-update-")
-	if err != nil {
-		logger.Fatal("Error creating temp file.", "error", err)
-	}
-	defer os.Remove(tmpFile.Name())
-
-	logger.Info("Downloading content to temp file")
-
-	// Write the downloaded content to the temporary file
-	if _, err := io.Copy(tmpFile, resp.Body); err != nil {
-		logger.Fatal("Error writing to temporary file:", err)
-		return
-	}
-
-	// Close the file to flush the content
-	if err := tmpFile.Close(); err != nil {
-		logger.Fatal("Error closing temporary file:", err)
-		return
-	}
-
-	// Make the temp file executable
-	if err := os.Chmod(tmpFile.Name(), 0700); err != nil {
-		logger.Fatal("Error changing mode to allow execution: ", err)
-		return
-	}
-
-	// Replace the current executable with the new one
-	if err := os.Rename(tmpFile.Name(), curExec); err != nil {
-		logger.Fatal("Error replacing the executable, maybe try sudo: ", err)
-		return
-	}
-
-	logger.Infof("Updated successfully to version %v", release.TagName)
 }
 
 type initMsg int
@@ -176,6 +105,9 @@ type updateModel struct {
 	tmpFile  *os.File
 }
 
+// RunUpdateModel downloads the newest version of aocli and
+// replaces the executable in place. Wrapped in a prettifier.
+// Associated command: `update`
 func RunUpdateModel() {
 	s := spinner.New()
 	s.Spinner = spinner.Dot
@@ -259,10 +191,10 @@ func (m updateModel) View() string {
 	var status string
 
 	if m.err != nil {
-		symbol = lipgloss.NewStyle().Foreground(lipgloss.Color("#FF0000")).Render("")
+		symbol = lipgloss.NewStyle().Foreground(styles.RedText).Render(styles.FailureX)
 		status = m.err.Error()
 	} else if m.done {
-		symbol = lipgloss.NewStyle().Foreground(lipgloss.Color("#00FF00")).Render("󰸞")
+		symbol = lipgloss.NewStyle().Foreground(styles.GreenText).Render(styles.Checkmark)
 		status = m.status
 	} else {
 		symbol = m.spinner.View()

@@ -12,6 +12,13 @@ var (
 )
 
 var (
+	// Text Styles
+	NormalTextStyle = lipgloss.NewStyle().Foreground(NormalText)
+	RedTextStyle    = lipgloss.NewStyle().Foreground(RedText)
+	GreenTextStyle  = lipgloss.NewStyle().Foreground(GreenText)
+	YellowTextStyle = lipgloss.NewStyle().Foreground(YellowText)
+	BlueTextStyle   = lipgloss.NewStyle().Foreground(BlueText)
+
 	// Styles
 	viewportTitleStyle = func() lipgloss.Style {
 		b := lipgloss.RoundedBorder()
