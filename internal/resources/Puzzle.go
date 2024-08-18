@@ -74,21 +74,28 @@ const (
 	WarningAnswer
 )
 
-func (p *Puzzle) SubmitAnswer(answer string) (int, string) {
+func (p *Puzzle) SubmitAnswer(answer string, part int) (int, string) {
 	if !time.Now().After(p.LockoutEnd) {
 		return WarningAnswer, fmt.Sprintf("Still within lockout period of last submission. Lockout End: %s", p.LockoutEnd.Format(time.Stamp))
 	}
 
-	var part int
-	if p.AnswerOne == "" {
-		part = 1
-	} else if p.AnswerTwo == "" {
-		part = 2
-	} else {
-		return WarningAnswer, "You've already gotten both stars for this level."
+	if p.AnswerOne != "" && answer == p.AnswerOne {
+		return CorrectAnswer, "You've already gotten it correct, but that IS the correct answer for part 1."
+	} else if p.AnswerTwo != "" && answer == p.AnswerTwo {
+		return CorrectAnswer, "You've already gotten it correct, but that IS the correct answer for part 2."
 	}
 
-	// TODO: Check past submissions and lockout period before allowing submission
+	if part == 0 {
+		if p.AnswerOne == "" {
+			part = 1
+		} else if p.AnswerTwo == "" {
+			part = 2
+		} else {
+			return WarningAnswer, "You've already gotten both stars for this level."
+		}
+	}
+
+	// TODO: Check past submissions before allowing submission
 	//	- Past submissions
 	//		- Too high / too low
 

@@ -321,7 +321,8 @@ func submit(args []string, user *resources.User) {
 
 	puzzle := resources.LoadOrCreatePuzzle(year, day, user.SessionTok)
 
-	answerResp, message := puzzle.SubmitAnswer(answer)
+	// TODO: Allow this to take a part as an argument
+	answerResp, message := puzzle.SubmitAnswer(answer, 0)
 
 	// TODO: Move these styles to the 'styles' package
 	if answerResp == resources.CorrectAnswer {
