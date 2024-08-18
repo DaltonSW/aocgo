@@ -323,18 +323,18 @@ func submit(args []string, user *resources.User) {
 
 	// TODO: Move these styles to the 'styles' package
 	if answerResp == resources.CorrectAnswer {
-		correctStyle := lipgloss.NewStyle().Background(lipgloss.Color("34"))
-		fmt.Println(correctStyle.Render("Correct answer!"))
-		fmt.Println(correctStyle.Render(message))
+		fmt.Println(styles.CorrectAnswerStyle.Render("Correct answer!"))
+		fmt.Println(styles.CorrectAnswerStyle.Render(message))
 		user.NumStars++
 	} else if answerResp == resources.IncorrectAnswer {
-		incorrectStyle := lipgloss.NewStyle().Background(lipgloss.Color("124"))
-		fmt.Println(incorrectStyle.Render("Incorrect answer!"))
-		fmt.Println(incorrectStyle.Render(message))
+		fmt.Println(styles.IncorrectAnswerStyle.Render("Incorrect answer!"))
+		fmt.Println(styles.IncorrectAnswerStyle.Render(message))
 	} else if answerResp == resources.WarningAnswer {
-		incorrectStyle := lipgloss.NewStyle().Background(lipgloss.Color("184"))
-		fmt.Println(incorrectStyle.Render("Answer not submitted!"))
-		fmt.Println(incorrectStyle.Render(message))
+		fmt.Println(styles.WarningAnswerStyle.Render("Answer not submitted!"))
+		fmt.Println(styles.WarningAnswerStyle.Render(message))
+	} else if answerResp == resources.NeutralAnswer {
+		fmt.Println(styles.WarningAnswerStyle.Render("Answer not submitted!"))
+		fmt.Println(styles.WarningAnswerStyle.Render(message))
 	}
 }
 

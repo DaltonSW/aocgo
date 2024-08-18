@@ -73,6 +73,7 @@ const (
 	IncorrectAnswer int = iota
 	CorrectAnswer
 	WarningAnswer
+	NeutralAnswer
 )
 
 func (p *Puzzle) SubmitAnswer(answer string, part int) (int, string) {
@@ -81,9 +82,9 @@ func (p *Puzzle) SubmitAnswer(answer string, part int) (int, string) {
 	}
 
 	if p.AnswerOne != "" && answer == p.AnswerOne {
-		return CorrectAnswer, "You've already gotten it correct, but that IS the correct answer for part 1."
+		return NeutralAnswer, "You've already gotten it correct, but that IS the correct answer for part 1."
 	} else if p.AnswerTwo != "" && answer == p.AnswerTwo {
-		return CorrectAnswer, "You've already gotten it correct, but that IS the correct answer for part 2."
+		return NeutralAnswer, "You've already gotten it correct, but that IS the correct answer for part 2."
 	}
 
 	if part == 0 {
@@ -92,7 +93,7 @@ func (p *Puzzle) SubmitAnswer(answer string, part int) (int, string) {
 		} else if p.AnswerTwo == "" {
 			part = 2
 		} else {
-			return WarningAnswer, "You've already gotten both stars for this level."
+			return NeutralAnswer, "You've already gotten both stars for this level."
 		}
 	}
 
