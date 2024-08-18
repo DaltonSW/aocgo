@@ -49,13 +49,13 @@ func Version() {
 	currentSemVer := semver.Canonical(currentVersion)
 
 	if semver.Compare(latestSemVer, currentSemVer) > 0 {
-		fmt.Println(fmt.Sprintf("%v %v", styles.NormalTextStyle.Render("Current version       : "), styles.RedTextStyle.Render(currentVersion)))
-		fmt.Println(fmt.Sprintf("%v %v", styles.NormalTextStyle.Render("Latest release version: "), styles.GreenTextStyle.Render(latestSemVer)))
+		fmt.Println(fmt.Sprintf("%v %v", styles.NormalTextStyle.Render("\n Current version       : "), styles.RedTextStyle.Render(currentVersion)))
+		fmt.Println(fmt.Sprintf("%v %v", styles.NormalTextStyle.Render(" Latest release version: "), styles.GreenTextStyle.Render(latestSemVer)))
 		fmt.Println(styles.NormalTextStyle.Render("\nNew version available! Run `aocli update` to get the new version (or `sudo aocli update` if your executable is in a protected location)"))
 	} else {
-		fmt.Println(fmt.Sprintf("%v %v", styles.NormalTextStyle.Render("Current version       : "), styles.BlueTextStyle.Render(currentVersion)))
-		fmt.Println(fmt.Sprintf("%v %v", styles.NormalTextStyle.Render("Latest release version: "), styles.BlueTextStyle.Render(latestSemVer)))
-		fmt.Println(styles.NormalTextStyle.Render("\nYou're up-to-date!"))
+		fmt.Println(fmt.Sprintf("%v %v", styles.NormalTextStyle.Render("\n Current version       : "), styles.BlueTextStyle.Render(currentVersion)))
+		fmt.Println(fmt.Sprintf("%v %v", styles.NormalTextStyle.Render(" Latest release version: "), styles.BlueTextStyle.Render(latestSemVer)))
+		fmt.Println(styles.NormalTextStyle.Render("\n You're up-to-date!"))
 	}
 }
 

@@ -138,11 +138,12 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 // TODO: Properly style this
 func (m Model) View() string {
-	sOut := "User Breakdown"
+	// sOut := lipgloss.PlaceHorizontal(ViewportWidth, lipgloss.Center, "User Breakdown\n\n")
 
-	sOut += "\nPress q or ctrl+c to quit\n\n"
+	sOut := m.simpleTable.View()
 
-	sOut += m.simpleTable.View()
+	sOut += lipgloss.PlaceHorizontal(ViewportWidth, lipgloss.Center, "\nPress q or ctrl+c to quit\n")
 
-	return sOut
+	return styles.UserRenderingStyle.Render(sOut)
+	// return sOut
 }

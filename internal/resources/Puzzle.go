@@ -10,6 +10,7 @@ import (
 
 	"dalton.dog/aocgo/internal/api"
 	"dalton.dog/aocgo/internal/cache"
+	"dalton.dog/aocgo/internal/styles"
 	"dalton.dog/aocgo/internal/utils"
 
 	"github.com/PuerkitoBio/goquery"
@@ -140,7 +141,6 @@ func (p *Puzzle) SubmitAnswer(answer string, part int) (int, string) {
 		}
 
 	} else {
-		// TODO: Parse the response message for lockout period
 		lockoutDuration, err := utils.ParseDuration(submission.message)
 		if err != nil {
 			return IncorrectAnswer, submission.message + "\nUnable to parse lockout duration from message."
@@ -322,17 +322,13 @@ func getPrettyArticle(article *goquery.Selection) []string {
 			// } else
 
 			if goquery.NodeName(s) == "em" {
-				parent := s.Parent()
-				if goquery.NodeName(parent) == "code" {
-					// Emphatic code should get rendered as code and emphasis
-					loopContents += italStyle.Render(codeStyle.Render(s.Text()))
-				} else if s.HasClass("star") {
-					loopContents += starStyle.Render(s.Text())
+				if s.HasClass("star") {
+					loopContents += styles.StarStyle.Render(s.Text())
 				} else {
-					loopContents += italStyle.Render(s.Text())
+					loopContents += styles.ItalStyle.Render(s.Text())
 				}
 			} else if goquery.NodeName(s) == "code" {
-				loopContents += codeStyle.Render(s.Text())
+				loopContents += styles.CodeStyle.Render(s.Text())
 			} else if goquery.NodeName(s) != "h2" {
 				loopContents += s.Text()
 			}

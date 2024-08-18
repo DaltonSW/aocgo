@@ -56,4 +56,6 @@ var (
 				Padding(0, 1).
 				Background(lipgloss.Color("204")).
 				Foreground(lipgloss.Color("0"))
+
+	UserRenderingStyle = lipgloss.NewStyle().Padding(2, 1).Margin(2, 1)
 )
