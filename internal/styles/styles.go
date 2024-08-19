@@ -57,5 +57,8 @@ var (
 				Background(lipgloss.Color("204")).
 				Foreground(lipgloss.Color("0"))
 
-	UserRenderingStyle = lipgloss.NewStyle().Padding(2, 1).Margin(2, 1)
+	GlobalSpacingStyle = lipgloss.NewStyle().Padding(1, 1, 0)
+
+	UserTableStyle = lipgloss.NewStyle().Foreground(NormalText).
+			BorderForeground(TableBorderColor).Align(lipgloss.Center)
 )

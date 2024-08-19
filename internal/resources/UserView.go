@@ -180,7 +180,7 @@ func (u User) NewModel() Model {
 			table.NewColumn("23", "23", 2),
 			table.NewColumn("24", "24", 2),
 			table.NewColumn("25", "25", 2),
-		}).WithRows(rows),
+		}).WithRows(rows).BorderRounded().WithBaseStyle(styles.UserTableStyle),
 	}
 }
 
@@ -216,6 +216,6 @@ func (m Model) View() string {
 
 	sOut += lipgloss.PlaceHorizontal(ViewportWidth, lipgloss.Center, "\nPress q or ctrl+c to quit\n")
 
-	return styles.UserRenderingStyle.Render(sOut)
+	return styles.GlobalSpacingStyle.Render(sOut)
 	// return sOut
 }

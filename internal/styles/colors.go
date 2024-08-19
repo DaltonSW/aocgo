@@ -23,6 +23,9 @@ var (
 	SilverColor = lipgloss.AdaptiveColor{Light: "#C0C0C0", Dark: "#C0C0C0"}
 	BronzeColor = lipgloss.AdaptiveColor{Light: "#CD7F32", Dark: "#CD7F32"}
 
+	// Table colors
+	TableBorderColor = PurpleText
+
 	// Puzzle view colors
 	ItalColor = lipgloss.AdaptiveColor{Light: "#FF3374", Dark: "#FF3374"}
 	StarColor = lipgloss.AdaptiveColor{Light: "#F1FA8C", Dark: "#F1FA8C"}
