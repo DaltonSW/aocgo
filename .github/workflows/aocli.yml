@@ -15,13 +15,13 @@ jobs:
       matrix:
         include:
           - os: ubuntu-latest
-            artifact_name: aocli
+            artifact_name: aocli-linux-amd64
             asset_name: linux-amd64-${{ github.ref_name }}
           - os: windows-latest
-            artifact_name: aocli.exe
+            artifact_name: aocli-windows-amd64.exe
             asset_name: windows-amd64-${{ github.ref_name }}
           - os: macos-latest
-            artifact_name: aocli
+            artifact_name: aocli-darwin-amd64
             asset_name: darwin-amd64-${{ github.ref_name }}
 
     steps:
