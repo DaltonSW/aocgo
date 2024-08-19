@@ -1,12 +1,84 @@
 package resources
 
 import (
+	"fmt"
+
 	"dalton.dog/aocgo/internal/styles"
 	"dalton.dog/aocgo/internal/utils"
+	"github.com/charmbracelet/bubbles/spinner"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/evertras/bubble-table/table"
 )
+
+type loadDoneMsg struct {
+	year int
+	day  int
+}
+
+type LoadUserModel struct {
+	user     *User
+	curYear  int
+	curDate  int
+	finished bool
+
+	table   table.Model
+	spinner spinner.Model
+	status  string
+}
+
+func loadPuzzle(year, day int, user User) tea.Cmd {
+	return func() tea.Msg {
+		LoadOrCreatePuzzle(year, day, user.GetToken())
+		return loadDoneMsg{year: year, day: day}
+	}
+}
+
+func (m LoadUserModel) Init() tea.Cmd {
+	return m.spinner.Tick
+}
+
+func (m LoadUserModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	var (
+		cmd  tea.Cmd
+		cmds []tea.Cmd
+	)
+
+	m.spinner, cmd = m.spinner.Update(msg)
+	cmds = append(cmds, cmd)
+
+	switch msg := msg.(type) {
+	case tea.KeyMsg:
+		switch msg.String() {
+		case "ctrl+c", "esc", "q":
+			cmds = append(cmds, tea.Quit)
+		}
+	case loadDoneMsg:
+		maxYear, _ := utils.GetCurrentMaxYearAndDay()
+		year, day := msg.year, msg.day
+		if day == 25 {
+			if year < maxYear {
+				m.curDate = 1
+				m.curYear++
+
+				m.status = fmt.Sprintf("Loading... Year %v - Day %v", m.curYear, m.curDate)
+			} else {
+				m.status = "Done loading!"
+				m.finished = true
+			}
+		}
+	}
+
+	return m, tea.Batch(cmds...)
+}
+
+func (m LoadUserModel) View() string {
+	if m.finished {
+		return ""
+	} else {
+		return m.spinner.View() + " " + m.status
+	}
+}
 
 type Model struct {
 	simpleTable table.Model

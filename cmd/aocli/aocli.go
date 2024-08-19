@@ -70,7 +70,7 @@ func main() {
 
 	// User agnostic commands
 	if args[1] == "health" {
-		health()
+		Health()
 		return
 	} else if args[1] == "help" {
 		Help(args)
@@ -102,7 +102,7 @@ func main() {
 	case "get":
 		Get(args, user)
 	case "submit":
-		submit(args, user)
+		Submit(args, user)
 	// case "load-user":
 	//	 loadUser(args, user)
 	case "reload":
@@ -110,7 +110,7 @@ func main() {
 	// case "run":
 	// 	run(args)
 	case "view":
-		view(args, user)
+		View(args, user)
 	// case "test":
 	// 	test(user)
 	case "user":
@@ -307,8 +307,8 @@ func loadUser(args []string, user *resources.User) {
 
 // TODO: Document
 
-// `submit [answer] -y <yyyy> -d <dd>` command
-func submit(args []string, user *resources.User) {
+// `Submit [answer] -y <yyyy> -d <dd>` command
+func Submit(args []string, user *resources.User) {
 	year, day, err := utils.GetYearAndDayFromCWD()
 	if err != nil {
 		log.Fatal(err)
@@ -321,7 +321,6 @@ func submit(args []string, user *resources.User) {
 	// TODO: Allow this to take a part as an argument
 	answerResp, message := puzzle.SubmitAnswer(answer, 0)
 
-	// TODO: Move these styles to the 'styles' package
 	if answerResp == resources.CorrectAnswer {
 		fmt.Println(styles.CorrectAnswerStyle.Render("Correct answer!"))
 		fmt.Println(styles.CorrectAnswerStyle.Render(message))
@@ -381,9 +380,9 @@ func User(args []string, user *resources.User) {
 	user.Display()
 }
 
-// `view [year] [day]` command
+// `View [year] [day]` command
 // Desc: Pretty-prints the puzzle's page data
-func view(args []string, user *resources.User) {
+func View(args []string, user *resources.User) {
 	var year int
 	var day int
 	var err error
@@ -409,9 +408,9 @@ func view(args []string, user *resources.User) {
 	puzzle.Display()
 }
 
-// `health` command
+// `Health` command
 // Desc: Checks if a session key is available
-func health() {
+func Health() {
 	sessionKey, err := session.GetSessionToken()
 	if err != nil {
 		log.Fatal("Test failed! Couldn't properly load a session key.", "err", err)

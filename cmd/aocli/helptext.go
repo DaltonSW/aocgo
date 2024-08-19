@@ -15,24 +15,73 @@ var UseStyle = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("#00FFFF
 var DescStyle = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("#FFFF00"))
 var ArgsStyle = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("#FF00FF"))
 
-var HelpTextMap map[string]*helpText = map[string]*helpText{
-	// NOTE: `aocli` program
-	"aocli": {
-		name: "aocli - CLI tool for interacting with Advent of Code",
+var (
+	aocliHelpText = helpText{
+		name: "aocli",
 		use:  "aocli <command> [params...]",
 		desc: `
-	aocli is a CLI tool written in Go for interacting with Advent of Code information.
-	It is able to view puzzle information and access user puzzle input, with more on the way!
-	Requests are limited to 10/s, and responses are locally cached.`,
+	aocli is a CLI tool written in Go for interacting with Advent of Code information.`,
 		args: `
-	get    - Gets user input for a certain day and saves it to 'input.txt'
-	view   - Pretty print puzzle page data to screen
-	health - Verifies that aocli and aocgo have information required to run properly`,
-		// submit <answer> <part> [year] [day] - Attempts to submit an answer for a puzzle
-	},
+	get --------- Get the user input for a given year and day and save it to a local file
+	health ------ Checks to see if the system has valid configuration in place to successfully run the program
+	help -------- Shows the help information for a specific command
+	leaderboard - Shows the leaderboard for the given year, or given year and day
+	reload ------ Refresh the page data for the puzzle on a given year and day
+	submit ------ Submit a puzzle answer for a given year and day
+	user -------- View the stars obtained for the current user
+	view -------- Pretty print the puzzle for a given day`,
+	}
 
-	// NOTE: `view` command
-	"view": {
+	getHelpText = helpText{
+		name: "get - Saves the user's puzzle input to a file",
+		use:  "aocli get [year] [day]",
+		desc: `
+	Loads the user's puzzle input for a given year and day.
+	The input will be saved to the current directory, named 'input.txt'.`,
+		args: `
+	year - Year to load input for. If not provided, will try to derive from parent dir name.
+	day  - Day to load input for. If not provided, will try to derive from current dir names.`,
+	}
+
+	healthHelpText = helpText{
+		name: "health - Checks validity of aocutil module",
+		use:  "aocli health",
+		desc: `
+	Will check the current session token for validity.`,
+		args: "",
+	}
+
+	helpHelpText = helpText{
+		name: "help",
+		use:  "aocli help <command>",
+		desc: "Shows the help information for the program as a whole, or for a specific command",
+	}
+
+	leaderboardHelpText = helpText{
+		name: "leaderboard",
+		use:  "aocli leaderboard [year] [day]",
+		desc: "Shows the leaderboard for a given year, or a given year and day",
+	}
+
+	reloadHelpText = helpText{
+		name: "reload",
+		use:  "aocli reload [year] [day]",
+		desc: "Reloads the page data for the puzzle on a given year and day",
+	}
+
+	submitHelpText = helpText{
+		name: "submit",
+		desc: `Submits an answer to the puzzle on the user's behalf and prints out the response.
+Attempts to derive the year and day from current and parent directory name.`,
+	}
+
+	userHelpText = helpText{
+		name: "user",
+		use:  "aocli user",
+		desc: "Loads all puzzle information for a user and will display their star count for each year and day in a table.",
+	}
+
+	viewHelpText = helpText{
 		name: "view - Pretty prints the puzzle's page data to the screen",
 		use:  "aocli view [year] [day]",
 		desc: `
@@ -42,28 +91,23 @@ var HelpTextMap map[string]*helpText = map[string]*helpText{
 		args: `
 	year - Year to load input for. If not provided, will try to derive from parent dir name.
 	day  - Day to load input for. If not provided, will try to derive from current dir names.`,
-	},
+	}
+)
 
-	// NOTE: `get` command
-	"get": {
-		name: "get - Saves the user's puzzle input to a file",
-		use:  "aocli get [year] [day]",
-		desc: `
-	Loads the user's puzzle input for a given year and day.
-	The input will be saved to the current directory, named 'input.txt'.`,
-		args: `
-	year - Year to load input for. If not provided, will try to derive from parent dir name.
-	day  - Day to load input for. If not provided, will try to derive from current dir names.`,
-	},
+var HelpTextMap map[string]helpText = map[string]helpText{
+	// Parent program help text
+	"aocli": aocliHelpText,
 
-	// NOTE: `health` command
-	"health": {
-		name: "health - Checks validity of aocutil module",
-		use:  "aocli health",
-		desc: `
-	Will check the current session token for validity.`,
-		args: "",
-	},
+	// Commands help text
+	"get":         getHelpText,
+	"health":      healthHelpText,
+	"help":        helpHelpText,
+	"leaderboard": leaderboardHelpText,
+	"lb":          leaderboardHelpText,
+	"reload":      reloadHelpText,
+	"submit":      submitHelpText,
+	"user":        userHelpText,
+	"view":        viewHelpText,
 }
 
 type helpText struct {
@@ -90,21 +134,3 @@ func (ht *helpText) Print() {
 
 	fmt.Println(outS)
 }
-
-const submitHelpText = `
-Submits the provided answer. Will display the response from the server.
-`
-
-const getHelpText = `
-Gets the input for the given year and day.
-Will attempt to parse the current and parent directory names for date information.
-By default, will save the input to a file in the current directory called 'input.txt'.
-`
-
-const healthHelpText = `
-Checks if there's a session token that's able to be used.
-`
-
-const runHelpText = `
-Runs the tests in the current directory, and any subdirectories.
-`
