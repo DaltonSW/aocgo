@@ -43,6 +43,7 @@ func (l *YearLB) GetTitle() string {
 	return fmt.Sprintf("Leaderboard -- Year: %d", l.Year)
 }
 
+// NewYearLB creates and returns a new whole-year leaderboard
 func NewYearLB(year int) *YearLB {
 	lb := &YearLB{
 		Year:      year,
@@ -54,6 +55,7 @@ func NewYearLB(year int) *YearLB {
 	return lb
 }
 
+// LoadPositions will get all of the yearly positions
 func (lb *YearLB) LoadPositions() error {
 	URL := fmt.Sprintf("https://adventofcode.com/%v/leaderboard", lb.Year)
 	resp, err := api.NewGetReq(URL, "")
@@ -113,6 +115,7 @@ func (lb *YearLB) LoadPositions() error {
 	return nil
 }
 
+// GetContent will get the lb content in a printable format
 func (lb *YearLB) GetContent() string {
 	t := table.New().
 		Border(lipgloss.NormalBorder()).
@@ -140,6 +143,7 @@ func (l *DayLB) GetTitle() string {
 	return fmt.Sprintf("Leaderboard -- Year: %d, Day: %d", l.Year, l.Day)
 }
 
+// NewDayLB creates a new leaderboard for a single day
 func NewDayLB(year, day int) *DayLB {
 	lb := &DayLB{
 		Year:      year,
@@ -152,6 +156,8 @@ func NewDayLB(year, day int) *DayLB {
 
 	return lb
 }
+
+// LoadPositions will get all of the daily positions
 func (lb *DayLB) LoadPositions() error {
 	URL := fmt.Sprintf("https://adventofcode.com/%v/leaderboard/day/%v", lb.Year, lb.Day)
 	resp, err := api.NewGetReq(URL, "")
@@ -221,6 +227,7 @@ func (lb *DayLB) LoadPositions() error {
 	return nil
 }
 
+// GetContent will get the lb content in a printable format
 func (lb *DayLB) GetContent() string {
 	tOne := table.New().
 		Border(lipgloss.NormalBorder()).

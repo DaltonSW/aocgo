@@ -28,6 +28,8 @@ type httpClient struct {
 	rateLimiter  *rate.Limiter
 }
 
+// Do is a wrapper around a normal client call in
+// order to use our rate limiter.
 func (c *httpClient) Do(req *http.Request) (*http.Response, error) {
 	err := c.rateLimiter.Wait(context.Background())
 	if err != nil {
@@ -42,8 +44,8 @@ func (c *httpClient) Do(req *http.Request) (*http.Response, error) {
 	return resp, nil
 }
 
+// InitClient creates the API client with a given user session token
 func InitClient(userSessionToken string) {
-	// log.Debug("Initiating API client.", "sessionToken", userSessionToken)
 	limiter := rate.NewLimiter(rate.Every(time.Second), REQS_PER_SEC)
 	client := httpClient{
 		client:       http.Client{},
@@ -63,8 +65,6 @@ func NewGetReq(url string, sessionToken string) (*http.Response, error) {
 	if sessionToken == "" {
 		sessionToken = MasterClient.sessionToken
 	}
-
-	// NOTE: We don't NEED to send a User-Agent, but it feels respectful
 
 	req.Header.Add("User-Agent", USER_AGENT)
 	req.Header.Add("Cookie", fmt.Sprintf("session=%s", strings.TrimSpace(sessionToken)))
