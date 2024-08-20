@@ -7,7 +7,7 @@ import (
 
 	"dalton.dog/aocgo/internal/api"
 	"dalton.dog/aocgo/internal/session"
-	"dalton.dog/aocgo/internal/styles"
+	// "dalton.dog/aocgo/internal/styles"
 	"dalton.dog/aocgo/internal/utils"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/log"
@@ -67,34 +67,26 @@ func (u *User) Display() {
 }
 
 func (u *User) LoadUser() {
-	logger := styles.GetStdoutLogger()
-
 	maxYear, _ := utils.GetCurrentMaxYearAndDay()
 
 	numStars := make(map[int]int)
 	year := utils.FIRST_YEAR
 
 	for year <= maxYear {
-		logger.Info("Loading year", "year", year)
 		numStars[year] = 0
 		day := 1
 		for day <= 25 {
-			logger.Info("Loading day", "day", day)
 			puzzle := LoadOrCreatePuzzle(year, day, u.SessionTok)
-
 			u.Years[year][day] = puzzle
 
 			if puzzle.AnswerOne != "" {
-				logger.Info("Answer one found!", "year", year, "day", day, "answer", puzzle.AnswerOne)
 				u.NumStars++
 				numStars[year]++
 				if puzzle.AnswerTwo != "" {
-					logger.Info("Answer two found!", "year", year, "day", day, "answer", puzzle.AnswerTwo)
 					u.NumStars++
 					numStars[year]++
 				}
 			}
-
 			day++
 		}
 
@@ -104,8 +96,6 @@ func (u *User) LoadUser() {
 			u.NumStars++
 			numStars[year]++
 		}
-		logger.Info("Ending year", "Stars found", numStars[year])
-
 		year++
 	}
 }

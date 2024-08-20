@@ -376,7 +376,6 @@ func run(args []string) {
 }
 
 func User(args []string, user *resources.User) {
-	user.LoadUser()
 	user.Display()
 }
 
