@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"runtime/pprof"
+	"strings"
 	"time"
 
 	"dalton.dog/aocgo/internal/cache"
@@ -14,6 +15,7 @@ import (
 	"dalton.dog/aocgo/internal/utils"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/charmbracelet/log"
+	"golang.org/x/mod/semver"
 )
 
 func main() {
@@ -120,6 +122,25 @@ func main() {
 	default:
 		fmt.Println("Not a valid command! Run `aocli help` to see valid commands.")
 	}
+
+	latestVersion, err := getLatestRelease()
+	if err != nil {
+		log.Fatal("Error checking for updates!", "error", err)
+	}
+
+	if !strings.Contains(latestVersion.TagName, "aocli-") {
+		return
+	} else {
+		latestVersion.TagName = strings.Replace(latestVersion.TagName, "aocli-", "", 1)
+	}
+
+	latestSemVer := semver.Canonical(latestVersion.TagName)
+	currentSemVer := semver.Canonical(currentVersion)
+
+	if semver.Compare(latestSemVer, currentSemVer) > 0 {
+		log.Info("\nNew version available! Run `aocli update` to get the new version (or `sudo aocli update` if your executable is in a protected location)")
+	}
+
 	return
 }
 
