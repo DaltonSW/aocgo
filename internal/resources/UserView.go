@@ -12,15 +12,20 @@ import (
 	"github.com/evertras/bubble-table/table"
 )
 
+// Message to indicate a puzzle has finished loading
+// Updates status message and triggers next load
 type loadDoneMsg struct {
 	year int
 	day  int
 }
 
+// Message to indicate that the user table is ready to display
 type tableDoneMsg struct {
 	table table.Model
 }
 
+// LoadUserModel is the BubbleTea model for loading and displaying
+// a user's information
 type LoadUserModel struct {
 	user     *User
 	curYear  int

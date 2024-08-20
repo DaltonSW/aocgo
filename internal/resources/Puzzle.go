@@ -64,6 +64,7 @@ func LoadOrCreatePuzzle(year int, day int, userSession string) *Puzzle {
 	return newPuzzle(year, day, userSession)
 }
 
+// Displays the puzzle's page to the user
 func (p *Puzzle) Display() {
 	NewPuzzleViewport(p)
 }
@@ -72,10 +73,12 @@ func (p *Puzzle) Display() {
 const (
 	IncorrectAnswer int = iota
 	CorrectAnswer
-	WarningAnswer
-	NeutralAnswer
+	WarningAnswer // Not submitted, but weird behavior
+	NeutralAnswer // Not submitted, but no warning
 )
 
+// SubmitAnswer takes an answer and a part to submit to.
+// If no part is provided, it will be derived based on stored puzzle information.
 func (p *Puzzle) SubmitAnswer(answer string, part int) (int, string) {
 	if !time.Now().After(p.LockoutEnd) {
 		return WarningAnswer, fmt.Sprintf("Still within lockout period of last submission. Lockout End: %s", p.LockoutEnd.Format(time.Stamp))
@@ -135,7 +138,12 @@ func (p *Puzzle) SubmitAnswer(answer string, part int) (int, string) {
 
 		if p.AnswerOne == "" {
 			p.AnswerOne = answer
-			return CorrectAnswer, "First star obtained! Run `view` again to get part 2."
+			if p.Day == 25 {
+				p.AnswerTwo = "Merry Christmas!"
+				return CorrectAnswer, "Correct answer! If you've got all 49 other stars for this year, submit again to get the 50th and complete the year!"
+			} else {
+				return CorrectAnswer, "First star obtained! Run `view` again to get part 2."
+			}
 		} else {
 			p.AnswerTwo = answer
 			return CorrectAnswer, "Second star obtained! That's all for today, good luck tomorrow!"
@@ -153,6 +161,7 @@ func (p *Puzzle) SubmitAnswer(answer string, part int) (int, string) {
 	}
 }
 
+// Creates a new puzzle by loading information from the server. Bypasses any cached data
 func newPuzzle(year int, day int, userSession string) *Puzzle {
 	URL := fmt.Sprintf(PUZZLE_URL, year, day)
 	bucketID := strconv.Itoa(year) + strconv.Itoa(day)
@@ -183,6 +192,7 @@ func newPuzzle(year int, day int, userSession string) *Puzzle {
 	return newPuzzle
 }
 
+// Reloads puzzle information from the server
 func (p *Puzzle) ReloadPuzzleData() error {
 	newInput, err := loadUserInputFromSite(p.URL, p.SessionToken)
 	if err != nil {
@@ -209,6 +219,7 @@ func (p *Puzzle) GetUserInput() ([]byte, error) {
 	return input, nil
 }
 
+// GetPrettyPageData parses the puzzle's stored information and displays it in a visually pleasing way.
 func (p *Puzzle) GetPrettyPageData() []string {
 	sOut := p.ArticleOne
 
@@ -230,6 +241,7 @@ func (p *Puzzle) GetPrettyPageData() []string {
 	return sOut
 }
 
+// Contacts the server to load the user's input for a given puzzle
 func loadUserInputFromSite(URL, userSession string) ([]byte, error) {
 	resp, err := api.NewGetReq(URL+"/input", userSession)
 	if err != nil {
@@ -363,6 +375,7 @@ func wrapText(line string, width int) string {
 	return result
 }
 
+// Possible submission value for a puzzle
 type Value struct {
 	number int
 	string string
@@ -378,9 +391,4 @@ func (v Value) GetValue() string {
 // // TODO: answerStyle
 var (
 	puzzleTitleStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("#000000")).Background(lipgloss.Color("#FFFF00"))
-	italStyle        = lipgloss.NewStyle().Foreground(lipgloss.Color("#FF3374"))
-	starStyle        = lipgloss.NewStyle().Foreground(lipgloss.Color("#F1FA8C"))
-	linkStyle        = lipgloss.NewStyle().Foreground(lipgloss.Color("#8BE9FD")).Underline(true)
-	codeStyle        = lipgloss.NewStyle().Foreground(lipgloss.Color("#FAC3D5")).Bold(true)
-	wordWrap         = lipgloss.NewStyle().Width(ViewportWidth)
 )

@@ -20,11 +20,14 @@ Usage:
 
 Available commands are:
 
-	get		get puzzle input for default session token
-	health		check that enough config is in place to run the program
-	help		print help for another command
-	leaderboard	display the leaderboard for a given year
-	view		view the puzzle information for a given day and year
+	get --------- Get the user input for a given year and day and save it to a local file
+	health ------ Checks to see if the system has valid configuration in place to successfully run the program
+	help -------- Shows the help information for a specific command
+	leaderboard - Shows the leaderboard for the given year, or given year and day
+	reload ------ Refresh the page data for the puzzle on a given year and day
+	submit ------ Submit a puzzle answer for a given year and day
+	user -------- View the stars obtained for the current user
+	view -------- Pretty print the puzzle for a given day
 
 Any commands that rely on a year and day will attempt to derive those values from the names of the current directory and the parent directory. If those can't be properly derived, or you wish to run the command for another date, you can pass those in manually.
 
@@ -51,9 +54,9 @@ The AOC_SESSION_TOKEN environment variable will be checked, as will the ~/.confi
 
 Usage:
 
-	aocli leaderboard <year>
+	aocli leaderboard <year> <day>
 
-This will display the leaderboard for the given year in a scrollable table.
+This will display the leaderboard for the given year, or a given year and day, in a scrollable table.
 
 # View the puzzle information for a given day and year
 
@@ -62,5 +65,17 @@ Usage:
 	aocli view [year] [day]
 
 This will display the page information about a puzzle. This includes the title, the description, any correct answers for the current user, as well as successfully loading Part B once it's unlocked.
+
+# Refresh the puzzle information for a given day and year
+
+Usage:
+
+	aocli refresh [year] [day]
+
+# Submit an answer for a day and year, SOLELY determined by the CWD directory structure
+
+Usage:
+
+	aocli submit <answer>
 */
 package main

@@ -55,6 +55,8 @@ func InitClient(userSessionToken string) {
 	MasterClient = client
 }
 
+// NewGetReq will make a request of a certain URL on behalf
+// of a given user session token.
 func NewGetReq(url string, sessionToken string) (*http.Response, error) {
 	log.Debug("Making GET request.", "URL", url)
 	req, err := http.NewRequest("GET", url, nil)
@@ -72,16 +74,8 @@ func NewGetReq(url string, sessionToken string) (*http.Response, error) {
 	return MasterClient.Do(req)
 }
 
-// NOTE: To submit answers:
-//	Method:  POST
-//	URL:	 https://adventofcode.com/yyyy/day/d/answer
-//	Headers:
-//		Cookie: session=<session token>
-//		Content-Type: application/x-www-form-urlencoded
-//	Form Data (Body):
-//		`level` : 1 if Part A, 2 if Part B
-//		`answer` : Answer to submit
-
+// SubmitAnswer will submit an answer to a puzzle on
+// behalf of a given user token.
 func SubmitAnswer(year int, day int, part int, userSession string, answer string) (*http.Response, error) {
 	URL := PuzzleAnswerURL(year, day)
 	log.Debugf("Attempting to submit answer for Day %v (%v) [Part %v] to URL %v", day, year, part, URL)
