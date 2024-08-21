@@ -18,7 +18,7 @@ const BASE_URL = "https://adventofcode.com"
 const YEAR_URL = BASE_URL + "/%v"
 const DAY_URL = YEAR_URL + "/day/%v"
 
-const REQS_PER_SEC = 20
+const REQS_PER_SEC = 10
 
 var MasterClient httpClient
 
@@ -46,7 +46,7 @@ func (c *httpClient) Do(req *http.Request) (*http.Response, error) {
 
 // InitClient creates the API client with a given user session token
 func InitClient(userSessionToken string) {
-	limiter := rate.NewLimiter(rate.Every(time.Second), REQS_PER_SEC)
+	limiter := rate.NewLimiter(rate.Every(time.Second/REQS_PER_SEC), 1)
 	client := httpClient{
 		client:       http.Client{},
 		sessionToken: userSessionToken,
