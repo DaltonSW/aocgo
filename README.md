@@ -18,8 +18,6 @@ I recommend that you install the tool via the GitHub Releases page. There are st
 
 ## Required Setup
 
-All of the functionality here requires a user session token to be available. It should be placed in `~/.config/aocgo/session.token`, or stored in the `AOC_SESSION_TOKEN` environment variable.
-
 1. To obtain this token, log in to Advent of Code as the user you'd like to make requests and submissions as.  
 2. Open the Dev Console (Ctrl + Shift + I, F12, or Right Click -> Inspect), then go to the Network tab.
 3. Navigate to any puzzle's input page and inspect the GET request headers. You should see `Cookie: session=<your session token>`.

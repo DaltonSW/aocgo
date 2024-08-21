@@ -1,12 +1,20 @@
-# Welcome to aocli
+# Welcome to `aocli`
 
-This is a command line tool that lets you interact with Advent of Code without ever leaving your terminal.
+`aocli` is a command line with the goal to provide a snappy, pretty, and functional way to interact with the entire Advent of Code workflow without ever leaving your terminal.
 
 It is implemented with rate limiting and local caching to ensure we're not hitting the servers more often than necessary.
+
+Cached information is stored in `~/.cache/aocgo/<session_token>.db`.
 
 ## Available Commands
 
 Syntax Example: `aocli command_name <RequiredParam> [OptionalParam] -optionOne valueOne -x`
+
+### `help`
+
+Prints out help for the program or for a specific command. If no parameter is specified, all available commands are printed. If a command is specified, command-specific help will be printed out.
+
+Syntax: `aocli help [command]`
 
 ### `get`
 
@@ -32,21 +40,33 @@ Syntax: `aocli leaderboard <year> [day]`
 
 [![aocli leaderboard demo](https://asciinema.org/a/misVkiiAbGsJb0xq1iq3WXhfk.svg)](https://asciinema.org/a/misVkiiAbGsJb0xq1iq3WXhfk?autoplay=1)
 
+### `user`
+
+Loads all available information for the available user. This essentially runs `view` on every puzzle, but doesn't visualize the puzzle itself. Counts all the user's stars across the days and years, and displays that in a table.
+
+Syntax: `aocli user`
+
 ### `submit`
 
-This exists! Need to document it!
+Submits an answer to a puzzle. The year, day, and part are NOT presently able to be specified, and will use the directory structure naming to derive the year and day. The part to submit to will be determined by the current state of the puzzle.
+For example, if the puzzle already has a correct answer 1, then it will submit to answer 2. 
 
-### `check-update`
+Submission validation is in place as well, preventing you from submitting obviously incorrect errors.
+For example, you can't submit previously submitted answers, nor can you attempt to submit the answer to part 1 for part 2.
 
-Will check the internal version against the latest GitHub repo release to see if there's a new version available.
+Syntax: `aocli submit <answer>`
 
-`aocli check-update`
+### `version`
+
+Will print out the latest version. Will also check the latest GitHub repo release to see if there's a new version available.
+
+Syntax: `aocli version`
 
 ### `update`
 
 Will attempt to download and install the newest version of `aocli` in-place, if there is one newer.
 
-`aocli update`
+Syntax: `aocli update`
 
 ### `reload`
 
@@ -58,4 +78,6 @@ Syntax: `aocli reload [year] [day]`
 
 Will clear the stored information for the user in the session token file, or AOC_SESSION_TOKEN environment variable.
 
-`aocli clear-user`
+You can also just manually delete the database file if you want. This file is located in `~/.cache/aocgo/<session_token>.db`
+
+Syntax: `aocli clear-user`
