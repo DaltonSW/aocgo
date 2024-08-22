@@ -51,7 +51,7 @@ All you need for this to work is the cookie session token of the user you'd like
 ![Storage Tab](./assets/Step2.png)
 3. With the `Storage` tab open, double click the `value` to select it, and copy it.
 ![Session Token](./assets/Step3.png)
-4. Grab everything after the equals sign (ignoring `session=`) and place it in one of these two places:
+4. Once copied, place it in one of these two places:
     - `~/.config/aocgo/session.token`
     - `AOC_SESSION_TOKEN` environment variable  
   
