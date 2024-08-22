@@ -1,6 +1,7 @@
 # Welcome to `aocGo`!
 
-`aocGo` is a two part project. 
+`aocGo` is a two part project. It is not an official [Advent of Code](https://adventofcode.com/) project, merely my take on some ways to enhance the workflow.  
+Definitely go support the official project, especially since this project would be useless without it.  
 
 ## `aocgo`
 
