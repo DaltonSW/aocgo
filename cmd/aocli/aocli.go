@@ -111,8 +111,8 @@ func main() {
 	// 	run(args)
 	case "view":
 		View(args, user)
-	// case "test":
-	// 	test(user)
+	case "test":
+		test(user)
 	case "user":
 		User(args, user)
 	case "clear-user":
@@ -441,7 +441,7 @@ func Health() {
 
 // Command:	`test`
 // Desc:	Does whatever I need to test at the time :)
-// func test(user *resources.User) {
-// 	lb := resources.NewDayLB(2016, 1)
-// 	resources.NewLeaderboardViewport(lb.GetContent(), lb.GetTitle())
-// }
+func test(user *resources.User) {
+	user.LoadDisplayName()
+	log.Info(user.DisplayName)
+}

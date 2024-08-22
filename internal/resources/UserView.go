@@ -28,6 +28,7 @@ type tableDoneMsg struct {
 // a user's information
 type LoadUserModel struct {
 	user     *User
+	userName string
 	curYear  int
 	curDate  int
 	finished bool
@@ -43,12 +44,15 @@ func (u *User) NewModel() tea.Model {
 	s.Spinner.FPS = 20
 	s.Style = lipgloss.NewStyle().Foreground(lipgloss.Color(styles.UpdateSpinnerColor))
 
+	u.LoadDisplayName()
+
 	model := LoadUserModel{
-		user:    u,
-		spinner: s,
-		curYear: utils.FIRST_YEAR,
-		curDate: 1,
-		status:  "Starting up!",
+		user:     u,
+		userName: u.DisplayName,
+		spinner:  s,
+		curYear:  utils.FIRST_YEAR,
+		curDate:  1,
+		status:   "Starting up!",
 	}
 
 	return model
@@ -73,6 +77,7 @@ func (m LoadUserModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "ctrl+c", "esc", "q":
 			cmds = append(cmds, tea.Quit)
 		}
+
 	case loadDoneMsg:
 		maxYear, _ := utils.GetCurrentMaxYearAndDay()
 		year, day := msg.year, msg.day
@@ -105,15 +110,16 @@ func (m LoadUserModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 func (m LoadUserModel) View() string {
 	if m.finished {
-		sOut := fmt.Sprintf("%v\n%v\n%v\n", header(), m.table.View(), footer())
+		sOut := fmt.Sprintf("%v\n%v\n%v\n", header(m.user.DisplayName), m.table.View(), footer())
 		return styles.GlobalSpacingStyle.Render(sOut)
 	} else {
 		return styles.GlobalSpacingStyle.Render(m.spinner.View() + " " + m.status)
 	}
 }
 
-func header() string {
-	return lipgloss.PlaceHorizontal(ViewportWidth, lipgloss.Center, "User Breakdown\n\n")
+func header(displayName string) string {
+	outStr := fmt.Sprintf("%v's Star Breakdown\n", displayName)
+	return lipgloss.PlaceHorizontal(ViewportWidth, lipgloss.Center, outStr)
 }
 
 func footer() string {
@@ -171,6 +177,7 @@ func generateTable(userToken string) tea.Cmd {
 			table.NewColumn("23", "23", 2),
 			table.NewColumn("24", "24", 2),
 			table.NewColumn("25", "25", 2),
+			table.NewColumn("Num", "Num", 3),
 		}).WithRows(rows).BorderRounded().WithBaseStyle(styles.UserTableStyle)
 		return tableDoneMsg{table: newTable}
 	}
@@ -191,6 +198,7 @@ func getRowForYear(userToken string, year, day int) table.Row {
 		} else if p.AnswerOne != "" {
 			if numStars == 48 {
 				sOut = lipgloss.NewStyle().Foreground(styles.BothStarsColor).Render("*")
+				numStars += 2
 			} else {
 				sOut = lipgloss.NewStyle().Foreground(styles.FirstStarColor).Render("*")
 				numStars += 1
@@ -235,5 +243,6 @@ func getRowForYear(userToken string, year, day int) table.Row {
 		"23":   stars[23],
 		"24":   stars[24],
 		"25":   stars[25],
+		"Num":  numStars,
 	})
 }

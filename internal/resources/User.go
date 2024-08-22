@@ -7,8 +7,10 @@ import (
 
 	"dalton.dog/aocgo/internal/api"
 	"dalton.dog/aocgo/internal/session"
+
 	// "dalton.dog/aocgo/internal/styles"
 	"dalton.dog/aocgo/internal/utils"
+	"github.com/PuerkitoBio/goquery"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/log"
 )
@@ -19,9 +21,10 @@ import (
 
 // User represents a session token and accompanying puzzles.
 type User struct {
-	NumStars   int
-	Years      map[int][]*Puzzle
-	SessionTok string
+	DisplayName string
+	NumStars    int
+	Years       map[int][]*Puzzle
+	SessionTok  string
 }
 
 // GetToken returns the user's session token.
@@ -67,6 +70,7 @@ func (u *User) Display() {
 }
 
 func (u *User) LoadUser() {
+	u.LoadDisplayName()
 	maxYear, _ := utils.GetCurrentMaxYearAndDay()
 
 	numStars := make(map[int]int)
@@ -98,4 +102,27 @@ func (u *User) LoadUser() {
 		}
 		year++
 	}
+}
+
+func (u *User) LoadDisplayName() {
+	resp, err := api.NewGetReq("https://adventofcode.com/", u.SessionTok)
+	if err != nil {
+		log.Fatal("Unable to load user's information", "err", err)
+	}
+
+	defer resp.Body.Close()
+	doc, err := goquery.NewDocumentFromReader(resp.Body)
+	if err != nil {
+		log.Fatal("Error constructing new PageData.", "error", err)
+	}
+
+	nameDiv := doc.Find("div.user")
+
+	// log.Info(nameDiv.Text())
+
+	nameClone := nameDiv.Clone()
+	// log.Info(nameClone.Text())
+	nameClone.Find("span").Remove()
+
+	u.DisplayName = strings.TrimSpace(nameClone.Text())
 }
