@@ -110,8 +110,8 @@ func main() {
 	// 	run(args)
 	case "view":
 		View(args, user)
-	case "test":
-		test(user)
+	// case "test":
+	// 	test(user)
 	case "user":
 		User(args, user)
 	case "clear-user":
@@ -412,7 +412,8 @@ func Health() {
 
 // Test does whatever I need to test at the time :)
 // Command:	`aocli test`
-func test(user *resources.User) {
-	user.LoadDisplayName()
-	log.Info(user.DisplayName)
-}
+// func test(user *resources.User) {
+// 	dispName := user.LoadDisplayName()
+// 	log.Info(user.DisplayName)
+// 	log.Info(dispName)
+// }

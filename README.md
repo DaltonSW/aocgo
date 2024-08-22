@@ -60,3 +60,9 @@ If you choose to use the environment variable method, make sure to include a lin
 
 From there, you should be good to go! If you installed the CLI program, you can run `aocli health` to verify that everything loaded properly.
 ![aocli health](./assets/aocliHealth.png)
+
+
+## Licensing
+
+© 2024 Dalton Williams
+Check repository LICENSE file for licensing information.

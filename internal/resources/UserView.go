@@ -44,15 +44,12 @@ func (u *User) NewModel() tea.Model {
 	s.Spinner.FPS = 20
 	s.Style = lipgloss.NewStyle().Foreground(lipgloss.Color(styles.UpdateSpinnerColor))
 
-	u.LoadDisplayName()
-
 	model := LoadUserModel{
-		user:     u,
-		userName: u.DisplayName,
-		spinner:  s,
-		curYear:  utils.FIRST_YEAR,
-		curDate:  1,
-		status:   "Starting up!",
+		user:    u,
+		spinner: s,
+		curYear: utils.FIRST_YEAR,
+		curDate: 1,
+		status:  "Starting up!",
 	}
 
 	return model

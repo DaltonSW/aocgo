@@ -56,10 +56,15 @@ func NewUser(token string) (*User, error) {
 		yearMap[i] = make([]*Puzzle, 26)
 	}
 
-	return &User{
+	newUser := &User{
 		SessionTok: token,
 		Years:      yearMap,
-	}, nil
+	}
+
+	name := newUser.LoadDisplayName()
+	newUser.DisplayName = name
+
+	return newUser, nil
 }
 
 func (u *User) Display() {
@@ -70,7 +75,6 @@ func (u *User) Display() {
 }
 
 func (u *User) LoadUser() {
-	u.LoadDisplayName()
 	maxYear, _ := utils.GetCurrentMaxYearAndDay()
 
 	numStars := make(map[int]int)
@@ -104,7 +108,7 @@ func (u *User) LoadUser() {
 	}
 }
 
-func (u *User) LoadDisplayName() {
+func (u *User) LoadDisplayName() string {
 	resp, err := api.NewGetReq("https://adventofcode.com/", u.SessionTok)
 	if err != nil {
 		log.Fatal("Unable to load user's information", "err", err)
@@ -124,5 +128,5 @@ func (u *User) LoadDisplayName() {
 	// log.Info(nameClone.Text())
 	nameClone.Find("span").Remove()
 
-	u.DisplayName = strings.TrimSpace(nameClone.Text())
+	return strings.TrimSpace(nameClone.Text())
 }
