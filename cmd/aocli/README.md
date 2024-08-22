@@ -22,7 +22,7 @@ Allows you to get the user input for a given year and day. Can be passed in as p
 
 Syntax: `aocli get [year] [day]`
 
-[![aocli get demo](https://asciinema.org/a/lduYJUOBrHWqwe9UieBHX9hU4.svg)](https://asciinema.org/a/lduYJUOBrHWqwe9UieBHX9hU4?autoplay=1)
+![aocli get demo](./assets/get.gif)]
 
 ### `view`
 
@@ -30,7 +30,7 @@ Allows you to view the puzzle page for a given year and day. Can be passed in as
 
 Syntax: `aocli view [year] [day]`
 
-[![aocli view demo](https://asciinema.org/a/bq5KqnHaY8ozybzxTGIAWFM8Z.svg)](https://asciinema.org/a/bq5KqnHaY8ozybzxTGIAWFM8Z?autoplay=1)
+![aocli view demo](./assets/view.gif)]
 
 ### `leaderboard`
 
@@ -38,13 +38,15 @@ Allows you to view the leaderboard for a given year, or given year + day. Passed
 
 Syntax: `aocli leaderboard <year> [day]`
 
-[![aocli leaderboard demo](https://asciinema.org/a/misVkiiAbGsJb0xq1iq3WXhfk.svg)](https://asciinema.org/a/misVkiiAbGsJb0xq1iq3WXhfk?autoplay=1)
+![aocli leaderboard demo](./assets/leaderboard.gif)]
 
 ### `user`
 
 Loads all available information for the available user. This essentially runs `view` on every puzzle, but doesn't visualize the puzzle itself. Counts all the user's stars across the days and years, and displays that in a table.
 
 Syntax: `aocli user`
+
+![aocli user demo](./assets/user.gif)]
 
 ### `submit`
 
@@ -81,3 +83,8 @@ Will clear the stored information for the user in the session token file, or AOC
 You can also just manually delete the database file if you want. This file is located in `~/.cache/aocgo/<session_token>.db`
 
 Syntax: `aocli clear-user`
+
+## Licensing
+
+© 2024 Dalton Williams
+Check repository LICENSE file for licensing information.
