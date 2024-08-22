@@ -30,7 +30,7 @@ func NewSubmission(data *http.Response, answer string) (*Submission, error) {
 		message: message,
 	}
 
-	if strings.Contains(message, "right answer") {
+	if strings.Contains(message, "right answer") || strings.Contains(message, "Congratulations!") {
 		newSub.correct = true
 	} else {
 		newSub.correct = false

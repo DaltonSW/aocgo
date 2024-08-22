@@ -134,13 +134,13 @@ func (p *Puzzle) SubmitAnswer(answer string, part int) (int, string) {
 	p.Submissions[part] = outList
 	defer p.SaveResource()
 	if submission.correct {
-		p.ReloadPuzzleData()
+		defer p.ReloadPuzzleData()
 
 		if p.AnswerOne == "" {
 			p.AnswerOne = answer
 			if p.Day == 25 {
 				p.AnswerTwo = "Merry Christmas!"
-				return CorrectAnswer, "Correct answer! If you've got all 49 other stars for this year, submit again to get the 50th and complete the year!"
+				return CorrectAnswer, "If you've got all 49 other stars for this year, submit again to get the 50th and complete the year!"
 			} else {
 				return CorrectAnswer, "First star obtained! Run `view` again to get part 2."
 			}

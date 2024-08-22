@@ -179,14 +179,22 @@ func generateTable(userToken string) tea.Cmd {
 func getRowForYear(userToken string, year, day int) table.Row {
 	stars := make([]string, 26)
 	d := 1
+	numStars := 0
 
 	for d <= day {
 		p := LoadOrCreatePuzzle(year, d, userToken)
 		var sOut string
+		// log.Info(numStars)
 		if p.AnswerTwo != "" {
 			sOut = lipgloss.NewStyle().Foreground(styles.BothStarsColor).Render("*")
+			numStars += 2
 		} else if p.AnswerOne != "" {
-			sOut = lipgloss.NewStyle().Foreground(styles.FirstStarColor).Render("*")
+			if numStars == 48 {
+				sOut = lipgloss.NewStyle().Foreground(styles.BothStarsColor).Render("*")
+			} else {
+				sOut = lipgloss.NewStyle().Foreground(styles.FirstStarColor).Render("*")
+				numStars += 1
+			}
 		} else {
 			sOut = lipgloss.NewStyle().Foreground(styles.NoStarsColor).Render("-")
 		}
