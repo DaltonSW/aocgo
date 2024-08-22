@@ -64,7 +64,7 @@ func main() {
 
 	args := os.Args
 	if len(args) == 1 {
-		fmt.Println(styles.HelpTextStyle.Render("Welcome to aocli! Try running `aocli help` for a list of available commands."))
+		fmt.Println("Welcome to aocli! Try running `aocli help` for a list of available commands.")
 		os.Exit(0)
 	}
 
@@ -78,8 +78,7 @@ func main() {
 		Help(args)
 		return
 	} else if args[1] == "update" {
-		// Update()
-		RunUpdateModel()
+		RunUpdateModel() // Runs the request such that masterAPI doesn't need to be initialized
 		return
 	}
 
@@ -116,7 +115,7 @@ func main() {
 	case "user":
 		User(args, user)
 	case "clear-user":
-		clearUser(user)
+		ClearUser(user)
 	case "leaderboard":
 		Leaderboard(args)
 	default:
@@ -144,12 +143,14 @@ func main() {
 	return
 }
 
-func clearUser(user *resources.User) {
+// ClearUser will delete the database file associated with the current session token.
+// Command: `aocli clear-user`
+func ClearUser(user *resources.User) {
 	cache.ClearUserDatabase(user.SessionTok)
 }
 
 // Help prints info and a list of commands
-// Associated command: `help`
+// Command: `aocli help`
 // Params:
 //
 //	[command] - command name to print Help for
@@ -159,18 +160,18 @@ func Help(args []string) {
 
 	// Too many args
 	if len(args) > 3 {
-		fmt.Println(styles.HelpTextStyle.Render("Too many arguments passed!"))
+		fmt.Println("Too many arguments passed!")
 		return
 	}
 
 	// They requested help for a specific command
 	if len(args) == 3 {
 		commandName := args[2]
-		helptext, ok := HelpTextMap[commandName]
+		ht, ok := HelpTextMap[commandName]
 		if ok {
-			helptext.Print()
+			ht.Print()
 		} else {
-			fmt.Println(styles.HelpTextStyle.Render("Not a valid command!"))
+			fmt.Println("Not a valid command!")
 		}
 		return
 	}
@@ -178,8 +179,7 @@ func Help(args []string) {
 	// Otherwise they just open-endedly requested help
 	ht, ok := HelpTextMap["aocli"]
 	if ok {
-		outS := "\n"
-		outS += NameStyle.Render("NAME:  ")
+		outS := NameStyle.Render("NAME:  ")
 		outS += ht.name + "\n\n"
 
 		outS += UseStyle.Render("USAGE: ")
@@ -197,11 +197,11 @@ func Help(args []string) {
 }
 
 // Get obtains input data for a specific day, outputting it to the current directory as `input.txt`
-// Command: `get [year] [day]`
+// Command: `aocli get [year] [day]`
 // Params:
 //
-//	[year] - 2 or 4 digit year (16 or 2016)
-//	[day]  - 1 or 2 digit day (1, 01, 21)
+//	(Opt) year - 2 or 4 digit year (16 or 2016)
+//	(Opt) day  - 1 or 2 digit day (1, 01, 21)
 func Get(args []string, user *resources.User) {
 	var year int
 	var day int
@@ -237,11 +237,11 @@ func Get(args []string, user *resources.User) {
 }
 
 // Leaderboard obtains and displays Leaderboard information for a specific year or day
-// Command: `Leaderboard year [day]`
+// Command: `aocli leaderboard year [day]`
 // Params:
 //
-//	year  - 2 or 4 digit year (16 or 2016)
-//	[day] - 1 or 2 digit day (1, 01, 21)
+//	(Req) year - 2 or 4 digit year (16 or 2016)
+//	(Opt) day  - 1 or 2 digit day (1, 01, 21)
 func Leaderboard(args []string) {
 	// TODO: Validation and help message
 	year, err := utils.ParseYear(args[2])
@@ -265,74 +265,39 @@ func Leaderboard(args []string) {
 	resources.NewLeaderboardViewport(lb.GetContent(), lb.GetTitle())
 }
 
-func loadUser(args []string, user *resources.User) {
-	logger := log.New(os.Stdout)
-	year := 2015
-	var maxYear int
-	if time.Now().Month() == time.December {
-		maxYear = time.Now().Year()
-	} else {
-		maxYear = time.Now().Year() - 1
-	}
-
-	if len(args) > 2 {
-		parseYear, err := utils.ParseYear(args[2])
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		year = parseYear
-		maxYear = parseYear
-	}
-
-	numStars := make(map[int]int)
-
-	for year <= maxYear {
-		logger.Info("Loading year", "year", year)
-		numStars[year] = 0
-		day := 1
-		for day <= 25 {
-			logger.Info("Loading day", "day", day)
-			puzzle := resources.LoadOrCreatePuzzle(year, day, user.GetToken())
-
-			user.Years[year][day] = puzzle
-
-			if puzzle.AnswerOne != "" {
-				logger.Info("Answer one found!", "year", year, "day", day, "answer", puzzle.AnswerOne)
-				user.NumStars++
-				numStars[year]++
-				if puzzle.AnswerTwo != "" {
-					logger.Info("Answer two found!", "year", year, "day", day, "answer", puzzle.AnswerTwo)
-					user.NumStars++
-					numStars[year]++
-				}
-			}
-
-			day++
-		}
-
-		// There's only 1 puzzle on Day 25, so if they've earned 49 stars, they get the 50th for free
-		if numStars[year] == 49 {
-			user.NumStars++
-			numStars[year]++
-		}
-		logger.Info("Ending year", "Stars found", numStars[year])
-
-		year++
-	}
-
-	for val, key := range numStars {
-		fmt.Printf("%d -- %d\n", key, val)
-	}
-}
-
-// TODO: Document
-
-// `Submit [answer] -y <yyyy> -d <dd>` command
+// Submit will submit the answer provided.
+// If date arguments aren't provided, they will be parsed from the current directory.
+// Command: `aocli submit <answer> [year] [day]`
+// Params:
+//
+//	(Req) answer - Answer to submit to the server
+//	(Opt) year   - 2 or 4 digit year (16 or 2016)
+//	(Opt) day    - 1 or 2 digit day (1, 01, 21)
 func Submit(args []string, user *resources.User) {
-	year, day, err := utils.GetYearAndDayFromCWD()
+	var year, day int
+	var err error
+
+	if len(args) > 3 {
+		year, err = utils.ParseYear(args[3])
+		log.Fatal("Couldn't parse provided year argument.", "err", err)
+	}
+
+	if len(args) > 4 {
+		day, err = utils.ParseDay(args[4])
+		log.Fatal("Couldn't parse provided day argument.", "err", err)
+	}
+
+	parseYear, parseDay, err := utils.GetYearAndDayFromCWD()
 	if err != nil {
 		log.Fatal(err)
+	}
+
+	if year == 0 {
+		year = parseYear
+	}
+
+	if day == 0 {
+		day = parseDay
 	}
 
 	answer := args[2]
@@ -353,8 +318,8 @@ func Submit(args []string, user *resources.User) {
 		fmt.Println(styles.WarningAnswerStyle.Render("Answer not submitted!"))
 		fmt.Println(styles.WarningAnswerStyle.Render(message))
 	} else if answerResp == resources.NeutralAnswer {
-		fmt.Println(styles.WarningAnswerStyle.Render("Answer not submitted!"))
-		fmt.Println(styles.WarningAnswerStyle.Render(message))
+		fmt.Println(styles.NeutralAnswerStyle.Render("Answer not submitted!"))
+		fmt.Println(styles.NeutralAnswerStyle.Render(message))
 	}
 }
 
@@ -362,8 +327,8 @@ func Submit(args []string, user *resources.User) {
 // Command: `reload [year] [day]`
 // Params:
 //
-//	[year] - 2 or 4 digit year (16 or 2016)
-//	[day]  - 1 or 2 digit day (1, 01, 21)
+//	(Opt) year - 2 or 4 digit year (16 or 2016)
+//	(Opt) day  - 1 or 2 digit day (1, 01, 21)
 func Reload(args []string, user *resources.User) {
 	var year int
 	var day int
@@ -396,12 +361,18 @@ func run(args []string) {
 
 }
 
+// User will print out a table visualization of the user's star progress.
+// Command: `aocli user`
 func User(args []string, user *resources.User) {
 	user.Display()
 }
 
-// `View [year] [day]` command
-// Desc: Pretty-prints the puzzle's page data
+// View will pretty print the puzzle's page data.
+// Command: `aocli view [year] [day]`
+// Params:
+//
+//	(Opt) year - 2 or 4 digit year (16 or 2016)
+//	(Opt) day  - 1 or 2 digit day (1, 01, 21)
 func View(args []string, user *resources.User) {
 	var year int
 	var day int
@@ -428,8 +399,8 @@ func View(args []string, user *resources.User) {
 	puzzle.Display()
 }
 
-// `Health` command
-// Desc: Checks if a session key is available
+// Health will check if a session key is available so that the program can run.
+// Command: `aocli health`
 func Health() {
 	sessionKey, err := session.GetSessionToken()
 	if err != nil {
@@ -439,8 +410,8 @@ func Health() {
 	log.Info("Test succeeded! Properly loaded session key", "key", sessionKey)
 }
 
-// Command:	`test`
-// Desc:	Does whatever I need to test at the time :)
+// Test does whatever I need to test at the time :)
+// Command:	`aocli test`
 func test(user *resources.User) {
 	user.LoadDisplayName()
 	log.Info(user.DisplayName)

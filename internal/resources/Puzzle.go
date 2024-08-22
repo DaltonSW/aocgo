@@ -85,9 +85,9 @@ func (p *Puzzle) SubmitAnswer(answer string, part int) (int, string) {
 	}
 
 	if p.AnswerOne != "" && answer == p.AnswerOne {
-		return NeutralAnswer, "You've already gotten it correct, but that IS the correct answer for part 1."
+		return NeutralAnswer, "Correct answer for Part 1 (no answer submitted, already got star)."
 	} else if p.AnswerTwo != "" && answer == p.AnswerTwo {
-		return NeutralAnswer, "You've already gotten it correct, but that IS the correct answer for part 2."
+		return NeutralAnswer, "Correct answer for Part 2 (no answer submitted, already got star)."
 	}
 
 	if part == 0 {

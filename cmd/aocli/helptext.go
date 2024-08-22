@@ -103,7 +103,6 @@ var HelpTextMap map[string]helpText = map[string]helpText{
 	"health":      healthHelpText,
 	"help":        helpHelpText,
 	"leaderboard": leaderboardHelpText,
-	"lb":          leaderboardHelpText,
 	"reload":      reloadHelpText,
 	"submit":      submitHelpText,
 	"user":        userHelpText,

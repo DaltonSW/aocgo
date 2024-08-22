@@ -37,8 +37,6 @@ var (
 	LinkStyle = lipgloss.NewStyle().Foreground(LinkColor).Underline(true)
 	CodeStyle = lipgloss.NewStyle().Foreground(CodeColor).Bold(true)
 
-	HelpTextStyle = lipgloss.NewStyle().MaxWidth(70)
-
 	LoggerFatalStyle = lipgloss.NewStyle().
 				SetString("FATAL").
 				Padding(0, 1).
