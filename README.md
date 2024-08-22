@@ -30,7 +30,7 @@ func main() {
 
 ## `aocli`
 
-The second is a CLI application called `aocli` that can be used to interact with the Advent of Code workflow without leaving your terminal.
+The second, and more expansive, is a CLI application called `aocli` that can be used to interact with the Advent of Code workflow without leaving your terminal.
 
 It can currently do all of the following:
 - View puzzle data
@@ -44,9 +44,21 @@ You should install the program via this repo's ['Releases' page](https://github.
 
 ## Required Setup
 
-1. To obtain this token, log in to Advent of Code as the user you'd like to make requests and submissions as.  
-2. Open the Dev Console (Ctrl + Shift + I, F12, or Right Click -> Inspect), then go to the Network tab.
-3. Navigate to any puzzle's input page and inspect the GET request headers. You should see `Cookie: session=<your session token>`.
-4. Place everything after the equals sign (ignore `Cookie: session=`) in the file or the environment variable.
-5. Run `aocli health` to verify that everthing is loaded properly.
+All you need for this to work is the cookie session token of the user you'd like to use to interface with Advent of Code.
 
+1. To obtain this token, log in to Advent of Code via whichever method you prefer.
+2. Open any puzzle, and navigate to its puzzle input page. ([2015 Day 1 Input URL](https://adventofcode.com/2015/day/1/input))
+3. Open Dev Tools (Press F12 or Right Click -> Inspect), and then open the `Network` tab. 
+![Network Tab](./assets/Step3.png)
+4. With the `Network` tab open, Refresh the input page.
+5. You should see a `GET` request with a file of `input`. Click this request, and look for the `Cookie` key under `Request Headers`.
+![Request and Cookie](./assets/Step5.png)
+6. Grab everything after the equals sign (ignoring `session=`) and place it in one of these two places:
+    - `~/.config/aocgo/session.token`
+    - `AOC_SESSION_TOKEN` environment variable*
+For example, if my request header was `Cookie: session=abcxyz`, the token I would use is `abcxyz`
+
+*If you choose to use the environment variable method, make sure to include a line to set it in your shell's startup script.
+
+From there, you should be good to go! If you installed the CLI program, you can run `aocli health` to verify that everything loaded properly.
+![aocli health](./assets/aocliHealth.png)

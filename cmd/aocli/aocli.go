@@ -81,8 +81,6 @@ func main() {
 		// Update()
 		RunUpdateModel()
 		return
-	} else if args[1] == "leaderboard" {
-		Leaderboard(args)
 	}
 
 	log.Debug("Trying to create user")
@@ -119,6 +117,8 @@ func main() {
 		User(args, user)
 	case "clear-user":
 		clearUser(user)
+	case "leaderboard":
+		Leaderboard(args)
 	default:
 		fmt.Println("Not a valid command! Run `aocli help` to see valid commands.")
 	}
