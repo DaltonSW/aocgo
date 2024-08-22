@@ -22,7 +22,7 @@ Allows you to get the user input for a given year and day. Can be passed in as p
 
 Syntax: `aocli get [year] [day]`
 
-![aocli get demo](./assets/get.gif)]
+![aocli get demo](./assets/get.gif)
 
 ### `view`
 
@@ -30,7 +30,7 @@ Allows you to view the puzzle page for a given year and day. Can be passed in as
 
 Syntax: `aocli view [year] [day]`
 
-![aocli view demo](./assets/view.gif)]
+![aocli view demo](./assets/view.gif)
 
 ### `leaderboard`
 
@@ -38,7 +38,7 @@ Allows you to view the leaderboard for a given year, or given year + day. Passed
 
 Syntax: `aocli leaderboard <year> [day]`
 
-![aocli leaderboard demo](./assets/leaderboard.gif)]
+![aocli leaderboard demo](./assets/leaderboard.gif)
 
 ### `user`
 
@@ -46,7 +46,7 @@ Loads all available information for the available user. This essentially runs `v
 
 Syntax: `aocli user`
 
-![aocli user demo](./assets/user.gif)]
+![aocli user demo](./assets/user.gif)
 
 ### `submit`
 
