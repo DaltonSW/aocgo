@@ -64,8 +64,10 @@ func main() {
 
 	args := os.Args
 	if len(args) == 1 {
-		fmt.Println("Welcome to aocli! Try running `aocli help` for a list of available commands.")
-		os.Exit(0)
+		RunLandingPage()
+		return
+		// fmt.Println("Welcome to aocli! Try running `aocli help` for a list of available commands.")
+		// os.Exit(0)
 	}
 
 	log.Debug("Args parsed", "args", args[1:])
@@ -102,8 +104,6 @@ func main() {
 		Get(args, user)
 	case "submit":
 		Submit(args, user)
-	// case "load-user":
-	//	 loadUser(args, user)
 	case "reload":
 		Reload(args, user)
 	// case "run":
@@ -137,7 +137,7 @@ func main() {
 	currentSemVer := semver.Canonical(currentVersion)
 
 	if semver.Compare(latestSemVer, currentSemVer) > 0 {
-		log.Info("\nNew version available! Run `aocli update` to get the new version (or `sudo aocli update` if your executable is in a protected location)")
+		fmt.Println(styles.GlobalSpacingStyle.Render(styles.NormalTextStyle.Render(updateMessage)))
 	}
 
 	return
@@ -155,14 +155,7 @@ func ClearUser(user *resources.User) {
 //
 //	[command] - command name to print Help for
 func Help(args []string) {
-	// Clear terminal
-	fmt.Print("\033[H\033[2J")
-
-	// Too many args
-	if len(args) > 3 {
-		fmt.Println("Too many arguments passed!")
-		return
-	}
+	utils.ClearTerminal()
 
 	// They requested help for a specific command
 	if len(args) == 3 {
@@ -171,7 +164,7 @@ func Help(args []string) {
 		if ok {
 			ht.Print()
 		} else {
-			fmt.Println("Not a valid command!")
+			log.Error("Not a valid command!")
 		}
 		return
 	}
@@ -251,7 +244,10 @@ func Leaderboard(args []string) {
 
 	var lb resources.ViewableLB
 	if len(args) == 4 {
-		day, _ := utils.ParseDay(args[3])
+		day, err := utils.ParseDay(args[3])
+		if err != nil {
+			log.Fatal("Error parsing day from args.", "err", err)
+		}
 		lb = resources.NewDayLB(year, day)
 	} else {
 		lb = resources.NewYearLB(year)

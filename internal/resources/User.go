@@ -15,10 +15,6 @@ import (
 	"github.com/charmbracelet/log"
 )
 
-// TODO: Load user's name from a page
-// Attempt and do it bespokely on user creation
-// so we don't need to rely on other requests for it
-
 // User represents a session token and accompanying puzzles.
 type User struct {
 	DisplayName string
