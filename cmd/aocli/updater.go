@@ -18,8 +18,10 @@ import (
 )
 
 // Internally tracked version to compare against GitHub releases
-const currentVersion = "v0.9.8"
+const currentVersion = "v0.9.9"
 const repoURL = "https://api.github.com/repos/DaltonSW/aocGo/releases/latest"
+
+const updateMessage = "\nNew version available! Run `aocli update` to get the new version (or `sudo aocli update` if your executable is in a protected location)"
 
 type githubRelease struct {
 	TagName string `json:"tag_name"`
@@ -33,6 +35,13 @@ type githubRelease struct {
 // It will also check for any updates available.
 // Associated command: `version`
 func Version() {
+	fmt.Print(styles.GlobalSpacingStyle.Render(styles.NormalTextStyle.Render(("Current version: " + currentVersion))))
+}
+
+// Version will print the current version of the program.
+// It will also check for any updates available.
+// Associated command: `version`
+func CheckVersion() {
 	// TODO: I think this won't work offline
 	latestVersion, err := getLatestRelease()
 	if err != nil {
@@ -52,11 +61,9 @@ func Version() {
 	if semver.Compare(latestSemVer, currentSemVer) > 0 {
 		sOut = fmt.Sprintf("%v %v", styles.NormalTextStyle.Render("Current version :"), styles.RedTextStyle.Render(currentVersion))
 		sOut += fmt.Sprintf("%v %v", styles.NormalTextStyle.Render("\nLatest version  :"), styles.GreenTextStyle.Render(latestSemVer))
-		sOut += styles.NormalTextStyle.Render("\nNew version available! Run `aocli update` to get the new version (or `sudo aocli update` if your executable is in a protected location)")
 	} else {
 		sOut = fmt.Sprintf("%v %v", styles.NormalTextStyle.Render("Current version :"), styles.BlueTextStyle.Render(currentVersion))
 		sOut += fmt.Sprintf("%v %v", styles.NormalTextStyle.Render("\nLatest version  :"), styles.BlueTextStyle.Render(latestSemVer))
-		sOut += styles.NormalTextStyle.Render("\n\nYou're up-to-date!")
 	}
 
 	fmt.Println(styles.GlobalSpacingStyle.Render(sOut))
@@ -194,10 +201,10 @@ func (m updateModel) View() string {
 	var status string
 
 	if m.err != nil {
-		symbol = lipgloss.NewStyle().Foreground(styles.RedText).Render(styles.FailureX)
+		symbol = lipgloss.NewStyle().Foreground(styles.RedTextColor).Render(styles.FailureX)
 		status = m.err.Error()
 	} else if m.done {
-		symbol = lipgloss.NewStyle().Foreground(styles.GreenText).Render(styles.Checkmark)
+		symbol = lipgloss.NewStyle().Foreground(styles.GreenTextColor).Render(styles.Checkmark)
 		status = m.status
 	} else {
 		symbol = m.spinner.View()

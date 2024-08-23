@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"fmt"
 	"os"
 	"os/exec"
 	"runtime"
@@ -10,6 +11,10 @@ import (
 	"github.com/charmbracelet/log"
 	"golang.org/x/term"
 )
+
+func ClearTerminal() {
+	fmt.Print("\033[H\033[2J")
+}
 
 func GetTerminalSize() (int, int, error) {
 	width, height, err := term.GetSize(int(os.Stdin.Fd()))
