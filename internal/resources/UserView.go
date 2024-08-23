@@ -2,14 +2,15 @@ package resources
 
 import (
 	"fmt"
+	"strconv"
 
 	"dalton.dog/aocgo/internal/styles"
 	"dalton.dog/aocgo/internal/utils"
 	"github.com/charmbracelet/bubbles/spinner"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/charmbracelet/lipgloss/table"
 	"github.com/charmbracelet/log"
-	"github.com/evertras/bubble-table/table"
 )
 
 // Message to indicate a puzzle has finished loading
@@ -21,7 +22,7 @@ type loadDoneMsg struct {
 
 // Message to indicate that the user table is ready to display
 type tableDoneMsg struct {
-	table table.Model
+	table table.Table
 }
 
 // LoadUserModel is the BubbleTea model for loading and displaying
@@ -33,7 +34,7 @@ type LoadUserModel struct {
 	curDate  int
 	finished bool
 
-	table   table.Model
+	table   table.Table
 	spinner spinner.Model
 	status  string
 }
@@ -107,7 +108,7 @@ func (m LoadUserModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 func (m LoadUserModel) View() string {
 	if m.finished {
-		sOut := fmt.Sprintf("%v\n%v\n%v\n", header(m.user.DisplayName), m.table.View(), footer())
+		sOut := fmt.Sprintf("%v\n%v\n%v\n", styles.NormalTextStyle.Render(header(m.user.DisplayName)), m.table.Render(), styles.NormalTextStyle.Render(footer()))
 		return styles.GlobalSpacingStyle.Render(sOut)
 	} else {
 		return styles.GlobalSpacingStyle.Render(m.spinner.View() + " " + m.status)
@@ -134,8 +135,14 @@ func loadPuzzle(year, day int, userToken string) tea.Cmd {
 
 func generateTable(userToken string) tea.Cmd {
 	return func() tea.Msg {
-		var rows []table.Row
 		maxYear, maxDay := utils.GetCurrentMaxYearAndDay()
+
+		t := table.New().
+			Headers("Year", "01", "02", "03", "04", "05", "06", "07", "08", "09",
+				"10", "11", "12", "13", "14", "15", "16", "17", "18", "19",
+				"20", "21", "22", "23", "24", "25", "Num").
+			Border(lipgloss.NormalBorder()).
+			BorderStyle(lipgloss.NewStyle().Foreground(lipgloss.Color("99")))
 
 		y := utils.FIRST_YEAR
 		for y <= maxYear {
@@ -143,52 +150,22 @@ func generateTable(userToken string) tea.Cmd {
 			if y == maxYear {
 				day = maxDay
 			}
-			rows = append(rows, getRowForYear(userToken, y, day))
+			t.Row(getRowForYear(userToken, y, day)...)
 			y++
 		}
 
-		newTable := table.New([]table.Column{
-			table.NewColumn("Year", "Year", 4),
-			table.NewColumn("1", "1", 2),
-			table.NewColumn("2", "2", 2),
-			table.NewColumn("3", "3", 2),
-			table.NewColumn("4", "4", 2),
-			table.NewColumn("5", "5", 2),
-			table.NewColumn("6", "6", 2),
-			table.NewColumn("7", "7", 2),
-			table.NewColumn("8", "8", 2),
-			table.NewColumn("9", "9", 2),
-			table.NewColumn("10", "10", 2),
-			table.NewColumn("11", "11", 2),
-			table.NewColumn("12", "12", 2),
-			table.NewColumn("13", "13", 2),
-			table.NewColumn("14", "14", 2),
-			table.NewColumn("15", "15", 2),
-			table.NewColumn("16", "16", 2),
-			table.NewColumn("17", "17", 2),
-			table.NewColumn("18", "18", 2),
-			table.NewColumn("19", "19", 2),
-			table.NewColumn("20", "20", 2),
-			table.NewColumn("21", "21", 2),
-			table.NewColumn("22", "22", 2),
-			table.NewColumn("23", "23", 2),
-			table.NewColumn("24", "24", 2),
-			table.NewColumn("25", "25", 2),
-			table.NewColumn("Num", "Num", 3),
-		}).WithRows(rows).BorderRounded().WithBaseStyle(styles.UserTableStyle)
-		return tableDoneMsg{table: newTable}
+		return tableDoneMsg{table: *t}
 	}
 }
 
-func getRowForYear(userToken string, year, day int) table.Row {
-	stars := make([]string, 26)
+func getRowForYear(userToken string, year, day int) []string {
+	stars := make([]string, 27)
 	d := 1
 	numStars := 0
 
 	for d <= day {
 		p := LoadOrCreatePuzzle(year, d, userToken)
 		var sOut string
-		// log.Info(numStars)
 		if p.AnswerTwo != "" {
 			sOut = lipgloss.NewStyle().Foreground(styles.BothStarsColor).Render("*")
 			numStars += 2
@@ -201,7 +178,7 @@ func getRowForYear(userToken string, year, day int) table.Row {
 				numStars += 1
 			}
 		} else {
-			sOut = lipgloss.NewStyle().Foreground(styles.NoStarsColor).Render("-")
+			sOut = lipgloss.NewStyle().Foreground(styles.SubtitleColor).Render(".")
 		}
 		stars[d] = sOut
 		d++
@@ -213,33 +190,8 @@ func getRowForYear(userToken string, year, day int) table.Row {
 		}
 	}
 
-	return table.NewRow(table.RowData{
-		"Year": year,
-		"1":    stars[1],
-		"2":    stars[2],
-		"3":    stars[3],
-		"4":    stars[4],
-		"5":    stars[5],
-		"6":    stars[6],
-		"7":    stars[7],
-		"8":    stars[8],
-		"9":    stars[9],
-		"10":   stars[10],
-		"11":   stars[11],
-		"12":   stars[12],
-		"13":   stars[13],
-		"14":   stars[14],
-		"15":   stars[15],
-		"16":   stars[16],
-		"17":   stars[17],
-		"18":   stars[18],
-		"19":   stars[19],
-		"20":   stars[20],
-		"21":   stars[21],
-		"22":   stars[22],
-		"23":   stars[23],
-		"24":   stars[24],
-		"25":   stars[25],
-		"Num":  numStars,
-	})
+	stars[0] = strconv.Itoa(year)
+	stars[26] = strconv.Itoa(numStars)
+
+	return stars
 }
