@@ -4,8 +4,9 @@ import (
 	"fmt"
 	"math/rand"
 
-	"dalton.dog/aocgo/internal/styles"
-	"dalton.dog/aocgo/internal/utils"
+	"go.dalton.dog/aocgo/internal/styles"
+	"go.dalton.dog/aocgo/internal/utils"
+
 	"github.com/charmbracelet/lipgloss"
 	"github.com/charmbracelet/log"
 )

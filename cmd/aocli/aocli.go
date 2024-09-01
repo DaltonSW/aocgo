@@ -8,13 +8,15 @@ import (
 	"strings"
 	"time"
 
-	"dalton.dog/aocgo/internal/cache"
-	"dalton.dog/aocgo/internal/resources"
-	"dalton.dog/aocgo/internal/session"
-	"dalton.dog/aocgo/internal/styles"
-	"dalton.dog/aocgo/internal/utils"
+	"go.dalton.dog/aocgo/internal/cache"
+	"go.dalton.dog/aocgo/internal/resources"
+	"go.dalton.dog/aocgo/internal/session"
+	"go.dalton.dog/aocgo/internal/styles"
+	"go.dalton.dog/aocgo/internal/utils"
+
 	"github.com/charmbracelet/lipgloss"
 	"github.com/charmbracelet/log"
+
 	"golang.org/x/mod/semver"
 )
 

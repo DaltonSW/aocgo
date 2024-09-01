@@ -5,11 +5,11 @@ import (
 	"strings"
 	"time"
 
-	"dalton.dog/aocgo/internal/api"
-	"dalton.dog/aocgo/internal/session"
+	"go.dalton.dog/aocgo/internal/api"
+	"go.dalton.dog/aocgo/internal/session"
+	"go.dalton.dog/aocgo/internal/utils"
 
 	// "dalton.dog/aocgo/internal/styles"
-	"dalton.dog/aocgo/internal/utils"
 	"github.com/PuerkitoBio/goquery"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/log"

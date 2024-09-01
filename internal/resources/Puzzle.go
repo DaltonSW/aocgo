@@ -8,10 +8,10 @@ import (
 	"strings"
 	"time"
 
-	"dalton.dog/aocgo/internal/api"
-	"dalton.dog/aocgo/internal/cache"
-	"dalton.dog/aocgo/internal/styles"
-	"dalton.dog/aocgo/internal/utils"
+	"go.dalton.dog/aocgo/internal/api"
+	"go.dalton.dog/aocgo/internal/cache"
+	"go.dalton.dog/aocgo/internal/styles"
+	"go.dalton.dog/aocgo/internal/utils"
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/charmbracelet/lipgloss"

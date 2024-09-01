@@ -7,7 +7,7 @@ Definitely go support the official project, especially since this project would 
 
 The first encompasses the `go` module of the same name. This module contains a main package with some functions for obtaining input for a given day based on the file's directory structure. It also contains an `aocutils` sub-package, containing some helpful functions for common things you might need when solving AoC puzzles. If you want to handle all of that yourself, don't worry about importing this.
 
-This module should be imported using `go get dalton.dog/aocgo`.
+This module should be imported using `go get go.dalton.dog/aocgo`.
 
 Example:
 ```go
@@ -15,7 +15,7 @@ Example:
 // 2015/1/main.go
 package main
 
-import "dalton.dog/aocgo"
+import "go.dalton.dog/aocgo"
 
 func main() {
     // Get your input data as a string, exactly as the input has it

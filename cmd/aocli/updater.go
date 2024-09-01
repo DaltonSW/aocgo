@@ -9,11 +9,13 @@ import (
 	"runtime"
 	"strings"
 
-	"dalton.dog/aocgo/internal/styles"
+	"go.dalton.dog/aocgo/internal/styles"
+
 	"github.com/charmbracelet/bubbles/spinner"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/charmbracelet/log"
+
 	"golang.org/x/mod/semver"
 )
 

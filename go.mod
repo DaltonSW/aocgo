@@ -1,4 +1,4 @@
-module dalton.dog/aocgo
+module go.dalton.dog/aocgo
 
 retract (
 	v0.0.1

@@ -4,10 +4,11 @@ package aocgo
 import (
 	"strings"
 
-	"dalton.dog/aocgo/internal/cache"
-	"dalton.dog/aocgo/internal/resources"
-	"dalton.dog/aocgo/internal/session"
-	"dalton.dog/aocgo/internal/utils"
+	"go.dalton.dog/aocgo/internal/cache"
+	"go.dalton.dog/aocgo/internal/resources"
+	"go.dalton.dog/aocgo/internal/session"
+	"go.dalton.dog/aocgo/internal/utils"
+
 	"github.com/charmbracelet/log"
 )
 

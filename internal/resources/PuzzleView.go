@@ -5,13 +5,13 @@ import (
 	"os"
 	"strings"
 
-	"dalton.dog/aocgo/internal/utils"
 	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/charmbracelet/log"
+	"go.dalton.dog/aocgo/internal/utils"
 	"golang.org/x/term"
 )
 

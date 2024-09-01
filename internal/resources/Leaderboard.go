@@ -5,8 +5,8 @@ import (
 	"strconv"
 	"strings"
 
-	"dalton.dog/aocgo/internal/api"
-	"dalton.dog/aocgo/internal/styles"
+	"go.dalton.dog/aocgo/internal/api"
+	"go.dalton.dog/aocgo/internal/styles"
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/charmbracelet/lipgloss"

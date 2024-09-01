@@ -4,8 +4,9 @@ import (
 	"fmt"
 	"strconv"
 
-	"dalton.dog/aocgo/internal/styles"
-	"dalton.dog/aocgo/internal/utils"
+	"go.dalton.dog/aocgo/internal/styles"
+	"go.dalton.dog/aocgo/internal/utils"
+
 	"github.com/charmbracelet/bubbles/spinner"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
