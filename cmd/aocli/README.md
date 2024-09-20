@@ -4,6 +4,8 @@
 
 It is implemented with rate limiting and local caching to ensure we're not hitting the servers more often than necessary.
 
+!["aocli landing page"]("../../assets/LandingPage.png")
+
 Cached information is stored in `~/.cache/aocgo/<session_token>.db`.
 
 ## Available Commands

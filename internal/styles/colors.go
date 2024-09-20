@@ -11,8 +11,8 @@ var (
 	BlueTextColor   = lipgloss.AdaptiveColor{Light: "#4171AE", Dark: "#74B2FF"}
 	PurpleTextColor = lipgloss.AdaptiveColor{Light: "#8959A8", Dark: "#AE81FF"}
 	CyanTextColor   = lipgloss.AdaptiveColor{Light: "#3E999F", Dark: "#58E1DB"}
-	BrownTextColor  = lipgloss.AdaptiveColor{Light: "#3D251E", Dark: "#4A2B22"}
-	SubtitleColor   = lipgloss.AdaptiveColor{Light: "#D0D0D0", Dark: "#444444"}
+	BrownTextColor  = lipgloss.AdaptiveColor{Light: "#3D251E", Dark: "#6A4A3A"}
+	SubtitleColor   = lipgloss.AdaptiveColor{Light: "#D0D0D0", Dark: "#777B7E"}
 
 	// Answer colors
 	CorrectAnswerStyle   = lipgloss.NewStyle().Foreground(GreenTextColor)
