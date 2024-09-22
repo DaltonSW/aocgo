@@ -13,11 +13,12 @@ import (
 	"golang.org/x/time/rate"
 )
 
-const USER_AGENT = "dalton.dog/aocgo"
+const USER_AGENT = "go.dalton.dog/aocgo"
 const BASE_URL = "https://adventofcode.com"
 const YEAR_URL = BASE_URL + "/%v"
 const DAY_URL = YEAR_URL + "/day/%v"
 
+// Number of API requests allowed per second.
 const REQS_PER_SEC = 10
 
 var MasterClient httpClient
@@ -28,8 +29,7 @@ type httpClient struct {
 	rateLimiter  *rate.Limiter
 }
 
-// Do is a wrapper around a normal client call in
-// order to use our rate limiter.
+// Do is a wrapper around a normal client call in order to use our rate limiter.
 func (c *httpClient) Do(req *http.Request) (*http.Response, error) {
 	err := c.rateLimiter.Wait(context.Background())
 	if err != nil {
@@ -44,7 +44,7 @@ func (c *httpClient) Do(req *http.Request) (*http.Response, error) {
 	return resp, nil
 }
 
-// InitClient creates the API client with a given user session token
+// InitClient creates the API client with a given user session token.
 func InitClient(userSessionToken string) {
 	limiter := rate.NewLimiter(rate.Every(time.Second/REQS_PER_SEC), 1)
 	client := httpClient{
@@ -55,10 +55,9 @@ func InitClient(userSessionToken string) {
 	MasterClient = client
 }
 
-// NewGetReq will make a request of a certain URL on behalf
-// of a given user session token.
+// NewGetReq will make a request of a certain URL on behalf of a given user session token.
 func NewGetReq(url string, sessionToken string) (*http.Response, error) {
-	log.Debug("Making GET request.", "URL", url)
+	log.Debug("Making GET request.", "URL", url, "token", sessionToken)
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		log.Fatal("Error creating GET request!", "error", err)
@@ -74,8 +73,7 @@ func NewGetReq(url string, sessionToken string) (*http.Response, error) {
 	return MasterClient.Do(req)
 }
 
-// SubmitAnswer will submit an answer to a puzzle on
-// behalf of a given user token.
+// SubmitAnswer will submit an answer to a puzzle on behalf of a given user token.
 func SubmitAnswer(year int, day int, part int, userSession string, answer string) (*http.Response, error) {
 	URL := PuzzleAnswerURL(year, day)
 	log.Debugf("Attempting to submit answer for Day %v (%v) [Part %v] to URL %v", day, year, part, URL)
