@@ -138,18 +138,22 @@ func Health() {
 //	(Req) answer - Answer to submit to the server
 //	(Opt) year   - 2 or 4 digit year (16 or 2016)
 //	(Opt) day    - 1 or 2 digit day (1, 01, 21)
-func Submit(args []string, user *resources.User, yearIn, dayIn string, partIn int) {
+func Submit(user *resources.User, yearIn, dayIn, answer string, partIn int) {
 	var year, day int
 	var err error
 
 	if yearIn != "0" {
 		year, err = utils.ParseYear(yearIn)
-		log.Fatal("Couldn't parse provided year argument.", "err", err)
+		if err != nil {
+			log.Fatal("Couldn't parse provided year argument.", "err", err)
+		}
 	}
 
 	if dayIn != "0" {
 		day, err = utils.ParseDay(dayIn)
-		log.Fatal("Couldn't parse provided day argument.", "err", err)
+		if err != nil {
+			log.Fatal("Couldn't parse provided day argument.", "err", err)
+		}
 	}
 
 	if day == 0 || year == 0 {
@@ -168,12 +172,10 @@ func Submit(args []string, user *resources.User, yearIn, dayIn string, partIn in
 
 	}
 
-	answer := args[2]
-
 	puzzle := resources.LoadOrCreatePuzzle(year, day, user.SessionTok)
 
 	var part int
-	if partIn != 1 && partIn != 2 {
+	if partIn < 0 || partIn > 2 {
 		part = 0
 		log.Error("Part provided by option is invalid. Using default part for submission.")
 	} else {

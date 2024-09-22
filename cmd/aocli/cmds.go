@@ -4,6 +4,8 @@ package main
 
 // TODO: Implement an `offline` check
 
+// TODO: Update godocs
+
 import (
 	"github.com/charmbracelet/log"
 	"github.com/spf13/cobra"
@@ -45,7 +47,7 @@ var rootCmd = &cobra.Command{
 	Short: "A CLI tool for interacting with Advent of Code puzzles.",
 	Args:  cobra.NoArgs,
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
-		log.SetLevel(log.DebugLevel)
+		// log.SetLevel(log.DebugLevel)
 		var err error
 
 		UserRsrc, err = resources.NewUser("")
@@ -101,9 +103,7 @@ var submitCmd = &cobra.Command{
 	Short: "Submits the given answer to a puzzle.",
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		// NOTE: Need to pass in answer from args[]
-		// ... or just leave it as is?
-		Submit(args, UserRsrc, Year, Day, AnswerPart)
+		Submit(UserRsrc, Year, Day, args[0], AnswerPart)
 	},
 }
 
