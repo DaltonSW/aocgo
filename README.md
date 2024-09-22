@@ -33,7 +33,7 @@ func main() {
 
 The second, and more expansive, is a CLI application called `aocli` that can be used to interact with the Advent of Code workflow without leaving your terminal.
 
-!["aocli landing page"]("./assets/LandingPage.png")
+!["aocli landing page"](./assets/LandingPage.png)
 
 It can currently do all of the following:
 - View puzzle data
