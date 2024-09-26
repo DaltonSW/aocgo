@@ -179,7 +179,7 @@ func getRowForYear(userToken string, year, day int) []string {
 				numStars += 1
 			}
 		} else {
-			sOut = lipgloss.NewStyle().Foreground(styles.SubtitleColor).Render(".")
+			sOut = lipgloss.NewStyle().Foreground(styles.NoStarsColor).Render(".")
 		}
 		stars[d] = sOut
 		d++

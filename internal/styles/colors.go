@@ -26,7 +26,7 @@ var (
 	BronzeColor = lipgloss.AdaptiveColor{Light: "#CD7F32", Dark: "#CD7F32"}
 
 	// Table colors
-	TableBorderColor = PurpleTextColor
+	TableBorderColor = lipgloss.AdaptiveColor{Light: "#8839EF", Dark: "#BD93F9"}
 
 	// Puzzle view colors
 	ItalColor = lipgloss.AdaptiveColor{Light: "#FF3374", Dark: "#FF3374"}
@@ -35,9 +35,9 @@ var (
 	CodeColor = lipgloss.AdaptiveColor{Light: "#FAC3D5", Dark: "#FAC3D5"}
 
 	// User display colors
-	BothStarsColor = lipgloss.Color("#FFFF66")
-	FirstStarColor = lipgloss.Color("#9999CC")
-	NoStarsColor   = lipgloss.Color("#0F0F23")
+	BothStarsColor = lipgloss.Color("#F1FA8C")
+	FirstStarColor = lipgloss.Color("#838BA7")
+	NoStarsColor   = lipgloss.Color("#414559")
 
 	// Misc colors
 	UpdateSpinnerColor = lipgloss.Color("#FB25A0")
