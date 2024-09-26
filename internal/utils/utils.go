@@ -25,7 +25,13 @@ func GetTerminalSize() (int, int, error) {
 }
 
 func GetCurrentMaxYearAndDay() (int, int) {
-	nowYear, nowMonth, nowDay := time.Now().Date()
+	loc, err := time.LoadLocation("America/New_York")
+
+	if err != nil {
+		log.Fatal("Error loading location:", err)
+	}
+
+	nowYear, nowMonth, nowDay := time.Now().In(loc).Date()
 	if nowMonth != time.December {
 		return nowYear - 1, 25
 	} else {
