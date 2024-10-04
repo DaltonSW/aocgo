@@ -8,7 +8,6 @@ import (
 	"strconv"
 	"strings"
 	"time"
-	// "github.com/charmbracelet/log"
 )
 
 const (
@@ -44,6 +43,7 @@ func GetYearAndDayFromDirInput(curDir, parentDir string) (int, int, error) {
 
 func ParseYear(yearStr string) (int, error) {
 	re := regexp.MustCompile(`\d+`)
+	yearStr = strings.TrimSpace(yearStr)
 	match := re.FindString(yearStr)
 	var outYear, year int
 	var err error
@@ -61,7 +61,7 @@ func ParseYear(yearStr string) (int, error) {
 	}
 
 	if outYear < FIRST_YEAR {
-		return 0, errors.New("Year parsed to be earlier than 2016.")
+		return 0, errors.New(fmt.Sprintf("Year parsed to be earlier than %v.", FIRST_YEAR))
 	}
 
 	var maxYear int
@@ -79,6 +79,7 @@ func ParseYear(yearStr string) (int, error) {
 }
 
 func ParseDay(dayStr string) (int, error) {
+	dayStr = strings.TrimSpace(dayStr)
 	re := regexp.MustCompile(`\d+`)
 	match := re.FindString(dayStr)
 	outInt, err := strconv.Atoi(match)

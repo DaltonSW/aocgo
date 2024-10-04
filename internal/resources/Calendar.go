@@ -3,10 +3,10 @@ package resources
 type Year struct {
 	numStars    int
 	days        []*Day
-	leaderboard YearLB
+	leaderboard Leaderboard
 }
 
 type Day struct {
 	puzzle      Puzzle
-	leaderboard DayLB
+	leaderboard Leaderboard
 }

@@ -104,9 +104,9 @@ func Leaderboard(yearIn, dayIn string) {
 		if err != nil {
 			log.Fatal("Error parsing day from args.", "err", err)
 		}
-		lb = resources.NewDayLB(year, day)
+		lb = resources.NewLeaderboard(year, day)
 	} else {
-		lb = resources.NewYearLB(year)
+		lb = resources.NewLeaderboard(year, 0)
 	}
 
 	if lb == nil {

@@ -33,30 +33,62 @@ type Placing struct {
 	Score int
 }
 
-// YearLB is the model to handle the leaderboard for a year as a whole
-type YearLB struct {
-	Year      int
-	Positions []*Placing
+// Leaderboard is a wrapper for either a yearly or daily leaderboard
+type Leaderboard struct {
+	Year int
+	Day  int
+
+	FirstHundred  []*Placing
+	SecondHundred []*Placing
+
+	BucketName string
 }
 
-func (l *YearLB) GetTitle() string {
-	return fmt.Sprintf("Leaderboard -- Year: %d", l.Year)
-}
-
-// NewYearLB creates and returns a new whole-year leaderboard
-func NewYearLB(year int) *YearLB {
-	lb := &YearLB{
-		Year:      year,
-		Positions: make([]*Placing, 0, 100),
+// NewLeaderboard will create a leaderboard object based on the parameters.
+// If you want to create a leaderboard for an entire year, pass in 0 for day
+func NewLeaderboard(year, day int) *Leaderboard {
+	lb := &Leaderboard{
+		Year:         year,
+		Day:          day,
+		FirstHundred: make([]*Placing, 0, 100),
+	}
+	if day > 0 {
+		lb.SecondHundred = make([]*Placing, 0, 100)
 	}
 
-	lb.LoadPositions()
+	lb.LoadPlacings()
 
 	return lb
 }
 
-// LoadPositions will get all of the yearly positions
-func (lb *YearLB) LoadPositions() error {
+// LoadPlacings will load all of the placings for a given year or date
+func (lb *Leaderboard) LoadPlacings() {
+	if lb.Day == 0 {
+		lb.loadYearlyLB()
+	} else {
+		lb.loadDailyLB()
+	}
+
+}
+
+// GetTitle will get the appropriate viewport title for the leaderboard
+func (lb *Leaderboard) GetTitle() string {
+	if lb.Day == 0 {
+		return fmt.Sprintf("Leaderboard -- Year: %d", lb.Year)
+	}
+	return fmt.Sprintf("Leaderboard -- Year: %d, Day: %d", lb.Year, lb.Day)
+}
+
+// GetContent will get the lb content in a printable format
+func (lb *Leaderboard) GetContent() string {
+	if lb.Day == 0 {
+		return lb.getYearlyContent()
+	} else {
+		return lb.getDailyContent()
+	}
+}
+
+func (lb *Leaderboard) loadYearlyLB() error {
 	URL := fmt.Sprintf("https://adventofcode.com/%v/leaderboard", lb.Year)
 	resp, err := api.NewGetReq(URL, "")
 
@@ -110,55 +142,27 @@ func (lb *YearLB) LoadPositions() error {
 			Position:    intPlace,
 		})
 	})
-	lb.Positions = placings
+	lb.FirstHundred = placings
 
 	return nil
 }
 
-// GetContent will get the lb content in a printable format
-func (lb *YearLB) GetContent() string {
+func (lb *Leaderboard) getYearlyContent() string {
 	t := table.New().
 		Border(lipgloss.NormalBorder()).
 		BorderStyle(lipgloss.NewStyle().Foreground(lipgloss.Color("99"))).
 		Headers("Place", "Score", "Display Name").
 		StyleFunc(styles.GetLeaderboardStyle)
 
-	for _, p := range lb.Positions {
+	for _, p := range lb.FirstHundred {
 		t.Row(strconv.Itoa(p.Position), strconv.Itoa(p.Score), p.DisplayName)
 	}
 
 	return t.Render()
 }
 
-// DayLB is the model to handle a specific day's leaderboard
-type DayLB struct {
-	Year int
-	Day  int
-
-	BothStars []*Placing
-	FirstStar []*Placing
-}
-
-func (l *DayLB) GetTitle() string {
-	return fmt.Sprintf("Leaderboard -- Year: %d, Day: %d", l.Year, l.Day)
-}
-
-// NewDayLB creates a new leaderboard for a single day
-func NewDayLB(year, day int) *DayLB {
-	lb := &DayLB{
-		Year:      year,
-		Day:       day,
-		FirstStar: make([]*Placing, 100),
-		BothStars: make([]*Placing, 100),
-	}
-
-	lb.LoadPositions()
-
-	return lb
-}
-
 // LoadPositions will get all of the daily positions
-func (lb *DayLB) LoadPositions() error {
+func (lb *Leaderboard) loadDailyLB() error {
 	URL := fmt.Sprintf("https://adventofcode.com/%v/leaderboard/day/%v", lb.Year, lb.Day)
 	resp, err := api.NewGetReq(URL, "")
 
@@ -209,7 +213,7 @@ func (lb *DayLB) LoadPositions() error {
 			if firstPass {
 				firstPass = false
 			} else {
-				lb.BothStars = placings
+				lb.FirstHundred = placings
 				placings = make([]*Placing, 0)
 			}
 		}
@@ -222,20 +226,20 @@ func (lb *DayLB) LoadPositions() error {
 		})
 	})
 
-	lb.FirstStar = placings
+	lb.SecondHundred = placings
 
 	return nil
 }
 
 // GetContent will get the lb content in a printable format
-func (lb *DayLB) GetContent() string {
+func (lb *Leaderboard) getDailyContent() string {
 	tOne := table.New().
 		Border(lipgloss.NormalBorder()).
 		BorderStyle(lipgloss.NewStyle().Foreground(lipgloss.Color("99"))).
 		Headers("Place", "Time Done (EST)", "Display Name").
 		StyleFunc(styles.GetLeaderboardStyle)
 
-	for _, p := range lb.BothStars {
+	for _, p := range lb.FirstHundred {
 		pos := strconv.Itoa(p.Position)
 		ft := p.FinishTime
 		name := p.DisplayName
@@ -250,7 +254,7 @@ func (lb *DayLB) GetContent() string {
 		Headers("Place", "Time Done (EST)", "Display Name").
 		StyleFunc(styles.GetLeaderboardStyle)
 
-	for _, p := range lb.FirstStar {
+	for _, p := range lb.SecondHundred {
 		pos := strconv.Itoa(p.Position)
 		ft := p.FinishTime
 		name := p.DisplayName
