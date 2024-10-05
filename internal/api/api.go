@@ -13,6 +13,7 @@ import (
 	"golang.org/x/time/rate"
 )
 
+// USER_AGENT is used to identify requests from this program
 const USER_AGENT = "go.dalton.dog/aocgo"
 const BASE_URL = "https://adventofcode.com"
 const YEAR_URL = BASE_URL + "/%v"
@@ -83,7 +84,7 @@ func NewGetReq(url string, sessionToken string) (*http.Response, error) {
 
 // SubmitAnswer will submit an answer to a puzzle on behalf of a given user token.
 func SubmitAnswer(year int, day int, part int, userSession string, answer string) (*http.Response, error) {
-	URL := PuzzleAnswerURL(year, day)
+	URL := puzzleAnswerURL(year, day)
 	log.Debugf("Attempting to submit answer for Day %v (%v) [Part %v] to URL %v", day, year, part, URL)
 	log.Debugf("Answer: %v -- User: %v", answer, userSession)
 
@@ -107,14 +108,6 @@ func SubmitAnswer(year int, day int, part int, userSession string, answer string
 
 // URL Helper Methods
 
-func PuzzlePageURL(year int, day int) string {
-	return fmt.Sprintf(DAY_URL, year, day)
-}
-
-func PuzzleInputURL(year int, day int) string {
-	return fmt.Sprintf(DAY_URL, year, day) + "/input"
-}
-
-func PuzzleAnswerURL(year int, day int) string {
+func puzzleAnswerURL(year int, day int) string {
 	return fmt.Sprintf(DAY_URL, year, day) + "/answer"
 }
