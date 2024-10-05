@@ -5,6 +5,7 @@ import (
 	"os"
 	"os/exec"
 	"runtime"
+	"strconv"
 	"strings"
 	"time"
 
@@ -77,4 +78,8 @@ func isWSL() bool {
 		return false
 	}
 	return strings.Contains(strings.ToLower(string(data)), "microsoft")
+}
+
+func GetResouceBucketID(year, day int) string {
+	return strconv.Itoa(year) + strconv.Itoa(day)
 }

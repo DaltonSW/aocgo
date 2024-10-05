@@ -1,12 +1,15 @@
 package resources
 
 import (
+	"encoding/json"
 	"fmt"
 	"strconv"
 	"strings"
 
 	"go.dalton.dog/aocgo/internal/api"
+	"go.dalton.dog/aocgo/internal/cache"
 	"go.dalton.dog/aocgo/internal/styles"
+	"go.dalton.dog/aocgo/internal/utils"
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/charmbracelet/lipgloss"
@@ -44,9 +47,22 @@ type Leaderboard struct {
 	BucketName string
 }
 
-// NewLeaderboard will create a leaderboard object based on the parameters.
+func (lb *Leaderboard) GetID() string                { return utils.GetResouceBucketID(lb.Year, lb.Day) }
+func (lb *Leaderboard) GetBucketName() string        { return cache.PUZZLES }
+func (lb *Leaderboard) MarshalData() ([]byte, error) { return json.Marshal(lb) }
+func (lb *Leaderboard) SaveResource()                { cache.SaveResource(lb) }
+
+// LoadOrCreateLeaderboard will create a leaderboard object based on the parameters.
 // If you want to create a leaderboard for an entire year, pass in 0 for day
-func NewLeaderboard(year, day int) *Leaderboard {
+func LoadOrCreateLeaderboard(year, day int) *Leaderboard {
+	lbData := cache.LoadResource(cache.LEADERBOARDS, utils.GetResouceBucketID(year, day))
+
+	if lbData != nil {
+		var lb *Leaderboard
+		json.Unmarshal(lbData, &lb)
+		return lb
+	}
+
 	lb := &Leaderboard{
 		Year:         year,
 		Day:          day,
@@ -57,6 +73,8 @@ func NewLeaderboard(year, day int) *Leaderboard {
 	}
 
 	lb.LoadPlacings()
+
+	lb.SaveResource()
 
 	return lb
 }
