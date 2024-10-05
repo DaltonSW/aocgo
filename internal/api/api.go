@@ -19,7 +19,8 @@ const YEAR_URL = BASE_URL + "/%v"
 const DAY_URL = YEAR_URL + "/day/%v"
 
 // Number of API requests allowed per second.
-const REQS_PER_SEC = 10
+const ONSEASON_REQS_PER_SEC = 10
+const OFFSEASON_REQS_PER_SEC = 25
 
 var MasterClient httpClient
 
@@ -46,7 +47,14 @@ func (c *httpClient) Do(req *http.Request) (*http.Response, error) {
 
 // InitClient creates the API client with a given user session token.
 func InitClient(userSessionToken string) {
-	limiter := rate.NewLimiter(rate.Every(time.Second/REQS_PER_SEC), 1)
+	var reqsPerSec int
+	if time.Now().Month() <= time.October && time.Now().Month() >= time.March {
+		reqsPerSec = OFFSEASON_REQS_PER_SEC
+	} else {
+		reqsPerSec = ONSEASON_REQS_PER_SEC
+	}
+
+	limiter := rate.NewLimiter(rate.Every(time.Second/time.Duration(reqsPerSec)), 1)
 	client := httpClient{
 		client:       http.Client{},
 		sessionToken: userSessionToken,
