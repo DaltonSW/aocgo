@@ -19,7 +19,7 @@ import (
 )
 
 // Internally tracked version to compare against GitHub releases
-const currentVersion = "v0.8.11"
+const currentVersion = "v0.9.11"
 const repoURL = "https://api.github.com/repos/DaltonSW/aocGo/releases/latest"
 
 const updateMessage = "New version available: %v\nRun `aocli update` to get the new version (or `sudo aocli update` if your executable is in a protected location)"
