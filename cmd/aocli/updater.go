@@ -15,15 +15,14 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/charmbracelet/log"
-
 	"golang.org/x/mod/semver"
 )
 
 // Internally tracked version to compare against GitHub releases
-const currentVersion = "v0.9.11"
+const currentVersion = "v0.8.11"
 const repoURL = "https://api.github.com/repos/DaltonSW/aocGo/releases/latest"
 
-const updateMessage = "\nNew version available! Run `aocli update` to get the new version (or `sudo aocli update` if your executable is in a protected location)"
+const updateMessage = "New version available: %v\nRun `aocli update` to get the new version (or `sudo aocli update` if your executable is in a protected location)"
 
 type githubRelease struct {
 	TagName string `json:"tag_name"`
@@ -37,14 +36,12 @@ type githubRelease struct {
 // It will also check for any updates available.
 // Associated command: `version`
 func Version() {
-	fmt.Println(styles.GlobalSpacingStyle.Render(styles.NormalTextStyle.Render(("Current version: " + currentVersion))))
+	fmt.Print(styles.GlobalSpacingStyle.Render(styles.NormalTextStyle.Render(("Current version: " + currentVersion))))
 }
 
-// Version will print the current version of the program.
-// It will also check for any updates available.
-// Associated command: `version`
-func CheckVersion() {
-	// TODO: I think this won't work offline
+// CheckForUpdate will run at the end of program executions to alert
+// the user if there's a program update available.
+func CheckForUpdate() {
 	latestVersion, err := getLatestRelease()
 	if err != nil {
 		log.Fatal("Error checking for updates!", "error", err)
@@ -59,16 +56,9 @@ func CheckVersion() {
 	latestSemVer := semver.Canonical(latestVersion.TagName)
 	currentSemVer := semver.Canonical(currentVersion)
 
-	var sOut string
 	if semver.Compare(latestSemVer, currentSemVer) > 0 {
-		sOut = fmt.Sprintf("%v %v", styles.NormalTextStyle.Render("Current version :"), styles.RedTextStyle.Render(currentVersion))
-		sOut += fmt.Sprintf("%v %v", styles.NormalTextStyle.Render("\nLatest version  :"), styles.GreenTextStyle.Render(latestSemVer))
-	} else {
-		sOut = fmt.Sprintf("%v %v", styles.NormalTextStyle.Render("Current version :"), styles.BlueTextStyle.Render(currentVersion))
-		sOut += fmt.Sprintf("%v %v", styles.NormalTextStyle.Render("\nLatest version  :"), styles.BlueTextStyle.Render(latestSemVer))
+		fmt.Println(styles.GlobalSpacingStyle.Render(styles.NormalTextStyle.Render(fmt.Sprintf(updateMessage, latestSemVer))))
 	}
-
-	fmt.Println(styles.GlobalSpacingStyle.Render(sOut))
 }
 
 // Gets the latest GitHub release's tag name (version number) and asset info
@@ -103,7 +93,7 @@ type fileMsg struct {
 	tmpFile *os.File
 }
 
-type errMsg struct{ err error }
+type errMsg error
 
 type updateModel struct {
 	spinner spinner.Model
@@ -153,7 +143,7 @@ func (m updateModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		cmds = append(cmds, func() tea.Msg {
 			release, err := getLatestRelease()
 			if err != nil {
-				return errMsg{err}
+				return err
 			}
 
 			var assetURL string
@@ -166,7 +156,7 @@ func (m updateModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 
 			if assetURL == "" {
-				return errMsg{err}
+				return err
 			}
 
 			return urlMsg{assetURL: assetURL, version: release.TagName}
@@ -188,6 +178,10 @@ func (m updateModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case doneMsg:
 		m.done = true
 		m.status = fmt.Sprintf("Successfully updated to version %s", m.version)
+		return m, tea.Quit
+
+	case errMsg:
+		m.err = msg
 		return m, tea.Quit
 	}
 
@@ -220,23 +214,23 @@ func urlCmd(assetURL string) tea.Cmd {
 	return func() tea.Msg {
 		resp, err := http.Get(assetURL)
 		if err != nil {
-			return errMsg{err}
+			return err
 		}
 		defer resp.Body.Close()
 
 		curExec, err := os.Executable()
 		if err != nil {
-			return errMsg{err}
+			return err
 		}
 
 		tmpFile, err := os.CreateTemp("", "aocli-update-")
 		if err != nil {
-			return errMsg{err}
+			return err
 		}
 
 		// Write the downloaded content to the temporary file
 		if _, err := io.Copy(tmpFile, resp.Body); err != nil {
-			return errMsg{err}
+			return err
 		}
 
 		return fileMsg{curFile: curExec, tmpFile: tmpFile}
@@ -247,17 +241,17 @@ func fileCmd(curFile string, tmpFile *os.File) tea.Cmd {
 	return func() tea.Msg {
 		// Close the file to flush the content
 		if err := tmpFile.Close(); err != nil {
-			return errMsg{err}
+			return err
 		}
 
 		// Make the temp file executable
 		if err := os.Chmod(tmpFile.Name(), 0700); err != nil {
-			return errMsg{err}
+			return err
 		}
 
 		// Replace the current executable with the new one
 		if err := os.Rename(tmpFile.Name(), curFile); err != nil {
-			return errMsg{err}
+			return err
 		}
 
 		os.Remove(tmpFile.Name())

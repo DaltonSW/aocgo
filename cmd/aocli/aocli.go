@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"os"
-	"strings"
 
 	"go.dalton.dog/aocgo/internal/cache"
 	"go.dalton.dog/aocgo/internal/resources"
@@ -12,36 +11,15 @@ import (
 	"go.dalton.dog/aocgo/internal/utils"
 
 	"github.com/charmbracelet/log"
-	"golang.org/x/mod/semver"
 )
 
 func main() {
 	rootCmd.Execute()
+
+	CheckForUpdate()
 }
 
 // region: User-agnostic commands
-
-// CheckForUpdate will run at the end of program executions to alert
-// the user if there's a program update available.
-func CheckForUpdate() {
-	latestVersion, err := getLatestRelease()
-	if err != nil {
-		log.Fatal("Error checking for updates!", "error", err)
-	}
-
-	if !strings.Contains(latestVersion.TagName, "aocli-") {
-		return
-	} else {
-		latestVersion.TagName = strings.Replace(latestVersion.TagName, "aocli-", "", 1)
-	}
-
-	latestSemVer := semver.Canonical(latestVersion.TagName)
-	currentSemVer := semver.Canonical(currentVersion)
-
-	if semver.Compare(latestSemVer, currentSemVer) > 0 {
-		fmt.Println(styles.GlobalSpacingStyle.Render(styles.NormalTextStyle.Render(updateMessage)))
-	}
-}
 
 // NOTE: Cobra handles help inherently now, but this is still
 //	here in case I want to override it again in the future
