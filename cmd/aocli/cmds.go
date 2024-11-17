@@ -35,6 +35,7 @@ func init() {
 
 	rootCmd.AddCommand(healthCmd)
 	rootCmd.AddCommand(updateCmd)
+	rootCmd.AddCommand(versionCmd)
 	rootCmd.AddCommand(getCmd)
 	rootCmd.AddCommand(viewCmd)
 	rootCmd.AddCommand(submitCmd)
@@ -77,6 +78,15 @@ var healthCmd = &cobra.Command{
 	Args:  cobra.NoArgs,
 	Run: func(cmd *cobra.Command, args []string) {
 		Health()
+	},
+}
+
+var versionCmd = &cobra.Command{
+	Use:   "version",
+	Short: "Prints out the current version of the program.",
+	Args:  cobra.NoArgs,
+	Run: func(cmd *cobra.Command, args []string) {
+		Version()
 	},
 }
 
