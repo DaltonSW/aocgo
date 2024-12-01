@@ -4,16 +4,25 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
+
+	"github.com/charmbracelet/log"
 )
 
-func GetSessionToken() (string, error) {
+// GetSessionToken attempts to get a valid session token.
+func GetSessionToken(healthLog bool) (string, error) {
 	sessionToken, err := getTokenFromFile("")
 	if sessionToken != "" {
+		if healthLog {
+			log.Info("Found session token in config file.", "token", sessionToken)
+		}
 		return sessionToken, err
 	}
 
 	sessionToken, err = getTokenFromEnv()
 	if sessionToken != "" {
+		if healthLog {
+			log.Info("Found session token in environment variable.", "token", sessionToken)
+		}
 		return sessionToken, err
 	}
 

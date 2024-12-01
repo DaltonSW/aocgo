@@ -34,7 +34,7 @@ func (u *User) GetToken() string {
 func NewUser(token string) (*User, error) {
 	var err error
 	if token == "" {
-		token, err = session.GetSessionToken()
+		token, err = session.GetSessionToken(false)
 		if err != nil {
 			return nil, err
 		}

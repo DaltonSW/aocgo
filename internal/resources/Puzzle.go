@@ -170,6 +170,8 @@ func newPuzzle(year int, day int, userSession string) *Puzzle {
 
 	if err != nil {
 		log.Fatal("Unable to load user input for the puzzle.", "error", err)
+	} else if strings.Contains(string(userInput), "log in") {
+		log.Fatal("Session token appears to be invalid. Login in a browser and get your new token.")
 	}
 
 	subMap := make(map[int][]*Submission)

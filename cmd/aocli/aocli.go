@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 
+	"go.dalton.dog/aocgo/internal/api"
 	"go.dalton.dog/aocgo/internal/cache"
 	"go.dalton.dog/aocgo/internal/resources"
 	"go.dalton.dog/aocgo/internal/session"
@@ -69,20 +70,34 @@ func main() {
 //	(Req) year - 2 or 4 digit year (16 or 2016)
 //	(Opt) day  - 1 or 2 digit day (1, 01, 21)
 func Leaderboard(yearIn, dayIn string) {
-	year, err := utils.ParseYear(yearIn)
-	if err != nil {
-		log.Fatal("Error parsing year!", "err", err)
-	}
-
+	var year int
+	var day int
+	var err error
 	var lb resources.ViewableLB
-	if dayIn != "0" {
-		day, err := utils.ParseDay(dayIn)
+
+	if yearIn == "0" {
+		year, day, err := utils.GetYearAndDayFromCWD()
 		if err != nil {
-			log.Fatal("Error parsing day from args.", "err", err)
+			log.Fatal("Error loading leaderboard based on current directory!", "err", err)
 		}
 		lb = resources.LoadOrCreateLeaderboard(year, day)
 	} else {
-		lb = resources.LoadOrCreateLeaderboard(year, 0)
+		year, err = utils.ParseYear(yearIn)
+		if err != nil {
+			log.Fatal("Error parsing year!", "err", err)
+		}
+	}
+
+	if lb == nil {
+		if dayIn != "0" {
+			day, err = utils.ParseDay(dayIn)
+			if err != nil {
+				log.Fatal("Error parsing day from args.", "err", err)
+			}
+			lb = resources.LoadOrCreateLeaderboard(year, day)
+		} else {
+			lb = resources.LoadOrCreateLeaderboard(year, 0)
+		}
 	}
 
 	if lb == nil {
@@ -96,12 +111,23 @@ func Leaderboard(yearIn, dayIn string) {
 // Health will check if a session key is available so that the program can run.
 // Command: `aocli health`
 func Health() {
-	sessionKey, err := session.GetSessionToken()
+	sessionToken, err := session.GetSessionToken(true)
+
 	if err != nil {
-		log.Fatal("Test failed! Couldn't properly load a session key.", "err", err)
+		log.Fatal("Test failed! Couldn't properly load a session token.", "err", err)
 	}
 
-	log.Info("Test succeeded! Properly loaded session key", "key", sessionKey)
+	log.Info("Session token check success!")
+
+	api.InitClient(sessionToken)
+
+	log.Info("API Client initialization check success!")
+
+	// user, err := resources.NewUser(sessionToken)
+
+	resources.LoadOrCreatePuzzle(2016, 1, sessionToken)
+
+	log.Info("Session token appears to be valid, happy solving!")
 }
 
 // User-specific functions

@@ -186,7 +186,7 @@ func getRowForYear(userToken string, year, day int) []string {
 	}
 
 	if day < 25 {
-		for d := day; d <= 25; d++ {
+		for d := day + 1; d <= 25; d++ {
 			stars[d] = lipgloss.NewStyle().Foreground(styles.NoStarsColor).Render("-")
 		}
 	}

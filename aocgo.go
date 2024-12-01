@@ -33,7 +33,7 @@ func GetInputAsLineArray() []string {
 }
 
 func getData(year int, day int) []byte {
-	userToken, err := session.GetSessionToken()
+	userToken, err := session.GetSessionToken(false)
 	if err != nil {
 		log.Fatal(err)
 	}
