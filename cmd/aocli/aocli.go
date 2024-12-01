@@ -15,8 +15,6 @@ import (
 
 func main() {
 	rootCmd.Execute()
-
-	CheckForUpdate()
 }
 
 // region: User-agnostic commands

@@ -1,9 +1,5 @@
 package main
 
-// TODO: Standardize how years and days are parsed and validated after being passed to functions
-
-// TODO: Implement an `offline` check
-
 // TODO: Update godocs
 
 import (
@@ -33,14 +29,15 @@ func init() {
 
 	userCmd.Flags().BoolVar(&ClearUser, "clear", false, "Clears the stored puzzle data for a user.")
 
-	rootCmd.AddCommand(healthCmd)
-	rootCmd.AddCommand(updateCmd)
-	rootCmd.AddCommand(versionCmd)
 	rootCmd.AddCommand(getCmd)
-	rootCmd.AddCommand(viewCmd)
-	rootCmd.AddCommand(submitCmd)
-	rootCmd.AddCommand(userCmd)
+	rootCmd.AddCommand(healthCmd)
 	rootCmd.AddCommand(leaderboardCmd)
+	rootCmd.AddCommand(reloadCmd)
+	rootCmd.AddCommand(submitCmd)
+	rootCmd.AddCommand(updateCmd)
+	rootCmd.AddCommand(userCmd)
+	rootCmd.AddCommand(versionCmd)
+	rootCmd.AddCommand(viewCmd)
 }
 
 var rootCmd = &cobra.Command{
@@ -69,6 +66,10 @@ var rootCmd = &cobra.Command{
 
 	PersistentPostRun: func(cmd *cobra.Command, args []string) {
 		cache.ShutdownDBM()
+
+		if cmd.Name() != "update" {
+			CheckForUpdate()
+		}
 	},
 }
 
