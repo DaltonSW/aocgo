@@ -3,6 +3,9 @@
 `aocGo` is a two part project. It is not an official [Advent of Code](https://adventofcode.com/) project, merely my take on some ways to enhance the workflow.  
 Definitely go support the official project, especially since this project would be useless without it.  
 
+> [!IMPORTANT]
+> I'm aware that there are some issues now that 2024 has released. Can't say I'm surprised that the first fresh launch revealed some quirks. I'm looking into it, please feel free to leave issues that you notice! Happy coding everyone!
+
 ## `aocgo`
 
 The first encompasses the `go` module of the same name. This module contains a main package with some functions for obtaining input for a given day based on the file's directory structure. It also contains an `aocutils` sub-package, containing some helpful functions for common things you might need when solving AoC puzzles. If you want to handle all of that yourself, don't worry about importing this.
@@ -66,5 +69,5 @@ From there, you should be good to go! If you installed the CLI program, you can 
 
 ## Licensing
 
-© 2024 Dalton Williams
+© 2024 Dalton Williams  
 Check repository LICENSE file for licensing information.
