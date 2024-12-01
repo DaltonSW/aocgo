@@ -261,14 +261,25 @@ func View(user *resources.User, yearIn, dayIn string) {
 //	(Opt) day  - 1 or 2 digit day (1, 01, 21)
 //	(Opt) filename  - overrides "input.txt" name if it's provided
 func Get(user *resources.User, yearIn, dayIn string, filename string) {
-	year, err := utils.ParseYear(yearIn)
-	if err != nil {
-		log.Fatal(err)
-	}
+	var year int
+	var day int
+	var err error
 
-	day, err := utils.ParseDay(dayIn)
-	if err != nil {
-		log.Fatal(err)
+	if yearIn == "0" || dayIn == "0" {
+		year, day, err = utils.GetYearAndDayFromCWD()
+		if err != nil {
+			log.Fatal("Unable to parse year/day from current directory.", "err", err)
+		}
+	} else {
+		year, err = utils.ParseYear(yearIn)
+		if err != nil {
+			log.Fatal("Unable to parse year from current directory.", "err", err)
+		}
+
+		day, err = utils.ParseDay(dayIn)
+		if err != nil {
+			log.Fatal("Unable to parse day from current directory.", "err", err)
+		}
 	}
 
 	puzzle := resources.LoadOrCreatePuzzle(year, day, user.GetToken())
@@ -279,7 +290,6 @@ func Get(user *resources.User, yearIn, dayIn string, filename string) {
 	out.Write(userInput)
 
 	log.Infof("Input saved to %v!", filename)
-	return
 }
 
 // Test does whatever I need to test at the time :)
