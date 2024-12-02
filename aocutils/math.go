@@ -36,17 +36,17 @@ func Distance3D[n Number](x1, y1, z1, x2, y2, z2 n) float64 {
 // ManhattanDistance2D calculates the Manhattan distance between two points in 2D space.
 // Returns the distance as an int.
 func ManhattanDistance2D(x1, y1, x2, y2 int) int {
-	return abs(x2-x1) + abs(y2-y1)
+	return AbsVal(x2-x1) + AbsVal(y2-y1)
 }
 
 // ManhattanDistance3D calculates the Manhattan distance between two points in 3D space.
 // Returns the distance as an int.
 func ManhattanDistance3D(x1, y1, z1, x2, y2, z2 int) int {
-	return abs(x2-x1) + abs(y2-y1) + abs(z2-z1)
+	return AbsVal(x2-x1) + AbsVal(y2-y1) + AbsVal(z2-z1)
 }
 
-// Helper function to calculate the absolute value of an integer.
-func abs(n int) int {
+// AbsVal calculates the absolute value of a number.
+func AbsVal[num Number](n num) num {
 	if n < 0 {
 		return -n
 	}
