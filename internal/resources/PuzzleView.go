@@ -12,7 +12,6 @@ import (
 	"github.com/charmbracelet/lipgloss"
 	"github.com/charmbracelet/log"
 	"go.dalton.dog/aocgo/internal/utils"
-	"golang.org/x/term"
 )
 
 type PuzzleModel struct {
@@ -22,6 +21,7 @@ type PuzzleModel struct {
 	help     help.Model
 	keys     helpKeymap
 	status   string
+	ready    bool
 }
 
 func NewPuzzleViewport(puzzle *Puzzle) {
@@ -32,6 +32,7 @@ func NewPuzzleViewport(puzzle *Puzzle) {
 		content: contentStr,
 		keys:    helpKeys,
 		help:    help.New(),
+		ready:   false,
 	}
 
 	p := tea.NewProgram(m, tea.WithAltScreen(), tea.WithMouseCellMotion())
@@ -43,7 +44,7 @@ func NewPuzzleViewport(puzzle *Puzzle) {
 func (m PuzzleModel) Init() tea.Cmd {
 	log.Debug("'Init' function")
 
-	return func() tea.Msg { return initMsg(0) }
+	return nil
 }
 func (m PuzzleModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var (
@@ -52,22 +53,6 @@ func (m PuzzleModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	)
 
 	switch msg := msg.(type) {
-	case initMsg:
-		width, height, err := term.GetSize(int(os.Stdout.Fd()))
-		if err != nil {
-			return m, nil
-		}
-
-		headerHeight := lipgloss.Height(m.headerView())
-		footerHeight := lipgloss.Height(m.footerView())
-		verticalMarginHeight := headerHeight + footerHeight
-
-		m.viewport = viewport.New(min(ViewportWidth, width), height-verticalMarginHeight)
-		m.viewport.YPosition = headerHeight
-		m.viewport.HighPerformanceRendering = UseHighPerformanceRenderer
-		m.viewport.SetContent(m.content)
-		m.viewport.YPosition = headerHeight + 1
-
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "esc", "q", "ctrl+c":
@@ -84,12 +69,12 @@ func (m PuzzleModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if err != nil {
 				log.Fatal(err)
 			}
-			m.content = strings.Join(m.puzzle.GetPrettyPageData(), "\n")
+			m.viewport.SetContent(strings.Join(m.puzzle.GetPrettyPageData(), "\n"))
 			m.status = "Page refreshed!"
 			// Clear terminal
 			fmt.Print("\033[H\033[2J")
 
-			return m, func() tea.Msg { return initMsg(1) }
+			return m, nil
 		case "s":
 			out, err := os.Create("./input.txt")
 			if err != nil {
@@ -112,6 +97,15 @@ func (m PuzzleModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		footerHeight := lipgloss.Height(m.footerView())
 		verticalMarginHeight := headerHeight + footerHeight
 
+		if !m.ready {
+			m.viewport = viewport.New(min(ViewportWidth, msg.Width), msg.Height-verticalMarginHeight)
+			// m.viewport.YPosition = headerHeight
+			m.viewport.HighPerformanceRendering = UseHighPerformanceRenderer
+			m.viewport.SetContent(m.content)
+			// m.viewport.YPosition = headerHeight + 1
+			m.ready = true
+		}
+
 		m.viewport.Width = min(ViewportWidth, msg.Width)
 		m.viewport.Height = msg.Height - verticalMarginHeight
 
@@ -132,7 +126,7 @@ func (m PuzzleModel) View() string {
 }
 
 func (m PuzzleModel) headerView() string {
-	title := puzzleTitleStyle.Render(m.puzzle.Title)
+	title := titleStyle.Render(m.puzzle.Title)
 	line := strings.Repeat("─", max(0, m.viewport.Width-lipgloss.Width(title)))
 	return lipgloss.JoinHorizontal(lipgloss.Center, title, line)
 }

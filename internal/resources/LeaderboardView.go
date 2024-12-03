@@ -9,13 +9,13 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/charmbracelet/log"
-	"golang.org/x/term"
 )
 
 type LeaderboardModel struct {
 	content  string
 	viewport viewport.Model
 	title    string
+	ready    bool
 }
 
 type ViewableLB interface {
@@ -27,6 +27,7 @@ func NewLeaderboardViewport(content, title string) {
 	m := LeaderboardModel{
 		content: content,
 		title:   title,
+		ready:   false,
 	}
 
 	p := tea.NewProgram(m, tea.WithAltScreen(), tea.WithMouseCellMotion())
@@ -39,7 +40,7 @@ func NewLeaderboardViewport(content, title string) {
 func (m LeaderboardModel) Init() tea.Cmd {
 	log.Debug("'Init' function")
 
-	return func() tea.Msg { return initMsg(0) }
+	return nil
 }
 
 func (m LeaderboardModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -49,19 +50,6 @@ func (m LeaderboardModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	)
 
 	switch msg := msg.(type) {
-	case initMsg:
-		width, height, err := term.GetSize(int(os.Stdout.Fd()))
-		if err != nil {
-			return m, nil
-		}
-
-		headerHeight := lipgloss.Height(m.headerView())
-
-		m.viewport = viewport.New(min(ViewportWidth, width), height-headerHeight)
-		m.viewport.YPosition = headerHeight
-		m.viewport.HighPerformanceRendering = UseHighPerformanceRenderer
-		m.viewport.SetContent(m.content)
-		m.viewport.YPosition = headerHeight + 1
 
 	case tea.KeyMsg:
 		switch msg.String() {
@@ -74,6 +62,16 @@ func (m LeaderboardModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		m.viewport.Width = min(ViewportWidth, msg.Width)
 		m.viewport.Height = msg.Height - headerHeight
+
+		if !m.ready {
+
+			m.viewport = viewport.New(min(ViewportWidth, msg.Width), msg.Height-headerHeight)
+			m.viewport.YPosition = headerHeight
+			m.viewport.HighPerformanceRendering = UseHighPerformanceRenderer
+			m.viewport.SetContent(m.content)
+			// m.viewport.YPosition = headerHeight + 1
+			m.ready = true
+		}
 
 		if UseHighPerformanceRenderer {
 			cmds = append(cmds, viewport.Sync(m.viewport))

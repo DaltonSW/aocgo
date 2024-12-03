@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -16,6 +17,7 @@ import (
 	"github.com/PuerkitoBio/goquery"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/charmbracelet/log"
+	"github.com/mattn/go-runewidth"
 )
 
 // Base URL for a single day's puzzle
@@ -223,15 +225,18 @@ func (p *Puzzle) GetUserInput() ([]byte, error) {
 
 // GetPrettyPageData parses the puzzle's stored information and displays it in a visually pleasing way.
 func (p *Puzzle) GetPrettyPageData() []string {
-	sOut := p.ArticleOne
+	var sOut []string
+	sOut = append(sOut, lipgloss.NewStyle().BorderStyle(lipgloss.RoundedBorder()).Render(" - Part One - "))
+	sOut = append(sOut, "\n")
+
+	sOut = append(sOut, p.ArticleOne...)
 
 	if p.AnswerOne != "" {
 		sOut = append(sOut, "Answer: "+p.AnswerOne)
 	}
 
 	if len(p.ArticleTwo) != 0 {
-		sOut = append(sOut, "\n\n")
-		sOut = append(sOut, "\n"+lipgloss.NewStyle().BorderStyle(lipgloss.RoundedBorder()).Render(" --- Part Two --- "))
+		sOut = append(sOut, "\n\n"+lipgloss.NewStyle().BorderStyle(lipgloss.RoundedBorder()).Render(" - Part Two - "))
 		sOut = append(sOut, "\n")
 		sOut = append(sOut, p.ArticleTwo...)
 		sOut = append(sOut, "\n")
@@ -305,10 +310,10 @@ func (p *Puzzle) processPageContents(mainContents *goquery.Selection) {
 			if outStr != "" {
 				if p.AnswerOne == "" {
 					log.Debug("Answer found!", "year", p.Year, "day", p.Day, "answer", outStr)
-					p.AnswerOne = outStr
+					p.AnswerOne = styles.CodeStyle.Render(outStr)
 				} else {
 					log.Debug("Answer found!", "year", p.Year, "day", p.Day, "answer", outStr)
-					p.AnswerTwo = outStr
+					p.AnswerTwo = styles.CodeStyle.Render(outStr) + "\n"
 				}
 			}
 		}
@@ -319,49 +324,73 @@ func getPrettyArticle(article *goquery.Selection) []string {
 	var articleOut []string
 
 	article.Contents().Each(func(i int, sel *goquery.Selection) {
-		if goquery.NodeName(sel) == "h2" {
+		switch goquery.NodeName(sel) {
+		case "h2":
 			return
-		}
+		case "p":
+			paraContents := getPrettySelection(sel)
 
-		loopContents := ""
-		sel.Contents().Each(func(j int, s *goquery.Selection) {
-			// TODO: Try to fix links. Maybe try "termlink" module
+			articleOut = append(articleOut, wrapText(paraContents, ViewportWidth)+"\n\n")
+		case "ul":
+			sel.Find("li").Each(func(j int, s *goquery.Selection) {
+				articleOut = append(articleOut, " - "+wrapText(getPrettySelection(s), ViewportWidth-2)+"\n\n")
+			})
+			articleOut = append(articleOut)
+		case "pre":
+			// Extract the <code> content
+			preContent := sel.Find("code").Text()
 
-			// if goquery.NodeName(s) == "a" {
-			// 	href, exists := s.Attr("href")
-			// 	if exists {
-			// 		// Links get made blue with an underline
-			// 		articleOut += createLink(href, linkStyle.Render(s.Text()))
-			// 		// articleOut += linkStyle.Render(s.Text() + "(" + href + ")")
-			// 	}
-			// } else
+			// Split content into lines
+			lines := strings.Split(preContent, "\n")
 
-			if goquery.NodeName(s) == "em" {
-				if s.HasClass("star") {
-					loopContents += styles.StarStyle.Render(s.Text())
-				} else {
-					loopContents += styles.ItalStyle.Render(s.Text())
+			for _, line := range lines {
+				if line != "" { // Ignore empty lines
+					articleOut = append(articleOut, styles.CodeStyle.Render(line)+"\n")
 				}
-			} else if goquery.NodeName(s) == "code" {
-				loopContents += styles.CodeStyle.Render(s.Text())
-			} else if goquery.NodeName(s) != "h2" {
-				loopContents += s.Text()
 			}
-		})
-
-		articleOut = append(articleOut, wrapText(loopContents, ViewportWidth)+"\n")
+			articleOut = append(articleOut, "\n") // Add spacing after the block
+		}
 	})
 
 	return articleOut
 }
 
+func getPrettySelection(sel *goquery.Selection) string {
+	selContents := ""
+	sel.Contents().Each(func(j int, s *goquery.Selection) {
+		switch goquery.NodeName(s) {
+		case "em":
+			if s.HasClass("star") {
+				selContents += styles.StarStyle.Render(s.Text())
+			} else {
+				selContents += styles.ItalStyle.Render(s.Text())
+			}
+		case "code":
+			selContents += styles.CodeStyle.Render(s.Text())
+		case "h2":
+			return
+		default:
+			selContents += s.Text()
+		}
+	})
+
+	return selContents
+}
+
+var ansiRegex = regexp.MustCompile(`\x1b\[[0-9;]*[a-zA-Z]`)
+
+// Wraps text without accounting for encoding characters
 func wrapText(line string, width int) string {
 	var result string
 	words := strings.Fields(line)
 	lineLength := 0
 
 	for _, word := range words {
-		if lineLength+len(word)+1 > width {
+		// Strip ANSI escape sequences for length calculation
+		cleanWord := ansiRegex.ReplaceAllString(word, "")
+		visibleLength := runewidth.StringWidth(cleanWord)
+
+		if lineLength+visibleLength+1 > width {
 			result += "\n"
 			lineLength = 0
 		}
@@ -371,7 +400,7 @@ func wrapText(line string, width int) string {
 		}
 
 		result += word
-		lineLength += len(word)
+		lineLength += visibleLength
 	}
 
 	return result
