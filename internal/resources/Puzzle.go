@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -16,6 +17,7 @@ import (
 	"github.com/PuerkitoBio/goquery"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/charmbracelet/log"
+	"github.com/mattn/go-runewidth"
 )
 
 // Base URL for a single day's puzzle
@@ -327,15 +329,8 @@ func getPrettyArticle(article *goquery.Selection) []string {
 		sel.Contents().Each(func(j int, s *goquery.Selection) {
 			// TODO: Try to fix links. Maybe try "termlink" module
 
-			// if goquery.NodeName(s) == "a" {
-			// 	href, exists := s.Attr("href")
-			// 	if exists {
-			// 		// Links get made blue with an underline
-			// 		articleOut += createLink(href, linkStyle.Render(s.Text()))
-			// 		// articleOut += linkStyle.Render(s.Text() + "(" + href + ")")
-			// 	}
-			// } else
-
+			// loopContents += s.Text()
+			//
 			if goquery.NodeName(s) == "em" {
 				if s.HasClass("star") {
 					loopContents += styles.StarStyle.Render(s.Text())
@@ -355,13 +350,20 @@ func getPrettyArticle(article *goquery.Selection) []string {
 	return articleOut
 }
 
+var ansiRegex = regexp.MustCompile(`\x1b\[[0-9;]*[a-zA-Z]`)
+
+// Wraps text without accounting for encoding characters
 func wrapText(line string, width int) string {
 	var result string
 	words := strings.Fields(line)
 	lineLength := 0
 
 	for _, word := range words {
-		if lineLength+len(word)+1 > width {
+		// Strip ANSI escape sequences for length calculation
+		cleanWord := ansiRegex.ReplaceAllString(word, "")
+		visibleLength := runewidth.StringWidth(cleanWord)
+
+		if lineLength+visibleLength+1 > width {
 			result += "\n"
 			lineLength = 0
 		}
@@ -371,7 +373,7 @@ func wrapText(line string, width int) string {
 		}
 
 		result += word
-		lineLength += len(word)
+		lineLength += visibleLength
 	}
 
 	return result
