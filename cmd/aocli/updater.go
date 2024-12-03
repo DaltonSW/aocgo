@@ -19,7 +19,7 @@ import (
 )
 
 // Internally tracked version to compare against GitHub releases
-const currentVersion = "v0.10.0"
+const currentVersion = "v0.11.0"
 
 // const currentVersion = "v0.0.0"
 
