@@ -225,15 +225,18 @@ func (p *Puzzle) GetUserInput() ([]byte, error) {
 
 // GetPrettyPageData parses the puzzle's stored information and displays it in a visually pleasing way.
 func (p *Puzzle) GetPrettyPageData() []string {
-	sOut := p.ArticleOne
+	var sOut []string
+	sOut = append(sOut, lipgloss.NewStyle().BorderStyle(lipgloss.RoundedBorder()).Render(" - Part One - "))
+	sOut = append(sOut, "\n")
+
+	sOut = append(sOut, p.ArticleOne...)
 
 	if p.AnswerOne != "" {
 		sOut = append(sOut, "Answer: "+p.AnswerOne)
 	}
 
 	if len(p.ArticleTwo) != 0 {
-		sOut = append(sOut, "\n\n")
-		sOut = append(sOut, "\n"+lipgloss.NewStyle().BorderStyle(lipgloss.RoundedBorder()).Render(" --- Part Two --- "))
+		sOut = append(sOut, "\n\n"+lipgloss.NewStyle().BorderStyle(lipgloss.RoundedBorder()).Render(" - Part Two - "))
 		sOut = append(sOut, "\n")
 		sOut = append(sOut, p.ArticleTwo...)
 		sOut = append(sOut, "\n")
@@ -307,10 +310,10 @@ func (p *Puzzle) processPageContents(mainContents *goquery.Selection) {
 			if outStr != "" {
 				if p.AnswerOne == "" {
 					log.Debug("Answer found!", "year", p.Year, "day", p.Day, "answer", outStr)
-					p.AnswerOne = outStr
+					p.AnswerOne = styles.CodeStyle.Render(outStr)
 				} else {
 					log.Debug("Answer found!", "year", p.Year, "day", p.Day, "answer", outStr)
-					p.AnswerTwo = outStr
+					p.AnswerTwo = styles.CodeStyle.Render(outStr) + "\n"
 				}
 			}
 		}
@@ -321,33 +324,57 @@ func getPrettyArticle(article *goquery.Selection) []string {
 	var articleOut []string
 
 	article.Contents().Each(func(i int, sel *goquery.Selection) {
-		if goquery.NodeName(sel) == "h2" {
+		switch goquery.NodeName(sel) {
+		case "h2":
 			return
-		}
+		case "p":
+			paraContents := getPrettySelection(sel)
 
-		loopContents := ""
-		sel.Contents().Each(func(j int, s *goquery.Selection) {
-			// TODO: Try to fix links. Maybe try "termlink" module
+			articleOut = append(articleOut, wrapText(paraContents, ViewportWidth)+"\n\n")
+		case "ul":
+			sel.Find("li").Each(func(j int, s *goquery.Selection) {
+				articleOut = append(articleOut, " - "+wrapText(getPrettySelection(s), ViewportWidth-2)+"\n\n")
+			})
+			articleOut = append(articleOut)
+		case "pre":
+			// Extract the <code> content
+			preContent := sel.Find("code").Text()
 
-			// loopContents += s.Text()
-			//
-			if goquery.NodeName(s) == "em" {
-				if s.HasClass("star") {
-					loopContents += styles.StarStyle.Render(s.Text())
-				} else {
-					loopContents += styles.ItalStyle.Render(s.Text())
+			// Split content into lines
+			lines := strings.Split(preContent, "\n")
+
+			for _, line := range lines {
+				if line != "" { // Ignore empty lines
+					articleOut = append(articleOut, styles.CodeStyle.Render(line)+"\n")
 				}
-			} else if goquery.NodeName(s) == "code" {
-				loopContents += styles.CodeStyle.Render(s.Text())
-			} else if goquery.NodeName(s) != "h2" {
-				loopContents += s.Text()
 			}
-		})
-
-		articleOut = append(articleOut, wrapText(loopContents, ViewportWidth)+"\n")
+			articleOut = append(articleOut, "\n") // Add spacing after the block
+		}
 	})
 
 	return articleOut
+}
+
+func getPrettySelection(sel *goquery.Selection) string {
+	selContents := ""
+	sel.Contents().Each(func(j int, s *goquery.Selection) {
+		switch goquery.NodeName(s) {
+		case "em":
+			if s.HasClass("star") {
+				selContents += styles.StarStyle.Render(s.Text())
+			} else {
+				selContents += styles.ItalStyle.Render(s.Text())
+			}
+		case "code":
+			selContents += styles.CodeStyle.Render(s.Text())
+		case "h2":
+			return
+		default:
+			selContents += s.Text()
+		}
+	})
+
+	return selContents
 }
 
 var ansiRegex = regexp.MustCompile(`\x1b\[[0-9;]*[a-zA-Z]`)
