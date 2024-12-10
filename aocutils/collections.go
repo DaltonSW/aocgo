@@ -97,3 +97,17 @@ func ReverseSlice[v Value](elements []v) []v {
 	}
 	return reversed
 }
+
+// RemoveAtIndex removes the value at a given index from a slice.
+// Returns a new slice with the given index removed.
+func RemoveAtIndex[v Value](elements []v, idx int) []v {
+	if idx > len(elements) {
+		return elements
+	}
+
+	outElms := make([]v, 0, len(elements)-1)
+	outElms = append(outElms, elements[:idx]...)
+	outElms = append(outElms, elements[idx+1:]...)
+
+	return outElms
+}
