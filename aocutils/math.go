@@ -27,6 +27,12 @@ func Distance2D[n Number](x1, y1, x2, y2 n) float64 {
 	return math.Sqrt(float64((x2-x1)*(x2-x1) + (y2-y1)*(y2-y1)))
 }
 
+// Slope2D calculates the slope between two points in 2D space.
+// Returns the slope as a float64
+func Slope2D[n Number](x1, y1, x2, y2 n) float64 {
+	return float64((y2 - y1) / (x2 - x1))
+}
+
 // Distance3D calculates the Euclidean distance between two points in 3D space.
 // Returns the distance as a float64.
 func Distance3D[n Number](x1, y1, z1, x2, y2, z2 n) float64 {
