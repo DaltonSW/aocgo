@@ -45,7 +45,6 @@ func GetCurrentMaxYearAndDay() (int, int) {
 }
 
 func LaunchURL(url string) error {
-	log.Printf("Attempting to launch URL %v\n", url)
 	var cmd string
 	var args []string
 
