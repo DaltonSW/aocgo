@@ -65,7 +65,8 @@ func RunTest[In InputData, Out AnswerData](title string, solver Solver[In, Out],
 	borderStyle := lipgloss.NewStyle().
 		Border(lipgloss.RoundedBorder()).
 		BorderForeground(outColor).
-		Padding(0, 2)
+		Padding(0, 2).
+		MaxWidth(18)
 
 	// Pretty info
 	prettyAnswer := fmt.Sprintf("Answer  : %v\n", answerStr)
@@ -108,11 +109,12 @@ func RunSolve[In InputData, Out AnswerData](title string, solver Solver[In, Out]
 	borderStyle := lipgloss.NewStyle().
 		Border(lipgloss.RoundedBorder()).
 		BorderForeground(puzzleSolveColor).
-		Padding(0, 2)
+		Padding(0, 2).
+		MaxWidth(18)
 
 	// Pretty info
-	prettyAnswer := fmt.Sprintf("Answer  : %v\n", answerStr)
-	prettyTime := fmt.Sprintf("Runtime : %v", timeTaken)
+	prettyAnswer := fmt.Sprintf("Answer : %v\n", answerStr)
+	prettyTime := fmt.Sprintf("Runtime: %v", timeTaken)
 
 	// Render the answer inside the border
 	wrappedInfo := borderStyle.Render(prettyAnswer + prettyTime)

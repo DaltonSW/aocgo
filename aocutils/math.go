@@ -28,9 +28,13 @@ func Distance2D[n Number](x1, y1, x2, y2 n) float64 {
 }
 
 // Slope2D calculates the slope between two points in 2D space.
-// Returns the slope as a float64
+// Returns the slope as a float64. If x1 == x2, returns math.Inf
 func Slope2D[n Number](x1, y1, x2, y2 n) float64 {
-	return float64((y2 - y1) / (x2 - x1))
+	if x2-x1 == 0 {
+		return math.Inf(0)
+	} else {
+		return float64((y2 - y1) / (x2 - x1))
+	}
 }
 
 // Distance3D calculates the Euclidean distance between two points in 3D space.
@@ -49,6 +53,30 @@ func ManhattanDistance2D(x1, y1, x2, y2 int) int {
 // Returns the distance as an int.
 func ManhattanDistance3D(x1, y1, z1, x2, y2, z2 int) int {
 	return AbsVal(x2-x1) + AbsVal(y2-y1) + AbsVal(z2-z1)
+}
+
+// FindMin finds and returns the smallest value in the list.
+func FindMin[n Number](values []n) n {
+	m := values[0]
+	for _, x := range values {
+		if x < m {
+			m = x
+		}
+	}
+
+	return m
+}
+
+// FindMin finds and returns the largest value in the list.
+func FindMax[n Number](values []n) n {
+	m := values[0]
+	for _, x := range values {
+		if x > m {
+			m = x
+		}
+	}
+
+	return m
 }
 
 // AbsVal calculates the absolute value of a number.
