@@ -2,7 +2,9 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"os"
+	"path/filepath"
 
 	"go.dalton.dog/aocgo/internal/api"
 	"go.dalton.dog/aocgo/internal/cache"
@@ -314,6 +316,49 @@ func Get(user *resources.User, yearIn, dayIn string, filename string) {
 	out.Write(userInput)
 
 	log.Infof("Input saved to %v!", filename)
+}
+
+// New will make a copy of the given base file into the given out file in a ./yearIn/dayIn/ directory.
+// Command `aocli new [-y yyyy -d dd -b base.go -o main.go]`
+func New(yearIn, dayIn, baseFile, outFile string) {
+	if yearIn == "0" {
+		log.Fatal("Must provide a year with the -y option.")
+	}
+
+	if dayIn == "0" {
+		log.Fatal("Must provide a day with the -d option.")
+	}
+
+	// Build the directory path, e.g. "./2025/15"
+	dirPath := filepath.Join(".", yearIn, dayIn)
+
+	// Create the directory (with parents, if needed).
+	if err := os.MkdirAll(dirPath, 0755); err != nil {
+		log.Fatalf("Failed to create directory %s: %v", dirPath, err)
+	}
+
+	// Open the source/base file.
+	src, err := os.Open(baseFile)
+	if err != nil {
+		log.Fatalf("Failed to open base file %s: %v", baseFile, err)
+	}
+	defer src.Close()
+
+	// Create the destination file in the new directory.
+	dstPath := filepath.Join(dirPath, outFile)
+	dst, err := os.Create(dstPath)
+	if err != nil {
+		log.Fatalf("Failed to create output file %s: %v", dstPath, err)
+	}
+	defer dst.Close()
+
+	// Copy the entire contents from baseFile to outFile.
+	if _, err := io.Copy(dst, src); err != nil {
+		log.Fatalf("Failed to copy data from %s to %s: %v", baseFile, dstPath, err)
+	}
+
+	log.Infof("Successfully copied %s to %s", baseFile, dstPath)
+
 }
 
 // Test does whatever I need to test at the time :)

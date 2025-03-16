@@ -13,7 +13,8 @@ var Year string
 var Day string
 
 var AnswerPart int
-var GetFilename string
+var OutFilename string
+var BaseFilename string
 var ClearUser bool
 
 var UserRsrc *resources.User
@@ -25,13 +26,17 @@ func init() {
 
 	submitCmd.Flags().IntVarP(&AnswerPart, "part", "p", 0, "--part [1|2]")
 
-	getCmd.Flags().StringVarP(&GetFilename, "out", "o", "input.txt", "--out filename")
+	getCmd.Flags().StringVarP(&OutFilename, "out", "o", "input.txt", "--out filename")
+
+	newCmd.Flags().StringVarP(&BaseFilename, "base", "b", "base.go", "--base filename")
+	newCmd.Flags().StringVarP(&OutFilename, "out", "o", "main.go", "--out filename")
 
 	userCmd.Flags().BoolVar(&ClearUser, "clear", false, "Clears the stored puzzle data for a user.")
 
 	rootCmd.AddCommand(getCmd)
 	rootCmd.AddCommand(healthCmd)
 	rootCmd.AddCommand(leaderboardCmd)
+	rootCmd.AddCommand(newCmd)
 	rootCmd.AddCommand(reloadCmd)
 	rootCmd.AddCommand(submitCmd)
 	rootCmd.AddCommand(updateCmd)
@@ -73,6 +78,24 @@ var rootCmd = &cobra.Command{
 	},
 }
 
+var newCmd = &cobra.Command{
+	Use:   "new [-b base.go]",
+	Short: "Copies the given file into the ./<year>/<day>/main.go",
+	Args:  cobra.NoArgs,
+	Run: func(cmd *cobra.Command, args []string) {
+		New(Year, Day, BaseFilename, OutFilename)
+	},
+}
+
+var getCmd = &cobra.Command{
+	Use:   "get [-o filename]",
+	Short: "Gets the puzzle input and saves it to disk.",
+	Args:  cobra.NoArgs,
+	Run: func(cmd *cobra.Command, args []string) {
+		Get(UserRsrc, Year, Day, OutFilename)
+	},
+}
+
 var healthCmd = &cobra.Command{
 	Use:   "health",
 	Short: "Checks if aocli and aocgo have proper config to run.",
@@ -97,15 +120,6 @@ var updateCmd = &cobra.Command{
 	Args:  cobra.NoArgs,
 	Run: func(cmd *cobra.Command, args []string) {
 		RunUpdateModel()
-	},
-}
-
-var getCmd = &cobra.Command{
-	Use:   "get [-o filename]",
-	Short: "Gets the puzzle input and saves it to disk.",
-	Args:  cobra.NoArgs,
-	Run: func(cmd *cobra.Command, args []string) {
-		Get(UserRsrc, Year, Day, GetFilename)
 	},
 }
 
