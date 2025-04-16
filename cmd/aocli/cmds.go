@@ -61,7 +61,10 @@ var rootCmd = &cobra.Command{
 			log.Debug("User loaded", "token", UserRsrc.SessionTok)
 		}
 
-		cache.StartupDBM(UserRsrc.GetToken())
+		err = cache.StartupDBM(UserRsrc.GetToken())
+		if err != nil {
+			log.Fatal(err)
+		}
 
 	},
 
