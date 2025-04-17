@@ -32,9 +32,8 @@ func Distance2D[n Number](x1, y1, x2, y2 n) float64 {
 func Slope2D[n Number](x1, y1, x2, y2 n) float64 {
 	if x2-x1 == 0 {
 		return math.Inf(0)
-	} else {
-		return float64((y2 - y1) / (x2 - x1))
 	}
+	return float64((y2 - y1) / (x2 - x1))
 }
 
 // Distance3D calculates the Euclidean distance between two points in 3D space.
