@@ -72,6 +72,7 @@ func init() {
 
 	userCmd.Flags().BoolVar(&ClearUser, "clear", false, "Clears the stored puzzle data for a user.")
 
+	rootCmd.AddCommand(authCmd)
 	rootCmd.AddCommand(getCmd)
 	rootCmd.AddCommand(healthCmd)
 	rootCmd.AddCommand(leaderboardCmd)
