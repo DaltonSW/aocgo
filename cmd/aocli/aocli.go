@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"os"
@@ -13,11 +14,14 @@ import (
 	"go.dalton.dog/aocgo/internal/styles"
 	"go.dalton.dog/aocgo/internal/utils"
 
+	"github.com/charmbracelet/fang"
 	"github.com/charmbracelet/log"
 )
 
 func main() {
-	rootCmd.Execute()
+	if err := fang.Execute(context.Background(), rootCmd); err != nil {
+		log.Fatal(err)
+	}
 }
 
 // region: User-agnostic commands
