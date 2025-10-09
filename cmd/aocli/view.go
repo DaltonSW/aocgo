@@ -11,6 +11,9 @@ var viewCmd = &cobra.Command{
 	Use:   "view",
 	Short: "Views the puzzle's page inside of the terminal.",
 	Args:  cobra.NoArgs,
+	Annotations: map[string]string{
+		requiresAuthAnnotation: "true",
+	},
 	Run: func(cmd *cobra.Command, args []string) {
 		View(UserRsrc, Year, Day)
 	},

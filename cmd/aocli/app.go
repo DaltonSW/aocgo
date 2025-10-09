@@ -19,6 +19,7 @@ var BaseFilename string
 var ClearUser bool
 
 var UserRsrc *resources.User
+var cacheInitialized bool
 
 func main() {
 	if err := fang.Execute(context.Background(), rootCmd); err != nil {
@@ -31,9 +32,12 @@ var rootCmd = &cobra.Command{
 	Short: "A CLI tool for interacting with Advent of Code puzzles.",
 	Args:  cobra.NoArgs,
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
-		// log.SetLevel(log.DebugLevel)
-		var err error
+		if !commandRequiresAuth(cmd) {
+			log.Debug("Skipping session bootstrap for command", "command", cmd.CommandPath())
+			return
+		}
 
+		var err error
 		UserRsrc, err = resources.NewUser("")
 
 		if err != nil {
@@ -46,6 +50,7 @@ var rootCmd = &cobra.Command{
 		if err != nil {
 			log.Fatal(err)
 		}
+		cacheInitialized = true
 
 	},
 
@@ -54,7 +59,10 @@ var rootCmd = &cobra.Command{
 	},
 
 	PersistentPostRun: func(cmd *cobra.Command, args []string) {
-		cache.ShutdownDBM()
+		if cacheInitialized {
+			cache.ShutdownDBM()
+			cacheInitialized = false
+		}
 	},
 }
 
@@ -81,4 +89,15 @@ func init() {
 	rootCmd.AddCommand(submitCmd)
 	rootCmd.AddCommand(userCmd)
 	rootCmd.AddCommand(viewCmd)
+}
+
+func commandRequiresAuth(cmd *cobra.Command) bool {
+	for current := cmd; current != nil; current = current.Parent() {
+		if current.Annotations != nil {
+			if value, ok := current.Annotations[requiresAuthAnnotation]; ok {
+				return value == "true"
+			}
+		}
+	}
+	return false
 }

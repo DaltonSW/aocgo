@@ -11,6 +11,9 @@ var reloadCmd = &cobra.Command{
 	Use:   "reload",
 	Short: "Reloads the page data for a given puzzle.",
 	Args:  cobra.NoArgs,
+	Annotations: map[string]string{
+		requiresAuthAnnotation: "true",
+	},
 	Run: func(cmd *cobra.Command, args []string) {
 		Reload(UserRsrc, Year, Day)
 	},

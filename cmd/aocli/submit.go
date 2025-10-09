@@ -14,6 +14,9 @@ var submitCmd = &cobra.Command{
 	Use:   "submit [-p {1|2}] <answer>",
 	Short: "Submits the given answer to a puzzle.",
 	Args:  cobra.ExactArgs(1),
+	Annotations: map[string]string{
+		requiresAuthAnnotation: "true",
+	},
 	Run: func(cmd *cobra.Command, args []string) {
 		Submit(UserRsrc, Year, Day, args[0], AnswerPart)
 	},

@@ -10,6 +10,9 @@ var userCmd = &cobra.Command{
 	Use:   "user",
 	Short: "Shows a visual representation of the user's puzzle progress.",
 	Args:  cobra.NoArgs,
+	Annotations: map[string]string{
+		requiresAuthAnnotation: "true",
+	},
 	Run: func(cmd *cobra.Command, args []string) {
 		User(UserRsrc, ClearUser)
 	},

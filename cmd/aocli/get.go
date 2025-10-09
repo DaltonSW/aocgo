@@ -13,6 +13,9 @@ var getCmd = &cobra.Command{
 	Use:   "get [-o filename]",
 	Short: "Gets the puzzle input and saves it to disk.",
 	Args:  cobra.NoArgs,
+	Annotations: map[string]string{
+		requiresAuthAnnotation: "true",
+	},
 	Run: func(cmd *cobra.Command, args []string) {
 		Get(UserRsrc, Year, Day, OutFilename)
 	},
