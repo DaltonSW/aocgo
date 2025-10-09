@@ -1,14 +1,12 @@
 package main
 
 import (
-	"fmt"
 	"math/rand"
 
 	"go.dalton.dog/aocgo/internal/styles"
 	"go.dalton.dog/aocgo/internal/utils"
 
-	"github.com/charmbracelet/lipgloss"
-	"github.com/charmbracelet/log"
+	"github.com/charmbracelet/lipgloss/v2"
 )
 
 const tree = `
@@ -51,11 +49,11 @@ func RunLandingPage() {
 		}
 	}
 
-	w, _, err := utils.GetTerminalSize()
+	// w, _, err := utils.GetTerminalSize()
 
-	if err != nil {
-		log.Fatal(err)
-	}
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
 
 	footOne := "Welcome to aocli!"
 
@@ -65,14 +63,14 @@ func RunLandingPage() {
 
 	footFour := styles.SubtitleStyle.Render("Advent of Code by Eric Wastl (http://was.tl)")
 
-	outStr := lipgloss.PlaceHorizontal(w, lipgloss.Center, sOut)
-	outStr += lipgloss.PlaceHorizontal(w, lipgloss.Center, footOne)
-	outStr += lipgloss.PlaceHorizontal(w, lipgloss.Center, footTwo)
-	outStr += lipgloss.PlaceHorizontal(w, lipgloss.Center, footThree)
-	outStr += lipgloss.PlaceHorizontal(w, lipgloss.Center, footFour)
+	outStr := lipgloss.JoinVertical(lipgloss.Center, sOut, footOne, footTwo, footThree, footFour)
+	// outStr += lipgloss.PlaceHorizontal(w, lipgloss.Center, footOne)
+	// outStr += lipgloss.PlaceHorizontal(w, lipgloss.Center, footTwo)
+	// outStr += lipgloss.PlaceHorizontal(w, lipgloss.Center, footThree)
+	// outStr += lipgloss.PlaceHorizontal(w, lipgloss.Center, footFour)
 
 	utils.ClearTerminal()
-	fmt.Println("\n" + outStr)
+	lipgloss.Println(lipgloss.NewStyle().PaddingTop(1).PaddingLeft(2).Render(outStr))
 
 	// fmt.Println(lipgloss.JoinVertical(lipgloss.Center, header, sOut, footer))
 }
