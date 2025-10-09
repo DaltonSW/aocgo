@@ -4,7 +4,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/charmbracelet/lipgloss"
+	"github.com/charmbracelet/lipgloss/v2"
 	"github.com/charmbracelet/log"
 )
 
@@ -16,9 +16,6 @@ func GetStdoutLogger() *log.Logger {
 
 	logStyles := log.DefaultStyles()
 
-	logStyles.Levels[log.FatalLevel] = LoggerFatalStyle
-	logStyles.Levels[log.ErrorLevel] = LoggerErrorStyle
-	logStyles.Levels[log.InfoLevel] = LoggerInfoStyle
 	logger.SetStyles(logStyles)
 
 	return logger

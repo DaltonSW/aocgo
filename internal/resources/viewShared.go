@@ -1,8 +1,7 @@
 package resources
 
-import "github.com/charmbracelet/lipgloss"
+import "github.com/charmbracelet/lipgloss/v2"
 
-var UseHighPerformanceRenderer = false
 var ViewportWidth = 80
 
 var (

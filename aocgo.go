@@ -3,6 +3,7 @@ package aocgo
 
 import (
 	"fmt"
+	"image/color"
 	"strings"
 	"time"
 
@@ -11,7 +12,7 @@ import (
 	"go.dalton.dog/aocgo/internal/session"
 	"go.dalton.dog/aocgo/internal/utils"
 
-	"github.com/charmbracelet/lipgloss"
+	"github.com/charmbracelet/lipgloss/v2"
 	"github.com/charmbracelet/log"
 )
 
@@ -46,7 +47,7 @@ func RunTest[In InputData, Out AnswerData](title string, solver Solver[In, Out],
 
 	expectedStr := fmt.Sprintf("%v", expected)
 
-	var outColor lipgloss.Color
+	var outColor color.Color
 
 	if answerStr == expectedStr {
 		outColor = correctTestColor

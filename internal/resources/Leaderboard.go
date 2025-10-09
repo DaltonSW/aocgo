@@ -12,8 +12,8 @@ import (
 	"go.dalton.dog/aocgo/internal/utils"
 
 	"github.com/PuerkitoBio/goquery"
-	"github.com/charmbracelet/lipgloss"
-	"github.com/charmbracelet/lipgloss/table"
+	"github.com/charmbracelet/lipgloss/v2"
+	"github.com/charmbracelet/lipgloss/v2/table"
 	"github.com/charmbracelet/log"
 )
 

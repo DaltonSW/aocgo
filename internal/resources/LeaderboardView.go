@@ -5,9 +5,9 @@ import (
 	"os"
 	"strings"
 
-	"github.com/charmbracelet/bubbles/viewport"
-	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
+	"github.com/charmbracelet/bubbles/v2/viewport"
+	tea "github.com/charmbracelet/bubbletea/v2"
+	"github.com/charmbracelet/lipgloss/v2"
 	"github.com/charmbracelet/log"
 )
 
@@ -60,21 +60,26 @@ func (m LeaderboardModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.WindowSizeMsg:
 		headerHeight := lipgloss.Height(m.headerView())
 
-		m.viewport.Width = min(ViewportWidth, msg.Width)
-		m.viewport.Height = msg.Height - headerHeight
+		width := min(ViewportWidth, msg.Width)
+		height := msg.Height - headerHeight
+		if height < 0 {
+			height = 0
+		}
 
 		if !m.ready {
 
-			m.viewport = viewport.New(min(ViewportWidth, msg.Width), msg.Height-headerHeight)
+			m.viewport = viewport.New(
+				viewport.WithWidth(width),
+				viewport.WithHeight(height),
+			)
 			m.viewport.YPosition = headerHeight
-			m.viewport.HighPerformanceRendering = UseHighPerformanceRenderer
 			m.viewport.SetContent(m.content)
 			// m.viewport.YPosition = headerHeight + 1
 			m.ready = true
-		}
-
-		if UseHighPerformanceRenderer {
-			cmds = append(cmds, viewport.Sync(m.viewport))
+		} else {
+			m.viewport.SetWidth(width)
+			m.viewport.SetHeight(height)
+			m.viewport.YPosition = headerHeight
 		}
 	}
 
@@ -91,6 +96,6 @@ func (m LeaderboardModel) View() string {
 
 func (m LeaderboardModel) headerView() string {
 	title := titleStyle.Render(m.title)
-	line := strings.Repeat("─", max(0, m.viewport.Width-lipgloss.Width(title)))
+	line := strings.Repeat("─", max(0, m.viewport.Width()-lipgloss.Width(title)))
 	return lipgloss.JoinHorizontal(lipgloss.Center, title, line)
 }

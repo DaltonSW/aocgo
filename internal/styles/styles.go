@@ -1,14 +1,15 @@
 package styles
 
 import (
-	"github.com/charmbracelet/lipgloss"
+	"github.com/charmbracelet/lipgloss/v2"
+	"github.com/charmbracelet/lipgloss/v2/compat"
 )
 
 // TODO: Actually differentiate between light and dark. I just don't wanna delve into this right now
 var (
 	// Colors
-	lbBorderColor  = lipgloss.AdaptiveColor{Light: "#8787FF", Dark: "#8787FF"}
-	viewTitleColor = lipgloss.AdaptiveColor{Light: "#FFFF00", Dark: "#FFFF00"}
+	lbBorderColor  = compat.AdaptiveColor{Light: lipgloss.Color("#8787FF"), Dark: lipgloss.Color("#8787FF")}
+	viewTitleColor = compat.AdaptiveColor{Light: lipgloss.Color("#FFFF00"), Dark: lipgloss.Color("#FFFF00")}
 )
 
 var (
@@ -41,24 +42,6 @@ var (
 	StarStyle = lipgloss.NewStyle().Foreground(StarColor)
 	LinkStyle = lipgloss.NewStyle().Foreground(LinkColor).Underline(true)
 	CodeStyle = lipgloss.NewStyle().Foreground(CodeColor).Bold(true).Italic(true)
-
-	LoggerFatalStyle = lipgloss.NewStyle().
-				SetString("FATAL").
-				Padding(0, 1).
-				Foreground(lipgloss.Color("0")).
-				Background(lipgloss.Color("#FF5F5F"))
-
-	LoggerInfoStyle = lipgloss.NewStyle().
-			SetString("INFO").
-			Padding(0, 1).
-			Foreground(lipgloss.Color("0")).
-			Background(lipgloss.Color("#5FFFD7"))
-
-	LoggerErrorStyle = lipgloss.NewStyle().
-				SetString("ERROR").
-				Padding(0, 1).
-				Background(lipgloss.Color("204")).
-				Foreground(lipgloss.Color("0"))
 
 	GlobalSpacingStyle = lipgloss.NewStyle().Padding(1, 1, 0)
 

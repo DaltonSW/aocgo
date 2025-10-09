@@ -11,7 +11,7 @@ import (
 
 	// "dalton.dog/aocgo/internal/styles"
 	"github.com/PuerkitoBio/goquery"
-	tea "github.com/charmbracelet/bubbletea"
+	tea "github.com/charmbracelet/bubbletea/v2"
 	"github.com/charmbracelet/log"
 )
 

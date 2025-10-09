@@ -7,10 +7,10 @@ import (
 	"go.dalton.dog/aocgo/internal/styles"
 	"go.dalton.dog/aocgo/internal/utils"
 
-	"github.com/charmbracelet/bubbles/spinner"
-	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
-	"github.com/charmbracelet/lipgloss/table"
+	"github.com/charmbracelet/bubbles/v2/spinner"
+	tea "github.com/charmbracelet/bubbletea/v2"
+	"github.com/charmbracelet/lipgloss/v2"
+	"github.com/charmbracelet/lipgloss/v2/table"
 	"github.com/charmbracelet/log"
 )
 
@@ -44,7 +44,7 @@ func (u *User) NewModel() tea.Model {
 	s := spinner.New()
 	s.Spinner = spinner.Dot
 	s.Spinner.FPS = 20
-	s.Style = lipgloss.NewStyle().Foreground(lipgloss.Color(styles.UpdateSpinnerColor))
+	s.Style = lipgloss.NewStyle().Foreground(styles.UpdateSpinnerColor)
 
 	model := LoadUserModel{
 		user:    u,

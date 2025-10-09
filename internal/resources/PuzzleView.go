@@ -5,11 +5,11 @@ import (
 	"os"
 	"strings"
 
-	"github.com/charmbracelet/bubbles/help"
-	"github.com/charmbracelet/bubbles/key"
-	"github.com/charmbracelet/bubbles/viewport"
-	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
+	"github.com/charmbracelet/bubbles/v2/help"
+	"github.com/charmbracelet/bubbles/v2/key"
+	"github.com/charmbracelet/bubbles/v2/viewport"
+	tea "github.com/charmbracelet/bubbletea/v2"
+	"github.com/charmbracelet/lipgloss/v2"
 	"github.com/charmbracelet/log"
 	"go.dalton.dog/aocgo/internal/utils"
 )
@@ -97,21 +97,29 @@ func (m PuzzleModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		footerHeight := lipgloss.Height(m.footerView())
 		verticalMarginHeight := headerHeight + footerHeight
 
+		width := min(ViewportWidth, msg.Width)
+		height := msg.Height - verticalMarginHeight
+		if height < 0 {
+			height = 0
+		}
+
 		if !m.ready {
-			m.viewport = viewport.New(min(ViewportWidth, msg.Width), msg.Height-verticalMarginHeight)
+			m.viewport = viewport.New(
+				viewport.WithWidth(width),
+				viewport.WithHeight(height),
+			)
 			// m.viewport.YPosition = headerHeight
-			m.viewport.HighPerformanceRendering = UseHighPerformanceRenderer
 			m.viewport.SetContent(m.content)
 			// m.viewport.YPosition = headerHeight + 1
 			m.ready = true
+
+			m.viewport.YPosition = headerHeight
+		} else {
+			m.viewport.SetWidth(width)
+			m.viewport.SetHeight(height)
+			m.viewport.YPosition = headerHeight
 		}
 
-		m.viewport.Width = min(ViewportWidth, msg.Width)
-		m.viewport.Height = msg.Height - verticalMarginHeight
-
-		if UseHighPerformanceRenderer {
-			cmds = append(cmds, viewport.Sync(m.viewport))
-		}
 	}
 
 	// Handle keyboard and mouse events in the viewport
@@ -127,13 +135,13 @@ func (m PuzzleModel) View() string {
 
 func (m PuzzleModel) headerView() string {
 	title := titleStyle.Render(m.puzzle.Title)
-	line := strings.Repeat("─", max(0, m.viewport.Width-lipgloss.Width(title)))
+	line := strings.Repeat("─", max(0, m.viewport.Width()-lipgloss.Width(title)))
 	return lipgloss.JoinHorizontal(lipgloss.Center, title, line)
 }
 
 func (m PuzzleModel) footerView() string {
 	info := infoStyle.Render(fmt.Sprintf("%3.f%%", m.viewport.ScrollPercent()*100))
-	line := strings.Repeat("─", max(0, m.viewport.Width-lipgloss.Width(info)))
+	line := strings.Repeat("─", max(0, m.viewport.Width()-lipgloss.Width(info)))
 	sOut := lipgloss.JoinHorizontal(lipgloss.Center, line, info)
 	sOut += "\n" + lipgloss.JoinHorizontal(lipgloss.Center, m.help.View(m.keys))
 	if m.status != "" {
