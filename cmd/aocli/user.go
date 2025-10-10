@@ -21,9 +21,9 @@ var userCmd = &cobra.Command{
 // User will print out a table visualization of the user's star progress.
 // Command: `aocli user [--clear]`
 func User(user *resources.User, clearUser bool) {
-	if ClearUser {
-		cache.ClearUserDatabase(UserRsrc.SessionTok)
+	if clearUser {
+		cache.ClearUserDatabase(user.SessionTok)
 	} else {
-		UserRsrc.Display()
+		user.Display()
 	}
 }

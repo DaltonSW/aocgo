@@ -1,0 +1,12 @@
+version: "3"
+tasks:
+  run:
+    cmds:
+      - go mod tidy
+      - go run ./cmd/aocli
+  debug:
+    cmds:
+      - export AOCGO_DEBUG=1; go run ./cmd/aocli
+      - export AOCGO_DEBUG=0
+    generates:
+      - output.txt

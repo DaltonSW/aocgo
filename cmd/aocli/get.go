@@ -10,7 +10,7 @@ import (
 )
 
 var getCmd = &cobra.Command{
-	Use:   "get [-o filename]",
+	Use:   "get",
 	Short: "Gets the puzzle input and saves it to disk.",
 	Args:  cobra.NoArgs,
 	Annotations: map[string]string{
@@ -51,11 +51,24 @@ func Get(user *resources.User, yearIn, dayIn string, filename string) {
 	}
 
 	puzzle := resources.LoadOrCreatePuzzle(year, day, user.GetToken())
-	userInput, _ := puzzle.GetUserInput()
+	userInput, err := puzzle.GetUserInput()
+	if err != nil {
+		output.Fatal("Unable to load puzzle input.", "err", err)
+	}
 
-	out, _ := os.Create(filename)
-	defer out.Close()
-	out.Write(userInput)
+	out, err := os.Create(filename)
+	if err != nil {
+		output.Fatal("Unable to create output file.", "err", err)
+	}
+
+	if _, err := out.Write(userInput); err != nil {
+		out.Close()
+		output.Fatal("Unable to write puzzle input to disk.", "err", err)
+	}
+
+	if err := out.Close(); err != nil {
+		output.Fatal("Unable to close output file.", "err", err)
+	}
 
 	output.Successf("Input saved to %v!", filename)
 }
