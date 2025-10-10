@@ -9,8 +9,8 @@ import (
 	"github.com/charmbracelet/bubbles/v2/textinput"
 	tea "github.com/charmbracelet/bubbletea/v2"
 	"github.com/charmbracelet/lipgloss/v2"
-	"github.com/charmbracelet/log"
 	"github.com/spf13/cobra"
+	"go.dalton.dog/aocgo/internal/output"
 )
 
 const requiresAuthAnnotation = "requiresAuth"
@@ -101,16 +101,16 @@ func Auth(args []string) {
 		var model tea.Model
 		model, err = tea.NewProgram(newAuthModel()).Run()
 		if err != nil {
-			log.Fatal("Unable to capture session token", "err", err)
+			output.Fatal("Unable to capture session token", "err", err)
 		}
 
 		m, ok := model.(authModel)
 		if !ok {
-			log.Fatal("Unexpected auth model response")
+			output.Fatal("Unexpected auth model response")
 		}
 
 		if m.cancelled {
-			log.Info("Authentication cancelled; no token stored.")
+			output.Info("Authentication cancelled; no token stored.")
 			return
 		}
 
@@ -118,15 +118,15 @@ func Auth(args []string) {
 	}
 
 	if token == "" {
-		log.Fatal("Session token cannot be empty.")
+		output.Fatal("Session token cannot be empty.")
 	}
 
 	tokenPath, err := writeSessionToken(token)
 	if err != nil {
-		log.Fatal("Unable to store session token", "err", err)
+		output.Fatal("Unable to store session token", "err", err)
 	}
 
-	log.Info("Session token saved.", "path", tokenPath)
+	output.Success("Session token saved.", "path", tokenPath)
 }
 
 func writeSessionToken(token string) (string, error) {

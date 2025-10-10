@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/charmbracelet/log"
 	"github.com/spf13/cobra"
+	"go.dalton.dog/aocgo/internal/output"
 	"go.dalton.dog/aocgo/internal/resources"
 	"go.dalton.dog/aocgo/internal/utils"
 )
@@ -31,13 +31,13 @@ func Leaderboard(yearIn, dayIn string) {
 	if yearIn == "0" {
 		year, day, err := utils.GetYearAndDayFromCWD()
 		if err != nil {
-			log.Fatal("Error loading leaderboard based on current directory!", "err", err)
+			output.Fatal("Error loading leaderboard based on current directory!", "err", err)
 		}
 		lb = resources.LoadOrCreateLeaderboard(year, day)
 	} else {
 		year, err = utils.ParseYear(yearIn)
 		if err != nil {
-			log.Fatal("Error parsing year!", "err", err)
+			output.Fatal("Error parsing year!", "err", err)
 		}
 	}
 
@@ -45,7 +45,7 @@ func Leaderboard(yearIn, dayIn string) {
 		if dayIn != "0" {
 			day, err = utils.ParseDay(dayIn)
 			if err != nil {
-				log.Fatal("Error parsing day from args.", "err", err)
+				output.Fatal("Error parsing day from args.", "err", err)
 			}
 			lb = resources.LoadOrCreateLeaderboard(year, day)
 		} else {
@@ -54,7 +54,7 @@ func Leaderboard(yearIn, dayIn string) {
 	}
 
 	if lb == nil {
-		log.Fatal("Unable to load/create leaderboard!")
+		output.Fatal("Unable to load/create leaderboard!")
 		return
 	}
 

@@ -6,7 +6,7 @@ import (
 	"path"
 	"time"
 
-	"github.com/charmbracelet/log"
+	"go.dalton.dog/aocgo/internal/output"
 	bolt "go.etcd.io/bbolt"
 )
 
@@ -170,6 +170,6 @@ func ClearUserDatabase(sessionToken string) {
 
 func checkErr(err error) {
 	if err != nil {
-		log.Error("Database error!", "err", err)
+		output.Error("Database error!", "err", err)
 	}
 }

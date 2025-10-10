@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/charmbracelet/log"
+	"go.dalton.dog/aocgo/internal/output"
 	"golang.org/x/term"
 )
 
@@ -29,7 +29,7 @@ func GetCurrentMaxYearAndDay() (int, int) {
 	loc, err := time.LoadLocation("America/New_York")
 
 	if err != nil {
-		log.Fatal("Error loading location:", err)
+		output.Fatal("Error loading location:", err)
 	}
 
 	nowYear, nowMonth, nowDay := time.Now().In(loc).Date()

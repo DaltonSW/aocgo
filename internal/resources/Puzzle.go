@@ -11,12 +11,12 @@ import (
 
 	"go.dalton.dog/aocgo/internal/api"
 	"go.dalton.dog/aocgo/internal/cache"
+	"go.dalton.dog/aocgo/internal/output"
 	"go.dalton.dog/aocgo/internal/styles"
 	"go.dalton.dog/aocgo/internal/utils"
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/charmbracelet/lipgloss/v2"
-	"github.com/charmbracelet/log"
 	"github.com/mattn/go-runewidth"
 )
 
@@ -114,12 +114,12 @@ func (p *Puzzle) SubmitAnswer(answer string, part int) (int, string) {
 
 	submissionData, err := api.SubmitAnswer(p.Year, p.Day, part, p.SessionToken, answer)
 	if err != nil {
-		log.Fatal(err)
+		output.Fatal(err)
 	}
 
 	submission, err := NewSubmission(submissionData, answer)
 	if err != nil {
-		log.Fatal(err)
+		output.Fatal(err)
 	}
 
 	if p.Submissions == nil {
@@ -171,9 +171,9 @@ func newPuzzle(year int, day int, userSession string) *Puzzle {
 	userInput, err := loadUserInputFromSite(URL, userSession)
 
 	if err != nil {
-		log.Fatal("Unable to load user input for the puzzle.", "error", err)
+		output.Fatal("Unable to load user input for the puzzle.", "error", err)
 	} else if strings.Contains(string(userInput), "log in") {
-		log.Fatal("Session token appears to be invalid. Login in a browser and get your new token.")
+		output.Fatal("Session token appears to be invalid. Login in a browser and get your new token.")
 	}
 
 	subMap := make(map[int][]*Submission)
@@ -274,7 +274,7 @@ func (p *Puzzle) loadPageData() {
 	defer resp.Body.Close()
 	doc, err := goquery.NewDocumentFromReader(resp.Body)
 	if err != nil {
-		log.Fatal("Error constructing new PageData.", "error", err)
+		output.Fatal("Error constructing new PageData.", "error", err)
 	}
 
 	mainContents := doc.Find("main")
@@ -309,10 +309,10 @@ func (p *Puzzle) processPageContents(mainContents *goquery.Selection) {
 			outStr := s.Find("code").Text()
 			if outStr != "" {
 				if p.AnswerOne == "" {
-					log.Debug("Answer found!", "year", p.Year, "day", p.Day, "answer", outStr)
+					output.Debug("Answer found!", "year", p.Year, "day", p.Day, "answer", outStr)
 					p.AnswerOne = styles.CodeStyle.Render(outStr)
 				} else {
-					log.Debug("Answer found!", "year", p.Year, "day", p.Day, "answer", outStr)
+					output.Debug("Answer found!", "year", p.Year, "day", p.Day, "answer", outStr)
 					p.AnswerTwo = styles.CodeStyle.Render(outStr) + "\n"
 				}
 			}

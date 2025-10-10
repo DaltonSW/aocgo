@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/charmbracelet/log"
 	"github.com/spf13/cobra"
+	"go.dalton.dog/aocgo/internal/output"
 	"go.dalton.dog/aocgo/internal/resources"
 	"go.dalton.dog/aocgo/internal/utils"
 )
@@ -33,18 +33,18 @@ func Reload(user *resources.User, yearIn, dayIn string) {
 	if yearIn == "0" || dayIn == "0" {
 		year, day, err = utils.GetYearAndDayFromCWD()
 		if err != nil {
-			log.Fatal(err)
+			output.Fatal(err)
 		}
 
 	} else {
 		year, err = utils.ParseYear(yearIn)
 		if err != nil {
-			log.Fatal(err)
+			output.Fatal(err)
 		}
 
 		day, err = utils.ParseDay(dayIn)
 		if err != nil {
-			log.Fatal(err)
+			output.Fatal(err)
 		}
 	}
 

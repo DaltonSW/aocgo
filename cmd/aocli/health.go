@@ -1,9 +1,9 @@
 package main
 
 import (
-	"github.com/charmbracelet/log"
 	"github.com/spf13/cobra"
 	"go.dalton.dog/aocgo/internal/api"
+	"go.dalton.dog/aocgo/internal/output"
 	"go.dalton.dog/aocgo/internal/resources"
 	"go.dalton.dog/aocgo/internal/session"
 )
@@ -23,18 +23,18 @@ func Health() {
 	sessionToken, err := session.GetSessionToken(true)
 
 	if err != nil {
-		log.Fatal("Test failed! Couldn't properly load a session token.", "err", err)
+		output.Fatal("Test failed! Couldn't properly load a session token.", "err", err)
 	}
 
-	log.Info("Session token check success!")
+	output.Success("Session token check success!")
 
 	api.InitClient(sessionToken)
 
-	log.Info("API Client initialization check success!")
+	output.Success("API Client initialization check success!")
 
 	// user, err := resources.NewUser(sessionToken)
 
 	resources.LoadOrCreatePuzzle(2016, 1, sessionToken)
 
-	log.Info("Session token appears to be valid, happy solving!")
+	output.Success("Session token appears to be valid, happy solving!")
 }

@@ -3,8 +3,8 @@ package main
 import (
 	"os"
 
-	"github.com/charmbracelet/log"
 	"github.com/spf13/cobra"
+	"go.dalton.dog/aocgo/internal/output"
 	"go.dalton.dog/aocgo/internal/resources"
 	"go.dalton.dog/aocgo/internal/utils"
 )
@@ -36,17 +36,17 @@ func Get(user *resources.User, yearIn, dayIn string, filename string) {
 	if yearIn == "0" || dayIn == "0" {
 		year, day, err = utils.GetYearAndDayFromCWD()
 		if err != nil {
-			log.Fatal("Unable to parse year/day from current directory.", "err", err)
+			output.Fatal("Unable to parse year/day from current directory.", "err", err)
 		}
 	} else {
 		year, err = utils.ParseYear(yearIn)
 		if err != nil {
-			log.Fatal("Unable to parse year from current directory.", "err", err)
+			output.Fatal("Unable to parse year from current directory.", "err", err)
 		}
 
 		day, err = utils.ParseDay(dayIn)
 		if err != nil {
-			log.Fatal("Unable to parse day from current directory.", "err", err)
+			output.Fatal("Unable to parse day from current directory.", "err", err)
 		}
 	}
 
@@ -57,5 +57,5 @@ func Get(user *resources.User, yearIn, dayIn string, filename string) {
 	defer out.Close()
 	out.Write(userInput)
 
-	log.Infof("Input saved to %v!", filename)
+	output.Successf("Input saved to %v!", filename)
 }

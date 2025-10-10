@@ -3,8 +3,8 @@ package main
 import (
 	"fmt"
 
-	"github.com/charmbracelet/log"
 	"github.com/spf13/cobra"
+	"go.dalton.dog/aocgo/internal/output"
 	"go.dalton.dog/aocgo/internal/resources"
 	"go.dalton.dog/aocgo/internal/styles"
 	"go.dalton.dog/aocgo/internal/utils"
@@ -37,21 +37,21 @@ func Submit(user *resources.User, yearIn, dayIn, answer string, partIn int) {
 	if yearIn != "0" {
 		year, err = utils.ParseYear(yearIn)
 		if err != nil {
-			log.Fatal("Couldn't parse provided year argument.", "err", err)
+			output.Fatal("Couldn't parse provided year argument.", "err", err)
 		}
 	}
 
 	if dayIn != "0" {
 		day, err = utils.ParseDay(dayIn)
 		if err != nil {
-			log.Fatal("Couldn't parse provided day argument.", "err", err)
+			output.Fatal("Couldn't parse provided day argument.", "err", err)
 		}
 	}
 
 	if day == 0 || year == 0 {
 		parseYear, parseDay, err := utils.GetYearAndDayFromCWD()
 		if err != nil {
-			log.Fatal(err)
+			output.Fatal(err)
 		}
 
 		if year == 0 {
@@ -69,7 +69,7 @@ func Submit(user *resources.User, yearIn, dayIn, answer string, partIn int) {
 	var part int
 	if partIn < 0 || partIn > 2 {
 		part = 0
-		log.Error("Part provided by option is invalid. Using default part for submission.")
+		output.Warn("Part provided by option is invalid. Using default part for submission.")
 	} else {
 		part = partIn
 	}

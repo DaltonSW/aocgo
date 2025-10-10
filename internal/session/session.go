@@ -5,7 +5,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/charmbracelet/log"
+	"go.dalton.dog/aocgo/internal/output"
 )
 
 // GetSessionToken attempts to get a valid session token.
@@ -13,7 +13,7 @@ func GetSessionToken(healthLog bool) (string, error) {
 	sessionToken, err := getTokenFromFile("")
 	if sessionToken != "" {
 		if healthLog {
-			log.Info("Found session token in config file.", "token", sessionToken)
+			output.Info("Found session token in config file.", "token", sessionToken)
 		}
 		return sessionToken, err
 	}
@@ -21,7 +21,7 @@ func GetSessionToken(healthLog bool) (string, error) {
 	sessionToken, err = getTokenFromEnv()
 	if sessionToken != "" {
 		if healthLog {
-			log.Info("Found session token in environment variable.", "token", sessionToken)
+			output.Info("Found session token in environment variable.", "token", sessionToken)
 		}
 		return sessionToken, err
 	}

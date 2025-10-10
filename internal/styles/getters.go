@@ -1,25 +1,6 @@
 package styles
 
-import (
-	"os"
-	"time"
-
-	"github.com/charmbracelet/lipgloss/v2"
-	"github.com/charmbracelet/log"
-)
-
-func GetStdoutLogger() *log.Logger {
-	logger := log.New(os.Stdout)
-
-	logger.SetReportTimestamp(true)
-	logger.SetTimeFormat(time.Stamp)
-
-	logStyles := log.DefaultStyles()
-
-	logger.SetStyles(logStyles)
-
-	return logger
-}
+import "github.com/charmbracelet/lipgloss/v2"
 
 func GetLeaderboardStyle(row, col int) lipgloss.Style {
 	if row == 0 {
@@ -27,21 +8,28 @@ func GetLeaderboardStyle(row, col int) lipgloss.Style {
 	}
 
 	var style lipgloss.Style
-	if col == 2 {
-		style = lipgloss.NewStyle().Width(40)
-	} else if col == 0 {
+
+	switch col {
+	case 0:
 		style = lipgloss.NewStyle().Width(5).Align(lipgloss.Center)
-	} else {
+
+	case 2:
+		style = lipgloss.NewStyle().Width(40)
+
+	default:
 		style = lipgloss.NewStyle().Width(17).Align(lipgloss.Center)
 	}
 
-	if row == 1 {
+	switch row {
+	case 1:
 		return style.Foreground(GoldColor)
-	} else if row == 2 {
+
+	case 2:
 		return style.Foreground(SilverColor)
-	} else if row == 3 {
+
+	case 3:
 		return style.Foreground(BronzeColor)
-	} else {
+	default:
 		return style
 	}
 }

@@ -8,7 +8,7 @@ import (
 	"github.com/charmbracelet/bubbles/v2/viewport"
 	tea "github.com/charmbracelet/bubbletea/v2"
 	"github.com/charmbracelet/lipgloss/v2"
-	"github.com/charmbracelet/log"
+	"go.dalton.dog/aocgo/internal/output"
 )
 
 type LeaderboardModel struct {
@@ -38,7 +38,7 @@ func NewLeaderboardViewport(content, title string) {
 }
 
 func (m LeaderboardModel) Init() tea.Cmd {
-	log.Debug("'Init' function")
+	output.Debug("'Init' function")
 
 	return nil
 }

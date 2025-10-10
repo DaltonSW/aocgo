@@ -10,7 +10,7 @@ import (
 	"github.com/charmbracelet/bubbles/v2/viewport"
 	tea "github.com/charmbracelet/bubbletea/v2"
 	"github.com/charmbracelet/lipgloss/v2"
-	"github.com/charmbracelet/log"
+	"go.dalton.dog/aocgo/internal/output"
 	"go.dalton.dog/aocgo/internal/utils"
 )
 
@@ -42,7 +42,7 @@ func NewPuzzleViewport(puzzle *Puzzle) {
 	}
 }
 func (m PuzzleModel) Init() tea.Cmd {
-	log.Debug("'Init' function")
+	output.Debug("'Init' function")
 
 	return nil
 }
@@ -67,7 +67,7 @@ func (m PuzzleModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "r":
 			err := m.puzzle.ReloadPuzzleData()
 			if err != nil {
-				log.Fatal(err)
+				output.Fatal(err)
 			}
 			m.viewport.SetContent(strings.Join(m.puzzle.GetPrettyPageData(), "\n"))
 			m.status = "Page refreshed!"
@@ -78,11 +78,11 @@ func (m PuzzleModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "s":
 			out, err := os.Create("./input.txt")
 			if err != nil {
-				log.Fatal(err)
+				output.Fatal(err)
 			}
 			userInput, err := m.puzzle.GetUserInput()
 			if err != nil {
-				log.Fatal(err)
+				output.Fatal(err)
 			}
 			out.Write(userInput)
 			out.Close()

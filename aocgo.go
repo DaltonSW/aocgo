@@ -8,12 +8,12 @@ import (
 	"time"
 
 	"go.dalton.dog/aocgo/internal/cache"
+	"go.dalton.dog/aocgo/internal/output"
 	"go.dalton.dog/aocgo/internal/resources"
 	"go.dalton.dog/aocgo/internal/session"
 	"go.dalton.dog/aocgo/internal/utils"
 
 	"github.com/charmbracelet/lipgloss/v2"
-	"github.com/charmbracelet/log"
 )
 
 var correctTestColor = lipgloss.Color("#1d8509")
@@ -134,7 +134,7 @@ func RunSolve[In InputData, Out AnswerData](title string, solver Solver[In, Out]
 func GetInputAsByteArray() []byte {
 	year, day, err := utils.GetYearAndDayFromCWD()
 	if err != nil {
-		log.Fatal(err)
+		output.Fatal(err)
 	}
 
 	return getData(year, day)
@@ -163,23 +163,23 @@ func GetInputAsCharMatrix() [][]string {
 func getData(year int, day int) []byte {
 	userToken, err := session.GetSessionToken(false)
 	if err != nil {
-		log.Fatal(err)
+		output.Fatal(err)
 	}
 
 	_, err = resources.NewUser(userToken)
 	if err != nil {
-		log.Fatal(err)
+		output.Fatal(err)
 	}
 
 	err = cache.StartupDBM(userToken)
 	if err != nil {
-		log.Fatal(err)
+		output.Fatal(err)
 	}
 
 	puzzle := resources.LoadOrCreatePuzzle(year, day, userToken)
 	input, err := puzzle.GetUserInput()
 	if err != nil {
-		log.Fatal(err)
+		output.Fatal(err)
 	}
 	return input
 }

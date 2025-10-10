@@ -8,13 +8,13 @@ import (
 
 	"go.dalton.dog/aocgo/internal/api"
 	"go.dalton.dog/aocgo/internal/cache"
+	"go.dalton.dog/aocgo/internal/output"
 	"go.dalton.dog/aocgo/internal/styles"
 	"go.dalton.dog/aocgo/internal/utils"
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/charmbracelet/lipgloss/v2"
 	"github.com/charmbracelet/lipgloss/v2/table"
-	"github.com/charmbracelet/log"
 )
 
 // Placing represents a single placing on a leaderboard
@@ -137,7 +137,7 @@ func (lb *Leaderboard) loadYearlyLB() error {
 
 			intPlace, err = strconv.Atoi(placement)
 			if err != nil {
-				log.Error("Error parsing placement", "err", err)
+				output.Warn("Error parsing placement", "err", err)
 			}
 
 			remainder = strings.TrimSpace(splitRow[1])
@@ -147,7 +147,7 @@ func (lb *Leaderboard) loadYearlyLB() error {
 		splitRemainder := strings.SplitN(remainder, " ", 2)
 		totalScore, err := strconv.Atoi(splitRemainder[0])
 		if err != nil {
-			log.Error("Error parsing score", "err", err)
+			output.Warn("Error parsing score", "err", err)
 		}
 
 		displayName := strings.TrimSpace(splitRemainder[1])
@@ -212,7 +212,7 @@ func (lb *Leaderboard) loadDailyLB() error {
 
 			intPlace, err = strconv.Atoi(placement)
 			if err != nil {
-				log.Error("Error parsing placement", "err", err)
+				output.Warn("Error parsing placement", "err", err)
 				return
 			}
 

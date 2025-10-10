@@ -4,9 +4,9 @@ import (
 	"context"
 
 	"github.com/charmbracelet/fang"
-	"github.com/charmbracelet/log"
 	"github.com/spf13/cobra"
 	"go.dalton.dog/aocgo/internal/cache"
+	"go.dalton.dog/aocgo/internal/output"
 	"go.dalton.dog/aocgo/internal/resources"
 )
 
@@ -23,17 +23,17 @@ var cacheInitialized bool
 
 func main() {
 	if err := fang.Execute(context.Background(), rootCmd); err != nil {
-		log.Fatal(err)
+		output.Fatal(err)
 	}
 }
 
 var rootCmd = &cobra.Command{
-	Use:   "aocli [-y year] [-d day] [command]",
+	Use:   "aocli",
 	Short: "A CLI tool for interacting with Advent of Code puzzles.",
 	Args:  cobra.NoArgs,
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
 		if !commandRequiresAuth(cmd) {
-			log.Debug("Skipping session bootstrap for command", "command", cmd.CommandPath())
+			output.Debug("Skipping session bootstrap for command", "command", cmd.CommandPath())
 			return
 		}
 
@@ -41,14 +41,14 @@ var rootCmd = &cobra.Command{
 		UserRsrc, err = resources.NewUser("")
 
 		if err != nil {
-			log.Fatalf("Unable to create user to run requests as. %v", err)
+			output.Fatalf("Unable to create user to run requests as. %v", err)
 		} else {
-			log.Debug("User loaded", "token", UserRsrc.SessionTok)
+			output.Debug("User loaded", "token", UserRsrc.SessionTok)
 		}
 
 		err = cache.StartupDBM(UserRsrc.GetToken())
 		if err != nil {
-			log.Fatal(err)
+			output.Fatal(err)
 		}
 		cacheInitialized = true
 
@@ -67,7 +67,6 @@ var rootCmd = &cobra.Command{
 }
 
 func init() {
-
 	rootCmd.PersistentFlags().StringVarP(&Year, "year", "y", "0", "--year [2015...2024]")
 	rootCmd.PersistentFlags().StringVarP(&Day, "day", "d", "0", "--day [1...25]")
 

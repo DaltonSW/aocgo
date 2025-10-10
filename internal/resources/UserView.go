@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strconv"
 
+	"go.dalton.dog/aocgo/internal/output"
 	"go.dalton.dog/aocgo/internal/styles"
 	"go.dalton.dog/aocgo/internal/utils"
 
@@ -11,7 +12,6 @@ import (
 	tea "github.com/charmbracelet/bubbletea/v2"
 	"github.com/charmbracelet/lipgloss/v2"
 	"github.com/charmbracelet/lipgloss/v2/table"
-	"github.com/charmbracelet/log"
 )
 
 // Message to indicate a puzzle has finished loading
@@ -127,7 +127,7 @@ func footer() string {
 }
 
 func loadPuzzle(year, day int, userToken string) tea.Cmd {
-	log.Debug("Entered loadPuzzle message")
+	output.Debug("Entered loadPuzzle message")
 	return func() tea.Msg {
 		LoadOrCreatePuzzle(year, day, userToken)
 		return loadDoneMsg{year: year, day: day}

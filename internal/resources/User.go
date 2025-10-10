@@ -6,13 +6,13 @@ import (
 	"time"
 
 	"go.dalton.dog/aocgo/internal/api"
+	"go.dalton.dog/aocgo/internal/output"
 	"go.dalton.dog/aocgo/internal/session"
 	"go.dalton.dog/aocgo/internal/utils"
 
 	// "dalton.dog/aocgo/internal/styles"
 	"github.com/PuerkitoBio/goquery"
 	tea "github.com/charmbracelet/bubbletea/v2"
-	"github.com/charmbracelet/log"
 )
 
 // User represents a session token and accompanying puzzles.
@@ -66,7 +66,7 @@ func NewUser(token string) (*User, error) {
 func (u *User) Display() {
 	p := tea.NewProgram(u.NewModel(), tea.WithAltScreen())
 	if _, err := p.Run(); err != nil {
-		log.Fatal("Couldn't run viewport!", "err", err)
+		output.Fatal("Couldn't run viewport!", "err", err)
 	}
 }
 
@@ -107,13 +107,13 @@ func (u *User) LoadUser() {
 func (u *User) LoadDisplayName() string {
 	resp, err := api.NewGetReq("https://adventofcode.com/", u.SessionTok)
 	if err != nil {
-		log.Fatal("Unable to load user's information", "err", err)
+		output.Fatal("Unable to load user's information", "err", err)
 	}
 
 	defer resp.Body.Close()
 	doc, err := goquery.NewDocumentFromReader(resp.Body)
 	if err != nil {
-		log.Fatal("Error constructing new PageData.", "error", err)
+		output.Fatal("Error constructing new PageData.", "error", err)
 	}
 
 	nameDiv := doc.Find("div.user")
