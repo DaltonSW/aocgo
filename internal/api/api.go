@@ -66,7 +66,7 @@ func InitClient(userSessionToken string) {
 
 // NewGetReq will make a request of a certain URL on behalf of a given user session token.
 func NewGetReq(url string, sessionToken string) (*http.Response, error) {
-	output.Debug("Making GET request.", "URL", url, "token", sessionToken)
+	maskedToken := MaskSecret(sessionToken)
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		output.Fatal("Error creating GET request!", "error", err)
@@ -74,7 +74,10 @@ func NewGetReq(url string, sessionToken string) (*http.Response, error) {
 
 	if sessionToken == "" {
 		sessionToken = MasterClient.sessionToken
+		maskedToken = MaskSecret(sessionToken)
 	}
+
+	output.Debug("Making GET request.", "URL", url, "token", maskedToken)
 
 	req.Header.Add("User-Agent", USER_AGENT)
 	req.Header.Add("Cookie", fmt.Sprintf("session=%s", strings.TrimSpace(sessionToken)))
@@ -86,7 +89,7 @@ func NewGetReq(url string, sessionToken string) (*http.Response, error) {
 func SubmitAnswer(year int, day int, part int, userSession string, answer string) (*http.Response, error) {
 	URL := puzzleAnswerURL(year, day)
 	output.Debugf("Attempting to submit answer for Day %v (%v) [Part %v] to URL %v", day, year, part, URL)
-	output.Debugf("Answer: %v -- User: %v", answer, userSession)
+	output.Debug("Submitting answer payload", "answer_len", len(answer), "user", MaskSecret(userSession))
 
 	formData := url.Values{}
 	formData.Set("level", strconv.Itoa(part))
@@ -103,11 +106,22 @@ func SubmitAnswer(year int, day int, part int, userSession string, answer string
 	req.Header.Add("Cookie", fmt.Sprintf("session=%v", userSession))
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
-	return MasterClient.client.Do(req)
+	return MasterClient.Do(req)
 }
 
 // URL Helper Methods
 
 func puzzleAnswerURL(year int, day int) string {
 	return fmt.Sprintf(DAY_URL, year, day) + "/answer"
+}
+
+func MaskSecret(secret string) string {
+	trimmed := strings.TrimSpace(secret)
+	if trimmed == "" {
+		return ""
+	}
+	if len(trimmed) <= 8 {
+		return strings.Repeat("*", len(trimmed))
+	}
+	return trimmed[:4] + "......" + trimmed[len(trimmed)-4:]
 }

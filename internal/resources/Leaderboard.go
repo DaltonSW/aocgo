@@ -48,7 +48,7 @@ type Leaderboard struct {
 }
 
 func (lb *Leaderboard) GetID() string                { return utils.GetResouceBucketID(lb.Year, lb.Day) }
-func (lb *Leaderboard) GetBucketName() string        { return cache.PUZZLES }
+func (lb *Leaderboard) GetBucketName() string        { return cache.LEADERBOARDS }
 func (lb *Leaderboard) MarshalData() ([]byte, error) { return json.Marshal(lb) }
 func (lb *Leaderboard) SaveResource()                { cache.SaveResource(lb) }
 

@@ -335,7 +335,6 @@ func getPrettyArticle(article *goquery.Selection) []string {
 			sel.Find("li").Each(func(j int, s *goquery.Selection) {
 				articleOut = append(articleOut, " - "+wrapText(getPrettySelection(s), ViewportWidth-2)+"\n\n")
 			})
-			articleOut = append(articleOut)
 		case "pre":
 			// Extract the <code> content
 			preContent := sel.Find("code").Text()

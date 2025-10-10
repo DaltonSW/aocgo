@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"go.dalton.dog/aocgo/internal/api"
 	"go.dalton.dog/aocgo/internal/output"
 )
 
@@ -13,7 +14,7 @@ func GetSessionToken(healthLog bool) (string, error) {
 	sessionToken, err := getTokenFromFile("")
 	if sessionToken != "" {
 		if healthLog {
-			output.Info("Found session token in config file.", "token", sessionToken)
+			output.Info("Found session token in config file.", "token", api.MaskSecret(sessionToken))
 		}
 		return sessionToken, err
 	}
@@ -21,7 +22,7 @@ func GetSessionToken(healthLog bool) (string, error) {
 	sessionToken, err = getTokenFromEnv()
 	if sessionToken != "" {
 		if healthLog {
-			output.Info("Found session token in environment variable.", "token", sessionToken)
+			output.Info("Found session token in environment variable.", "token", api.MaskSecret(sessionToken))
 		}
 		return sessionToken, err
 	}

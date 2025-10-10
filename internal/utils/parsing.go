@@ -61,7 +61,7 @@ func ParseYear(yearStr string) (int, error) {
 	}
 
 	if outYear < FIRST_YEAR {
-		return 0, errors.New(fmt.Sprintf("Year parsed to be earlier than %v.", FIRST_YEAR))
+		return 0, fmt.Errorf("Year parsed to be earlier than %v.", FIRST_YEAR)
 	}
 
 	var maxYear int
@@ -72,7 +72,7 @@ func ParseYear(yearStr string) (int, error) {
 	}
 
 	if outYear > maxYear {
-		return 0, errors.New(fmt.Sprintf("Year parsed to be later than %v.", maxYear))
+		return 0, fmt.Errorf("Year parsed to be later than %v.", maxYear)
 	}
 
 	return outYear, nil
@@ -84,7 +84,7 @@ func ParseDay(dayStr string) (int, error) {
 	match := re.FindString(dayStr)
 	outInt, err := strconv.Atoi(match)
 	if err != nil {
-		return 0, nil
+		return 0, fmt.Errorf("unable to parse day from %q: %w", dayStr, err)
 	}
 
 	if outInt < 1 {

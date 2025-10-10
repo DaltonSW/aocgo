@@ -51,7 +51,7 @@ func LaunchURL(url string) error {
 	switch runtime.GOOS {
 	case "windows":
 		cmd = "cmd"
-		args = []string{"/c", "start"}
+		args = []string{"/c", "start", url}
 	case "darwin":
 		cmd = "open"
 		args = []string{url}
