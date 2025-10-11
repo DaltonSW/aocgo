@@ -35,13 +35,13 @@ func GetCurrentMaxYearAndDay() (int, int) {
 	nowYear, nowMonth, nowDay := time.Now().In(loc).Date()
 	if nowMonth != time.December {
 		return nowYear - 1, 25
-	} else {
-		if nowDay > 24 {
-			return nowYear, 25
-		} else {
-			return nowYear, nowDay
-		}
 	}
+
+	if nowDay > 24 {
+		return nowYear, 25
+	}
+
+	return nowYear, max(nowDay, 1)
 }
 
 func LaunchURL(url string) error {

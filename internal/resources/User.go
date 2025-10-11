@@ -64,7 +64,7 @@ func NewUser(token string) (*User, error) {
 }
 
 func (u *User) Display() {
-	p := tea.NewProgram(u.NewModel(), tea.WithAltScreen())
+	p := tea.NewProgram(u.NewModel())
 	if _, err := p.Run(); err != nil {
 		output.Fatal("Couldn't run viewport!", "err", err)
 	}
@@ -117,11 +117,7 @@ func (u *User) LoadDisplayName() string {
 	}
 
 	nameDiv := doc.Find("div.user")
-
-	// log.Info(nameDiv.Text())
-
 	nameClone := nameDiv.Clone()
-	// log.Info(nameClone.Text())
 	nameClone.Find("span").Remove()
 
 	return strings.TrimSpace(nameClone.Text())

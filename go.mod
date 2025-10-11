@@ -11,8 +11,8 @@ require (
 	github.com/PuerkitoBio/goquery v1.10.0
 	github.com/charmbracelet/bubbles/v2 v2.0.0-beta.1
 	github.com/charmbracelet/bubbletea/v2 v2.0.0-beta.4
-	github.com/charmbracelet/lipgloss/v2 v2.0.0-beta.3
 	github.com/charmbracelet/fang v0.4.1
+	github.com/charmbracelet/lipgloss/v2 v2.0.0-beta.3
 	github.com/mattn/go-runewidth v0.0.16
 	github.com/spf13/cobra v1.9.1
 	go.etcd.io/bbolt v1.3.11
@@ -29,6 +29,7 @@ require (
 	github.com/andybalholm/cascadia v1.3.2 // indirect
 	github.com/atotto/clipboard v0.1.4 // indirect
 	github.com/charmbracelet/colorprofile v0.3.2 // indirect
+	github.com/charmbracelet/harmonica v0.2.0 // indirect
 	github.com/charmbracelet/x/ansi v0.10.1 // indirect
 	github.com/charmbracelet/x/cellbuf v0.0.14-0.20250505150409-97991a1f17d1 // indirect
 	github.com/charmbracelet/x/exp/charmtone v0.0.0-20250603201427-c31516f43444 // indirect

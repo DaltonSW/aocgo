@@ -8,6 +8,7 @@ import (
 	"go.dalton.dog/aocgo/internal/styles"
 	"go.dalton.dog/aocgo/internal/utils"
 
+	"github.com/charmbracelet/bubbles/v2/progress"
 	"github.com/charmbracelet/bubbles/v2/spinner"
 	tea "github.com/charmbracelet/bubbletea/v2"
 	"github.com/charmbracelet/lipgloss/v2"
@@ -26,39 +27,67 @@ type tableDoneMsg struct {
 	table table.Table
 }
 
+// Message to indicate the total number of puzzles needed to be loaded
+type setTotalMsg struct {
+	total int
+}
+
 // LoadUserModel is the BubbleTea model for loading and displaying
 // a user's information
 type LoadUserModel struct {
 	user     *User
 	userName string
-	curYear  int
-	curDate  int
 	finished bool
 
-	table   table.Table
-	spinner spinner.Model
-	status  string
+	totalLoaded int
+	totalToLoad int
+
+	table    table.Table
+	spinner  spinner.Model
+	progress progress.Model
+	status   string
 }
 
 func (u *User) NewModel() tea.Model {
 	s := spinner.New()
 	s.Spinner = spinner.Dot
-	s.Spinner.FPS = 20
+	s.Spinner.FPS = 10
 	s.Style = lipgloss.NewStyle().Foreground(styles.UpdateSpinnerColor)
 
+	p := progress.New()
+
 	model := LoadUserModel{
-		user:    u,
-		spinner: s,
-		curYear: utils.FIRST_YEAR,
-		curDate: 1,
-		status:  "Starting up!",
+		user:     u,
+		spinner:  s,
+		progress: p,
+		status:   "Starting up!",
 	}
 
 	return model
 }
 
 func (m LoadUserModel) Init() tea.Cmd {
-	return tea.Batch(loadPuzzle(m.curYear, m.curDate, m.user.SessionTok), m.spinner.Tick)
+	var cmds []tea.Cmd
+	startYear := utils.FIRST_YEAR
+
+	maxYear, maxDay := utils.GetCurrentMaxYearAndDay()
+
+	for loopYear := startYear; loopYear <= maxYear; loopYear++ {
+		maxLoopDay := 25
+		if loopYear == maxYear {
+			maxLoopDay = maxDay
+		}
+
+		for loopDay := 1; loopDay <= maxLoopDay; loopDay++ {
+			cmds = append(cmds, loadPuzzle(loopYear, loopDay, m.user.SessionTok))
+		}
+	}
+
+	return tea.Sequence(
+		func() tea.Msg { return setTotalMsg{total: len(cmds)} },
+		m.spinner.Tick,
+		tea.Batch(cmds...),
+	)
 }
 
 func (m LoadUserModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -77,53 +106,70 @@ func (m LoadUserModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			cmds = append(cmds, tea.Quit)
 		}
 
+	case progress.FrameMsg:
+		m.progress, cmd = m.progress.Update(msg)
+		return m, cmd
+
+	case setTotalMsg:
+		m.totalToLoad = msg.total
+		return m, nil
+
 	case loadDoneMsg:
-		maxYear, _ := utils.GetCurrentMaxYearAndDay()
-		year, day := msg.year, msg.day
-		if day == 25 {
-			if year < maxYear {
-				m.curDate = 1
-				m.curYear++
-
-				m.status = fmt.Sprintf("Loading... Year %v - Day %v", m.curYear, m.curDate)
-				cmds = append(cmds, loadPuzzle(m.curYear, m.curDate, m.user.SessionTok))
-
-			} else {
-				m.status = "Done loading, generating table!"
-				cmds = append(cmds, generateTable(m.user.GetToken()))
-			}
-		} else {
-			m.curDate++
-			m.status = fmt.Sprintf("Loading... Year %v - Day %v", m.curYear, m.curDate)
-			cmds = append(cmds, loadPuzzle(m.curYear, m.curDate, m.user.SessionTok))
+		m.totalLoaded++
+		if m.totalLoaded >= m.totalToLoad {
+			return m, generateTable(m.user.GetToken())
 		}
+
+		return m, nil
+		// maxYear, _ := utils.GetCurrentMaxYearAndDay()
+		// year, day := msg.year, msg.day
+		// if day == 25 {
+		// 	if year < maxYear {
+		// 		m.curDate = 1
+		// 		m.curYear++
+		//
+		// 		m.status = fmt.Sprintf("Loading... Year %v - Day %v", m.curYear, m.curDate)
+		// 		cmds = append(cmds, loadPuzzle(m.curYear, m.curDate, m.user.SessionTok))
+		//
+		// 	} else {
+		// 		m.status = "Done loading, generating table!"
+		// 		cmds = append(cmds, generateTable(m.user.GetToken()))
+		// 	}
+		// } else {
+		// 	m.curDate++
+		// 	m.status = fmt.Sprintf("Loading... Year %v - Day %v", m.curYear, m.curDate)
+		// 	cmds = append(cmds, loadPuzzle(m.curYear, m.curDate, m.user.SessionTok))
+		// }
 
 	case tableDoneMsg:
 		m.status = "Table is done, good to go!"
 		m.finished = true
 		m.table = msg.table
+
+		// sOut := fmt.Sprintf("%v\n%v", styles.NormalTextStyle.Render(header(m.user.DisplayName)), m.table.Render())
+		// lipgloss.Println(styles.GlobalSpacingStyle.Render(sOut))
+		return m, tea.Quit
 	}
 
 	return m, tea.Batch(cmds...)
 }
 
 func (m LoadUserModel) View() string {
-	if m.finished {
-		sOut := fmt.Sprintf("%v\n%v\n%v\n", styles.NormalTextStyle.Render(header(m.user.DisplayName)), m.table.Render(), styles.NormalTextStyle.Render(footer()))
-		return styles.GlobalSpacingStyle.Render(sOut)
-	} else {
-		return styles.GlobalSpacingStyle.Render(m.spinner.View() + " " + m.status)
+	if m.user.DisplayName == "" {
+		m.user.LoadDisplayName()
 	}
+	if m.finished {
+		sOut := fmt.Sprintf("%v\n%v\n", styles.NormalTextStyle.Render(header(m.user.DisplayName)), m.table.Render())
+		return styles.GlobalSpacingStyle.Render(sOut)
+	}
+
+	outStr := fmt.Sprintf("Loading %s's stars... %s \n%s", m.user.DisplayName, m.spinner.View(), m.progress.ViewAs(float64(m.totalLoaded)/float64(m.totalToLoad)))
+	return styles.GlobalSpacingStyle.Render(outStr)
 }
 
 func header(displayName string) string {
 	outStr := fmt.Sprintf("%v's Star Breakdown\n", displayName)
 	return lipgloss.PlaceHorizontal(ViewportWidth, lipgloss.Center, outStr)
-}
-
-func footer() string {
-	return lipgloss.PlaceHorizontal(ViewportWidth, lipgloss.Center, "\nPress q or ctrl+c to quit\n")
-
 }
 
 func loadPuzzle(year, day int, userToken string) tea.Cmd {
