@@ -11,7 +11,7 @@ import (
 )
 
 var submitCmd = &cobra.Command{
-	Use:   "submit [-p {1|2}] <answer>",
+	Use:   "submit answer",
 	Short: "Submits the given answer to a puzzle.",
 	Args:  cobra.ExactArgs(1),
 	Annotations: map[string]string{

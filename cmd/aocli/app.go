@@ -74,9 +74,6 @@ var rootCmd = &cobra.Command{
 }
 
 func init() {
-	rootCmd.PersistentFlags().StringVarP(&Year, "year", "y", "0", "--year [2015...2024]")
-	rootCmd.PersistentFlags().StringVarP(&Day, "day", "d", "0", "--day [1...25]")
-
 	rootCmd.AddGroup(&cobra.Group{ID: "health", Title: "Health"})
 	rootCmd.AddGroup(&cobra.Group{ID: "puzzles", Title: "Puzzles"})
 
@@ -84,6 +81,8 @@ func init() {
 	rootCmd.AddCommand(authCmd)
 
 	getCmd.GroupID = "puzzles"
+	getCmd.Flags().StringVarP(&Year, "year", "y", "0", "--year [2015...2024]")
+	getCmd.Flags().StringVarP(&Day, "day", "d", "0", "--day [1...25]")
 	getCmd.Flags().StringVarP(&OutFilename, "out", "o", "input.txt", "--out filename")
 	rootCmd.AddCommand(getCmd)
 
@@ -91,25 +90,35 @@ func init() {
 	rootCmd.AddCommand(healthCmd)
 
 	leaderboardCmd.GroupID = "puzzles"
+	leaderboardCmd.Flags().StringVarP(&Year, "year", "y", "0", "--year [2015...2024]")
+	leaderboardCmd.Flags().StringVarP(&Day, "day", "d", "0", "--day [1...25]")
 	rootCmd.AddCommand(leaderboardCmd)
 
 	newCmd.GroupID = "puzzles"
+	newCmd.Flags().StringVarP(&Year, "year", "y", "0", "--year [2015...2024]")
+	newCmd.Flags().StringVarP(&Day, "day", "d", "0", "--day [1...25]")
 	newCmd.Flags().StringVarP(&BaseFilename, "base", "b", "base.go", "--base filename")
 	newCmd.Flags().StringVarP(&OutFilename, "out", "o", "main.go", "--out filename")
 	rootCmd.AddCommand(newCmd)
 
 	reloadCmd.GroupID = "health"
+	reloadCmd.Flags().StringVarP(&Year, "year", "y", "0", "--year [2015...2024]")
+	reloadCmd.Flags().StringVarP(&Day, "day", "d", "0", "--day [1...25]")
 	rootCmd.AddCommand(reloadCmd)
 
 	submitCmd.GroupID = "puzzles"
+	submitCmd.Flags().StringVarP(&Year, "year", "y", "0", "--year [2015...2024]")
+	submitCmd.Flags().StringVarP(&Day, "day", "d", "0", "--day [1...25]")
 	submitCmd.Flags().IntVarP(&AnswerPart, "part", "p", 0, "--part [1|2]")
 	rootCmd.AddCommand(submitCmd)
 
 	userCmd.GroupID = "puzzles"
-	userCmd.Flags().BoolVar(&ClearUser, "clear", false, "Clears the stored puzzle data for a user.")
+	userCmd.Flags().BoolVar(&ClearUser, "clear", false, "Clears *ALL* stored puzzle data for a user.")
 	rootCmd.AddCommand(userCmd)
 
 	viewCmd.GroupID = "puzzles"
+	viewCmd.Flags().StringVarP(&Year, "year", "y", "0", "--year [2015...2024]")
+	viewCmd.Flags().StringVarP(&Day, "day", "d", "0", "--day [1...25]")
 	rootCmd.AddCommand(viewCmd)
 }
 

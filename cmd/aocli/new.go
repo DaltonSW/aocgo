@@ -10,7 +10,7 @@ import (
 )
 
 var newCmd = &cobra.Command{
-	Use:   "new [-b base.go]",
+	Use:   "new",
 	Short: "Copies the given file into the ./<year>/<day>/main.go",
 	Args:  cobra.NoArgs,
 	Run: func(cmd *cobra.Command, args []string) {

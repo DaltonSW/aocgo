@@ -8,9 +8,10 @@ import (
 )
 
 var leaderboardCmd = &cobra.Command{
-	Use:   "leaderboard",
-	Short: "Shows a puzzle's daily leaderboard, or a yearly leaderboard.",
-	Args:  cobra.NoArgs,
+	Use:     "leaderboard",
+	Aliases: []string{"lb", "board"},
+	Short:   "Shows a puzzle's daily leaderboard, or a yearly leaderboard.",
+	Args:    cobra.NoArgs,
 	Annotations: map[string]string{
 		requiresAuthAnnotation: "true",
 	},
