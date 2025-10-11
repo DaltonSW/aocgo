@@ -12,10 +12,10 @@ import (
 )
 
 type LeaderboardModel struct {
-	content  string
-	viewport viewport.Model
-	title    string
-	ready    bool
+	left, right string
+	viewport    viewport.Model
+	title       string
+	ready       bool
 }
 
 type ViewableLB interface {
@@ -23,11 +23,12 @@ type ViewableLB interface {
 	GetContent() string
 }
 
-func NewLeaderboardViewport(content, title string) {
+func NewLeaderboardViewport(leftTable, rightTable, title string) {
 	m := LeaderboardModel{
-		content: content,
-		title:   title,
-		ready:   false,
+		left:  leftTable,
+		right: rightTable,
+		title: title,
+		ready: false,
 	}
 
 	p := tea.NewProgram(m, tea.WithAltScreen(), tea.WithMouseCellMotion())
@@ -60,27 +61,28 @@ func (m LeaderboardModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.WindowSizeMsg:
 		headerHeight := lipgloss.Height(m.headerView())
 
-		width := min(ViewportWidth, msg.Width)
-		height := msg.Height - headerHeight
-		if height < 0 {
-			height = 0
-		}
+		width := msg.Width
+		height := max(msg.Height-headerHeight, 0)
 
 		if !m.ready {
-
 			m.viewport = viewport.New(
 				viewport.WithWidth(width),
 				viewport.WithHeight(height),
 			)
-			m.viewport.YPosition = headerHeight
-			m.viewport.SetContent(m.content)
-			// m.viewport.YPosition = headerHeight + 1
 			m.ready = true
+			m.viewport.YPosition = headerHeight
 		} else {
 			m.viewport.SetWidth(width)
 			m.viewport.SetHeight(height)
 			m.viewport.YPosition = headerHeight
 		}
+		var content string
+		if m.viewport.Width() < lipgloss.Width(m.left)+lipgloss.Width(m.right) {
+			content = lipgloss.JoinVertical(lipgloss.Left, m.left, m.right)
+		} else {
+			content = lipgloss.JoinHorizontal(lipgloss.Top, m.left, m.right)
+		}
+		m.viewport.SetContent(content)
 	}
 
 	// Handle keyboard and mouse events in the viewport

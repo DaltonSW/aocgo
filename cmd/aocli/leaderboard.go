@@ -11,6 +11,9 @@ var leaderboardCmd = &cobra.Command{
 	Use:   "leaderboard",
 	Short: "Shows a puzzle's daily leaderboard, or a yearly leaderboard.",
 	Args:  cobra.NoArgs,
+	Annotations: map[string]string{
+		requiresAuthAnnotation: "true",
+	},
 	Run: func(cmd *cobra.Command, args []string) {
 		Leaderboard(Year, Day)
 	},
@@ -23,40 +26,37 @@ var leaderboardCmd = &cobra.Command{
 //	(Req) year - 2 or 4 digit year (16 or 2016)
 //	(Opt) day  - 1 or 2 digit day (1, 01, 21)
 func Leaderboard(yearIn, dayIn string) {
-	var year int
-	var day int
-	var err error
-	var lb resources.ViewableLB
+	var (
+		year int
+		day  int
+		err  error
+	)
 
 	if yearIn == "0" {
-		year, day, err := utils.GetYearAndDayFromCWD()
+		year, day, err = utils.GetYearAndDayFromCWD()
 		if err != nil {
 			output.Fatal("Error loading leaderboard based on current directory!", "err", err)
 		}
-		lb = resources.LoadOrCreateLeaderboard(year, day)
 	} else {
 		year, err = utils.ParseYear(yearIn)
 		if err != nil {
 			output.Fatal("Error parsing year!", "err", err)
 		}
-	}
 
-	if lb == nil {
 		if dayIn != "0" {
 			day, err = utils.ParseDay(dayIn)
 			if err != nil {
 				output.Fatal("Error parsing day from args.", "err", err)
 			}
-			lb = resources.LoadOrCreateLeaderboard(year, day)
-		} else {
-			lb = resources.LoadOrCreateLeaderboard(year, 0)
 		}
 	}
 
-	if lb == nil {
-		output.Fatal("Unable to load/create leaderboard!")
-		return
+	lb, err := resources.LoadOrCreateLeaderboard(year, day)
+	if err != nil {
+		output.Fatal("Unable to load leaderboard data.", "err", err)
 	}
 
-	resources.NewLeaderboardViewport(lb.GetContent(), lb.GetTitle())
+	tOne, tTwo := lb.GetContent()
+
+	resources.NewLeaderboardViewport(tOne, tTwo, lb.GetTitle())
 }

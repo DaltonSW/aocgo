@@ -54,13 +54,16 @@ func (lb *Leaderboard) SaveResource()                { cache.SaveResource(lb) }
 
 // LoadOrCreateLeaderboard will create a leaderboard object based on the parameters.
 // If you want to create a leaderboard for an entire year, pass in 0 for day
-func LoadOrCreateLeaderboard(year, day int) *Leaderboard {
+func LoadOrCreateLeaderboard(year, day int) (*Leaderboard, error) {
 	lbData := cache.LoadResource(cache.LEADERBOARDS, utils.GetResouceBucketID(year, day))
 
 	if lbData != nil {
-		var lb *Leaderboard
-		json.Unmarshal(lbData, &lb)
-		return lb
+		var cached Leaderboard
+		if err := json.Unmarshal(lbData, &cached); err == nil {
+			return &cached, nil
+		} else {
+			output.Warn("Unable to read cached leaderboard data; refetching.", "err", err)
+		}
 	}
 
 	lb := &Leaderboard{
@@ -72,21 +75,22 @@ func LoadOrCreateLeaderboard(year, day int) *Leaderboard {
 		lb.SecondHundred = make([]*Placing, 0, 100)
 	}
 
-	lb.LoadPlacings()
+	if err := lb.LoadPlacings(); err != nil {
+		return nil, err
+	}
 
 	lb.SaveResource()
 
-	return lb
+	return lb, nil
 }
 
 // LoadPlacings will load all of the placings for a given year or date
-func (lb *Leaderboard) LoadPlacings() {
+func (lb *Leaderboard) LoadPlacings() error {
 	if lb.Day == 0 {
-		lb.loadYearlyLB()
-	} else {
-		lb.loadDailyLB()
+		return lb.loadYearlyLB()
 	}
 
+	return lb.loadDailyLB()
 }
 
 // GetTitle will get the appropriate viewport title for the leaderboard
@@ -98,9 +102,9 @@ func (lb *Leaderboard) GetTitle() string {
 }
 
 // GetContent will get the lb content in a printable format
-func (lb *Leaderboard) GetContent() string {
+func (lb *Leaderboard) GetContent() (string, string) {
 	if lb.Day == 0 {
-		return lb.getYearlyContent()
+		return lb.getYearlyContent(), ""
 	} else {
 		return lb.getDailyContent()
 	}
@@ -250,23 +254,8 @@ func (lb *Leaderboard) loadDailyLB() error {
 }
 
 // GetContent will get the lb content in a printable format
-func (lb *Leaderboard) getDailyContent() string {
+func (lb *Leaderboard) getDailyContent() (string, string) {
 	tOne := table.New().
-		Border(lipgloss.NormalBorder()).
-		BorderStyle(lipgloss.NewStyle().Foreground(lipgloss.Color("99"))).
-		Headers("Place", "Time Done (EST)", "Display Name").
-		StyleFunc(styles.GetLeaderboardStyle)
-
-	for _, p := range lb.FirstHundred {
-		pos := strconv.Itoa(p.Position)
-		ft := p.FinishTime
-		name := p.DisplayName
-		tOne.Row(pos, ft, name)
-	}
-
-	sOut := "First People to Obtain Both Stars\n" + tOne.Render()
-
-	tTwo := table.New().
 		Border(lipgloss.NormalBorder()).
 		BorderStyle(lipgloss.NewStyle().Foreground(lipgloss.Color("99"))).
 		Headers("Place", "Time Done (EST)", "Display Name").
@@ -276,10 +265,25 @@ func (lb *Leaderboard) getDailyContent() string {
 		pos := strconv.Itoa(p.Position)
 		ft := p.FinishTime
 		name := p.DisplayName
+		tOne.Row(pos, ft, name)
+	}
+
+	outOne := "First People to Obtain The First Star\n" + tOne.Render()
+
+	tTwo := table.New().
+		Border(lipgloss.NormalBorder()).
+		BorderStyle(lipgloss.NewStyle().Foreground(lipgloss.Color("99"))).
+		Headers("Place", "Time Done (EST)", "Display Name").
+		StyleFunc(styles.GetLeaderboardStyle)
+
+	for _, p := range lb.FirstHundred {
+		pos := strconv.Itoa(p.Position)
+		ft := p.FinishTime
+		name := p.DisplayName
 		tTwo.Row(pos, ft, name)
 	}
 
-	sOut += "\nFirst People to Obtain The First Star\n" + tTwo.Render()
+	outTwo := "First People to Obtain Both Stars\n" + tTwo.Render()
 
-	return sOut
+	return outOne, outTwo
 }

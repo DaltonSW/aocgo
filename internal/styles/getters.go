@@ -1,12 +1,11 @@
 package styles
 
-import "github.com/charmbracelet/lipgloss/v2"
+import (
+	"github.com/charmbracelet/lipgloss/v2"
+	"github.com/charmbracelet/lipgloss/v2/table"
+)
 
 func GetLeaderboardStyle(row, col int) lipgloss.Style {
-	if row == 0 {
-		return lipgloss.NewStyle().Foreground(lipgloss.Color("99")).Bold(true).Align(lipgloss.Center)
-	}
-
 	var style lipgloss.Style
 
 	switch col {
@@ -21,13 +20,15 @@ func GetLeaderboardStyle(row, col int) lipgloss.Style {
 	}
 
 	switch row {
-	case 1:
+	case table.HeaderRow:
+		return lipgloss.NewStyle().Foreground(lipgloss.Color("99")).Bold(true).Align(lipgloss.Center)
+	case 0:
 		return style.Foreground(GoldColor)
 
-	case 2:
+	case 1:
 		return style.Foreground(SilverColor)
 
-	case 3:
+	case 2:
 		return style.Foreground(BronzeColor)
 	default:
 		return style

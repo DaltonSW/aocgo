@@ -2,14 +2,6 @@ package styles
 
 import (
 	"github.com/charmbracelet/lipgloss/v2"
-	"github.com/charmbracelet/lipgloss/v2/compat"
-)
-
-// TODO: Actually differentiate between light and dark. I just don't wanna delve into this right now
-var (
-	// Colors
-	lbBorderColor  = compat.AdaptiveColor{Light: lipgloss.Color("#8787FF"), Dark: lipgloss.Color("#8787FF")}
-	viewTitleColor = compat.AdaptiveColor{Light: lipgloss.Color("#FFFF00"), Dark: lipgloss.Color("#FFFF00")}
 )
 
 var (
@@ -24,19 +16,6 @@ var (
 	BrownTextStyle  = lipgloss.NewStyle().Foreground(BrownTextColor)
 
 	SubtitleStyle = lipgloss.NewStyle().Foreground(SubtitleColor).Italic(true)
-
-	// Styles
-	viewportTitleStyle = func() lipgloss.Style {
-		b := lipgloss.RoundedBorder()
-		b.Right = "├"
-		return lipgloss.NewStyle().BorderStyle(b).Padding(0, 1).Foreground(viewTitleColor).Underline(true)
-	}()
-
-	viewportScrollStyle = func() lipgloss.Style {
-		b := lipgloss.RoundedBorder()
-		b.Left = "┤"
-		return lipgloss.NewStyle().BorderStyle(b).Padding(0, 1)
-	}()
 
 	ItalStyle = lipgloss.NewStyle().Foreground(ItalColor)
 	StarStyle = lipgloss.NewStyle().Foreground(StarColor)

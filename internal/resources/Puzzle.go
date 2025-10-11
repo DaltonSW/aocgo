@@ -417,8 +417,3 @@ func (v Value) GetValue() string {
 	}
 	return strconv.Itoa(v.number)
 }
-
-// // TODO: answerStyle
-var (
-	puzzleTitleStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("#000000")).Background(lipgloss.Color("#FFFF00"))
-)
