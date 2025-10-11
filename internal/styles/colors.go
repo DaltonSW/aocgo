@@ -18,10 +18,10 @@ var (
 	SubtitleColor   = compat.AdaptiveColor{Light: lipgloss.Color("#D0D0D0"), Dark: lipgloss.Color("#777B7E")}
 
 	// Answer colors
-	CorrectAnswerStyle   = lipgloss.NewStyle().Foreground(GreenTextColor)
-	IncorrectAnswerStyle = lipgloss.NewStyle().Foreground(RedTextColor)
-	NeutralAnswerStyle   = lipgloss.NewStyle().Foreground(PurpleTextColor)
-	WarningAnswerStyle   = lipgloss.NewStyle().Foreground(YellowTextColor)
+	CorrectAnswerStyle   = lipgloss.NewStyle().Foreground(lipgloss.Green)
+	IncorrectAnswerStyle = lipgloss.NewStyle().Foreground(lipgloss.Red)
+	NeutralAnswerStyle   = lipgloss.NewStyle().Foreground(lipgloss.Magenta)
+	WarningAnswerStyle   = lipgloss.NewStyle().Foreground(lipgloss.Yellow)
 
 	// Leaderboard colors
 	GoldColor   = compat.AdaptiveColor{Light: lipgloss.Color("#D4AF37"), Dark: lipgloss.Color("#D4AF37")}
@@ -29,7 +29,7 @@ var (
 	BronzeColor = compat.AdaptiveColor{Light: lipgloss.Color("#CD7F32"), Dark: lipgloss.Color("#CD7F32")}
 
 	// Table colors
-	TableBorderColor = compat.AdaptiveColor{Light: lipgloss.Color("#8839EF"), Dark: lipgloss.Color("#BD93F9")}
+	TableBorderColor = lipgloss.Magenta
 
 	// Puzzle view colors
 	ItalColor = compat.AdaptiveColor{Light: lipgloss.Color("#FF3374"), Dark: lipgloss.Color("#FF3374")}
@@ -38,9 +38,12 @@ var (
 	CodeColor = compat.AdaptiveColor{Light: lipgloss.Color("#FAC3D5"), Dark: lipgloss.Color("#FAC3D5")}
 
 	// User display colors
-	BothStarsColor = lipgloss.Color("#F1FA8C")
-	FirstStarColor = lipgloss.Color("#838BA7")
-	NoStarsColor   = lipgloss.Color("#414559")
+	// BothStarsColor = lipgloss.Color("#F1FA8C")
+	// FirstStarColor = lipgloss.Color("#838BA7")
+	// NoStarsColor   = lipgloss.Color("#414559")
+	BothStarsColor = lipgloss.BrightYellow
+	FirstStarColor = lipgloss.Cyan
+	NoStarsColor   = lipgloss.Black
 
 	// Misc colors
 	UpdateSpinnerColor = lipgloss.Color("#FB25A0")

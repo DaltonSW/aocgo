@@ -146,8 +146,7 @@ func (m LoadUserModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.finished = true
 		m.table = msg.table
 
-		// sOut := fmt.Sprintf("%v\n%v", styles.NormalTextStyle.Render(header(m.user.DisplayName)), m.table.Render())
-		// lipgloss.Println(styles.GlobalSpacingStyle.Render(sOut))
+		utils.ClearTerminal()
 		return m, tea.Quit
 	}
 
@@ -159,7 +158,7 @@ func (m LoadUserModel) View() string {
 		m.user.LoadDisplayName()
 	}
 	if m.finished {
-		sOut := fmt.Sprintf("%v\n%v\n", styles.NormalTextStyle.Render(header(m.user.DisplayName)), m.table.Render())
+		sOut := fmt.Sprintf("\n%v\n%v\n", styles.IncorrectAnswerStyle.Bold(true).Render(header(m.user.DisplayName)), m.table.Render())
 		return styles.GlobalSpacingStyle.Render(sOut)
 	}
 
@@ -188,8 +187,8 @@ func generateTable(userToken string) tea.Cmd {
 			Headers("Year", "01", "02", "03", "04", "05", "06", "07", "08", "09",
 				"10", "11", "12", "13", "14", "15", "16", "17", "18", "19",
 				"20", "21", "22", "23", "24", "25", "Num").
-			Border(lipgloss.NormalBorder()).
-			BorderStyle(lipgloss.NewStyle().Foreground(lipgloss.Color("99")))
+			Border(lipgloss.RoundedBorder()).
+			BorderStyle(lipgloss.NewStyle().Foreground(lipgloss.BrightRed))
 
 		y := utils.FIRST_YEAR
 		for y <= maxYear {

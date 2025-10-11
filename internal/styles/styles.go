@@ -22,7 +22,7 @@ var (
 	LinkStyle = lipgloss.NewStyle().Foreground(LinkColor).Underline(true)
 	CodeStyle = lipgloss.NewStyle().Foreground(CodeColor).Bold(true).Italic(true)
 
-	GlobalSpacingStyle = lipgloss.NewStyle().Padding(1, 1, 0)
+	GlobalSpacingStyle = lipgloss.NewStyle().Margin(1).AlignHorizontal(lipgloss.Center)
 
 	UserTableStyle = lipgloss.NewStyle().Foreground(NormalTextColor).
 			BorderForeground(TableBorderColor).Align(lipgloss.Center)
