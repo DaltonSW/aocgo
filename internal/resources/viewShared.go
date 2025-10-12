@@ -8,12 +8,12 @@ var (
 	titleStyle = func() lipgloss.Style {
 		b := lipgloss.RoundedBorder()
 		b.Right = "├"
-		return lipgloss.NewStyle().BorderStyle(b).Padding(0, 1).Foreground(lipgloss.Color("#FFFF00"))
+		return lipgloss.NewStyle().BorderStyle(b).Padding(0, 1).Foreground(lipgloss.BrightYellow)
 	}()
 
-	infoStyle = func() lipgloss.Style {
-		b := lipgloss.RoundedBorder()
-		b.Left = "┤"
-		return lipgloss.NewStyle().BorderStyle(b).Padding(0, 1)
-	}()
+	// infoStyle = func() lipgloss.Style {
+	// 	b := lipgloss.RoundedBorder()
+	// 	b.Left = "┤"
+	// 	return lipgloss.NewStyle().BorderStyle(b).Padding(0, 1)
+	// }()
 )

@@ -64,17 +64,17 @@ func (m PuzzleModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, nil
 
 		// BUG: Refreshing isn't working quite right. Stuff has to scroll before visualizing
-		case "r":
-			err := m.puzzle.ReloadPuzzleData()
-			if err != nil {
-				output.Fatal(err)
-			}
-			m.viewport.SetContent(strings.Join(m.puzzle.GetPrettyPageData(), "\n"))
-			m.status = "Page refreshed!"
-			// Clear terminal
-			fmt.Print("\033[H\033[2J")
-
-			return m, nil
+		// case "r":
+		// 	err := m.puzzle.ReloadPuzzleData()
+		// 	if err != nil {
+		// 		output.Fatal(err)
+		// 	}
+		// 	m.viewport.SetContent(strings.Join(m.puzzle.GetPrettyPageData(), "\n"))
+		// 	m.status = "Page refreshed!"
+		// 	// Clear terminal
+		// 	fmt.Print("\033[H\033[2J")
+		//
+		// 	return m, nil
 		case "s":
 			out, err := os.Create("./input.txt")
 			if err != nil {
@@ -98,10 +98,7 @@ func (m PuzzleModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		verticalMarginHeight := headerHeight + footerHeight
 
 		width := min(ViewportWidth, msg.Width)
-		height := msg.Height - verticalMarginHeight
-		if height < 0 {
-			height = 0
-		}
+		height := max(msg.Height-verticalMarginHeight, 0)
 
 		if !m.ready {
 			m.viewport = viewport.New(
@@ -140,12 +137,16 @@ func (m PuzzleModel) headerView() string {
 }
 
 func (m PuzzleModel) footerView() string {
-	info := infoStyle.Render(fmt.Sprintf("%3.f%%", m.viewport.ScrollPercent()*100))
-	line := strings.Repeat("─", max(0, m.viewport.Width()-lipgloss.Width(info)))
-	sOut := lipgloss.JoinHorizontal(lipgloss.Center, line, info)
-	sOut += "\n" + lipgloss.JoinHorizontal(lipgloss.Center, m.help.View(m.keys))
+	// info := infoStyle.Render(fmt.Sprintf("%3.f%%", m.viewport.ScrollPercent()*100))
+	// line := strings.Repeat("─", max(0, m.viewport.Width()-lipgloss.Width(info)))
+	sOut := m.help.View(m.keys)
+
+	var alertLayer *lipgloss.Layer
 	if m.status != "" {
-		sOut += " -- " + m.status
+		alertLayer = lipgloss.NewLayer(
+			lipgloss.NewStyle().Border(lipgloss.RoundedBorder()).Foreground(lipgloss.BrightCyan).Render(m.status),
+		).X(lipgloss.Width(sOut) / 2).Y(-1).Z(1)
+		return lipgloss.NewCanvas(alertLayer, lipgloss.NewLayer(sOut)).Render()
 	}
 
 	return sOut
@@ -162,7 +163,7 @@ type helpKeymap struct {
 }
 
 func (k helpKeymap) ShortHelp() []key.Binding {
-	return []key.Binding{k.Input, k.Browser, k.Quit}
+	return []key.Binding{k.Up, k.Down, k.Input, k.Browser, k.Quit}
 }
 
 func (k helpKeymap) FullHelp() [][]key.Binding {

@@ -31,20 +31,35 @@ var (
 	// Table colors
 	TableBorderColor = lipgloss.Magenta
 
-	// Puzzle view colors
-	ItalColor = compat.AdaptiveColor{Light: lipgloss.Color("#FF3374"), Dark: lipgloss.Color("#FF3374")}
-	StarColor = compat.AdaptiveColor{Light: lipgloss.Color("#F1FA8C"), Dark: lipgloss.Color("#F1FA8C")}
-	LinkColor = compat.AdaptiveColor{Light: lipgloss.Color("#8BE9FD"), Dark: lipgloss.Color("#8BE9FD")}
-	CodeColor = compat.AdaptiveColor{Light: lipgloss.Color("#FAC3D5"), Dark: lipgloss.Color("#FAC3D5")}
-
 	// User display colors
-	// BothStarsColor = lipgloss.Color("#F1FA8C")
-	// FirstStarColor = lipgloss.Color("#838BA7")
-	// NoStarsColor   = lipgloss.Color("#414559")
 	BothStarsColor = lipgloss.BrightYellow
 	FirstStarColor = lipgloss.Cyan
 	NoStarsColor   = lipgloss.Black
 
 	// Misc colors
-	UpdateSpinnerColor = lipgloss.Color("#FB25A0")
+	UpdateSpinnerColor = lipgloss.BrightMagenta
+)
+
+var (
+	// Text Styles
+	NormalTextStyle = lipgloss.NewStyle().Foreground(NormalTextColor)
+	RedTextStyle    = lipgloss.NewStyle().Foreground(RedTextColor)
+	GreenTextStyle  = lipgloss.NewStyle().Foreground(GreenTextColor)
+	YellowTextStyle = lipgloss.NewStyle().Foreground(YellowTextColor)
+	BlueTextStyle   = lipgloss.NewStyle().Foreground(BlueTextColor)
+	PurpleTextStyle = lipgloss.NewStyle().Foreground(PurpleTextColor)
+	CyanTextStyle   = lipgloss.NewStyle().Foreground(CyanTextColor)
+	BrownTextStyle  = lipgloss.NewStyle().Foreground(BrownTextColor)
+
+	SubtitleStyle = lipgloss.NewStyle().Foreground(SubtitleColor).Italic(true)
+
+	ItalStyle = lipgloss.NewStyle().Foreground(lipgloss.BrightRed).Italic(true).Bold(true)
+	StarStyle = lipgloss.NewStyle().Foreground(lipgloss.BrightYellow)
+	LinkStyle = lipgloss.NewStyle().Foreground(lipgloss.BrightCyan).Underline(true)
+	CodeStyle = lipgloss.NewStyle().Foreground(lipgloss.BrightGreen).Bold(true).Italic(true)
+
+	GlobalSpacingStyle = lipgloss.NewStyle().Margin(1).AlignHorizontal(lipgloss.Center)
+
+	UserTableStyle = lipgloss.NewStyle().Foreground(NormalTextColor).
+			BorderForeground(TableBorderColor).Align(lipgloss.Center)
 )
