@@ -29,7 +29,8 @@ var (
 	BronzeColor = compat.AdaptiveColor{Light: lipgloss.Color("#CD7F32"), Dark: lipgloss.Color("#CD7F32")}
 
 	// Table colors
-	TableBorderColor = lipgloss.Magenta
+	TableHeaderColor = lipgloss.Magenta
+	TableBorderColor = lipgloss.BrightRed
 
 	// User display colors
 	BothStarsColor = lipgloss.BrightYellow
@@ -61,5 +62,5 @@ var (
 	GlobalSpacingStyle = lipgloss.NewStyle().Margin(1).AlignHorizontal(lipgloss.Center)
 
 	UserTableStyle = lipgloss.NewStyle().Foreground(NormalTextColor).
-			BorderForeground(TableBorderColor).Align(lipgloss.Center)
+			BorderForeground(TableHeaderColor).Align(lipgloss.Center)
 )

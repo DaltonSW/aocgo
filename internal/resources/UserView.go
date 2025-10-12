@@ -188,7 +188,7 @@ func generateTable(userToken string) tea.Cmd {
 				"10", "11", "12", "13", "14", "15", "16", "17", "18", "19",
 				"20", "21", "22", "23", "24", "25", "Num").
 			Border(lipgloss.RoundedBorder()).
-			BorderStyle(lipgloss.NewStyle().Foreground(lipgloss.BrightRed))
+			BorderStyle(lipgloss.NewStyle().Foreground(styles.TableBorderColor))
 
 		y := utils.FIRST_YEAR
 		for y <= maxYear {

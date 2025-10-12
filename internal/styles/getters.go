@@ -21,7 +21,7 @@ func GetLeaderboardStyle(row, col int) lipgloss.Style {
 
 	switch row {
 	case table.HeaderRow:
-		return lipgloss.NewStyle().Foreground(lipgloss.Color("99")).Bold(true).Align(lipgloss.Center)
+		return lipgloss.NewStyle().Foreground(TableHeaderColor).Bold(true).Align(lipgloss.Center)
 	case 0:
 		return style.Foreground(GoldColor)
 

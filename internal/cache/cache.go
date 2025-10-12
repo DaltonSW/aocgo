@@ -46,19 +46,25 @@ var masterDBM *DatabaseManager
 
 // Create and initialize master database manager, taking in a valid AoC user session token
 func StartupDBM(userSession string) error {
-	masterDBM = &DatabaseManager{}
-	return masterDBM.initializeDBM(userSession)
+	dbm := &DatabaseManager{}
+	if err := dbm.initializeDBM(userSession); err != nil {
+		return err
+	}
+	masterDBM = dbm
+	return nil
 }
 
 // Ensure Master DBM gets shutdown
 func ShutdownDBM() {
+	if masterDBM == nil {
+		return
+	}
 	masterDBM.Shutdown()
+	masterDBM = nil
 }
 
 // Database Manager
 type DatabaseManager struct {
-	sessionDB *bolt.DB
-	// generalDB    *bolt.DB
 	saveFilePath string
 }
 
@@ -68,56 +74,41 @@ func (dbm *DatabaseManager) initializeDBM(userSession string) error {
 
 	// Load save file path and ensure it exists
 	dbm.saveFilePath = fmt.Sprintf(CacheFile, userSession)
-	os.MkdirAll(path.Join(CacheDir), os.ModePerm)
+	if err := os.MkdirAll(path.Join(CacheDir), os.ModePerm); err != nil {
+		return err
+	}
 
 	// log.Debugf("Trying to access save file path: %v", dbm.saveFilePath)
 
-	// Open database. Read/Write for user, none for Group/Other, and none for Gretchen Weiners
-	tempDB, err := bolt.Open(dbm.saveFilePath, 0600, &bolt.Options{Timeout: 10 * time.Second})
-	if err != nil {
-		return err
-	}
-	dbm.sessionDB = tempDB
-	// log.Debug("Session database opened")
-
-	// log.Debugf("Trying to access save file path: %v", GeneralCacheDB)
-
-	// // Open database. Read/Write for user, none for Group/Other, and none for Gretchen Weiners
-	// tempDB, err = bolt.Open(GeneralCacheDB, 0600, &bolt.Options{Timeout: 10 * time.Second})
-	// if err != nil {
-	// 	return err
-	// }
-	// dbm.generalDB = tempDB
-	// log.Debug("General database opened")
-	//
-	dbm.initializeBuckets()
-	// log.Debug("Buckets initialized")
-	return nil
+	return dbm.initializeBuckets()
 }
 
 // Ensure all buckets exist so they can assuredly be loaded later on
-func (dbm *DatabaseManager) initializeBuckets() {
-	dbm.sessionDB.Update(func(tx *bolt.Tx) error {
-		tx.CreateBucketIfNotExists([]byte(PAGE_DATA))
-		tx.CreateBucketIfNotExists([]byte(PUZZLES))
-		tx.CreateBucketIfNotExists([]byte(USER_INPUTS))
-		tx.CreateBucketIfNotExists([]byte(USER_DATA))
-		tx.CreateBucketIfNotExists([]byte(LEADERBOARDS))
-		return nil
-	})
+func (dbm *DatabaseManager) initializeBuckets() error {
+	return dbm.withDB(false, func(db *bolt.DB) error {
+		return db.Update(func(tx *bolt.Tx) error {
+			buckets := [][]byte{
+				[]byte(PAGE_DATA),
+				[]byte(PUZZLES),
+				[]byte(USER_INPUTS),
+				[]byte(USER_DATA),
+				[]byte(LEADERBOARDS),
+			}
 
-	// dbm.generalDB.Update(func(tx *bolt.Tx) error {
-	// 	tx.CreateBucketIfNotExists([]byte(LEADERBOARDS))
-	// 	tx.CreateBucketIfNotExists([]byte(USER_DATA))
-	// 	return nil
-	// })
+			for _, bucket := range buckets {
+				if _, err := tx.CreateBucketIfNotExists(bucket); err != nil {
+					return err
+				}
+			}
+
+			return nil
+		})
+	})
 }
 
 // Ensure database is properly closed
 func (dbm *DatabaseManager) Shutdown() {
-	masterDBM.sessionDB.Close()
-	// masterDBM.generalDB.Close()
-	// log.Debug("Database closed")
+	// No persistent handles remain; kept for API compatibility.
 }
 
 func SaveResource(r Resource) {
@@ -125,26 +116,38 @@ func SaveResource(r Resource) {
 		return
 	}
 	// log.Debug("Saving resource", "bucket", r.GetBucketName(), "id", r.GetID(), "data", resourceData)
-	masterDBM.sessionDB.Update(func(tx *bolt.Tx) error {
-		bucket := tx.Bucket([]byte(r.GetBucketName()))
-		resourceData, err := r.MarshalData()
-		if err != nil {
-			return err
-		}
-		bucket.Put([]byte(r.GetID()), resourceData)
-		return nil
+	err := masterDBM.withDB(false, func(db *bolt.DB) error {
+		return db.Update(func(tx *bolt.Tx) error {
+			bucket := tx.Bucket([]byte(r.GetBucketName()))
+			if bucket == nil {
+				return fmt.Errorf("bucket %s does not exist", r.GetBucketName())
+			}
+			resourceData, err := r.MarshalData()
+			if err != nil {
+				return err
+			}
+			return bucket.Put([]byte(r.GetID()), resourceData)
+		})
 	})
+	checkErr(err)
 }
 
 // Save resource to database
 func SaveGenericResource(bucketName, idToSave string, dataToSave []byte) {
+	if masterDBM == nil {
+		return
+	}
 	// log.Debug("Saving resource", "bucket", bucketName, "id", idToSave, "data", dataToSave)
-	masterDBM.sessionDB.Update(func(tx *bolt.Tx) error {
-		bucket := tx.Bucket([]byte(bucketName))
-		bucket.Put([]byte(idToSave), dataToSave)
-		return nil
+	err := masterDBM.withDB(false, func(db *bolt.DB) error {
+		return db.Update(func(tx *bolt.Tx) error {
+			bucket := tx.Bucket([]byte(bucketName))
+			if bucket == nil {
+				return fmt.Errorf("bucket %s does not exist", bucketName)
+			}
+			return bucket.Put([]byte(idToSave), dataToSave)
+		})
 	})
-
+	checkErr(err)
 }
 
 // Load resource from database by ID
@@ -154,11 +157,22 @@ func LoadResource(bucketName, idToLoad string) []byte {
 	}
 
 	var output []byte
-	masterDBM.sessionDB.View(func(tx *bolt.Tx) error {
-		bucket := tx.Bucket([]byte(bucketName))
-		output = bucket.Get([]byte(idToLoad))
-		return nil
+	err := masterDBM.withDB(true, func(db *bolt.DB) error {
+		return db.View(func(tx *bolt.Tx) error {
+			bucket := tx.Bucket([]byte(bucketName))
+			if bucket == nil {
+				return nil
+			}
+
+			value := bucket.Get([]byte(idToLoad))
+			if value != nil {
+				output = make([]byte, len(value))
+				copy(output, value)
+			}
+			return nil
+		})
 	})
+	checkErr(err)
 	// log.Debug("Loading resource", "bucket", bucketName, "id", idToLoad, "data", output)
 	return output
 }
@@ -172,4 +186,24 @@ func checkErr(err error) {
 	if err != nil {
 		output.Error("Database error!", "err", err)
 	}
+}
+
+// withDB opens the database, executes the provided function, and ensures the file handle is released.
+func (dbm *DatabaseManager) withDB(readOnly bool, fn func(*bolt.DB) error) error {
+	if dbm == nil || dbm.saveFilePath == "" {
+		return fmt.Errorf("database manager not initialized")
+	}
+
+	options := &bolt.Options{
+		Timeout:  10 * time.Second,
+		ReadOnly: readOnly,
+	}
+
+	db, err := bolt.Open(dbm.saveFilePath, 0600, options)
+	if err != nil {
+		return err
+	}
+	defer db.Close()
+
+	return fn(db)
 }
