@@ -112,10 +112,6 @@ func init() {
 	submitCmd.Flags().IntVarP(&AnswerPart, "part", "p", 0, "--part [1|2]")
 	rootCmd.AddCommand(submitCmd)
 
-	userCmd.GroupID = "puzzles"
-	userCmd.Flags().BoolVar(&ClearUser, "clear", false, "Clears *ALL* stored puzzle data for a user.")
-	rootCmd.AddCommand(userCmd)
-
 	viewCmd.GroupID = "puzzles"
 	viewCmd.Flags().StringVarP(&Year, "year", "y", "0", "--year [2015...2024]")
 	viewCmd.Flags().StringVarP(&Day, "day", "d", "0", "--day [1...25]")

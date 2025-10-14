@@ -10,7 +10,6 @@ import (
 	"go.dalton.dog/aocgo/internal/session"
 	"go.dalton.dog/aocgo/internal/utils"
 
-	// "dalton.dog/aocgo/internal/styles"
 	"github.com/PuerkitoBio/goquery"
 	tea "github.com/charmbracelet/bubbletea/v2"
 )
