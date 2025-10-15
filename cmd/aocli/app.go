@@ -74,20 +74,13 @@ var rootCmd = &cobra.Command{
 }
 
 func init() {
-	rootCmd.AddGroup(&cobra.Group{ID: "health", Title: "Health"})
 	rootCmd.AddGroup(&cobra.Group{ID: "puzzles", Title: "Puzzles"})
-
-	authCmd.GroupID = "health"
-	rootCmd.AddCommand(authCmd)
 
 	getCmd.GroupID = "puzzles"
 	getCmd.Flags().StringVarP(&Year, "year", "y", "0", "--year [2015...2024]")
 	getCmd.Flags().StringVarP(&Day, "day", "d", "0", "--day [1...25]")
 	getCmd.Flags().StringVarP(&OutFilename, "out", "o", "input.txt", "--out filename")
 	rootCmd.AddCommand(getCmd)
-
-	healthCmd.GroupID = "health"
-	rootCmd.AddCommand(healthCmd)
 
 	leaderboardCmd.GroupID = "puzzles"
 	leaderboardCmd.Flags().StringVarP(&Year, "year", "y", "0", "--year [2015...2024]")
@@ -101,7 +94,7 @@ func init() {
 	newCmd.Flags().StringVarP(&OutFilename, "out", "o", "main.go", "--out filename")
 	rootCmd.AddCommand(newCmd)
 
-	reloadCmd.GroupID = "health"
+	reloadCmd.GroupID = "puzzles"
 	reloadCmd.Flags().StringVarP(&Year, "year", "y", "0", "--year [2015...2024]")
 	reloadCmd.Flags().StringVarP(&Day, "day", "d", "0", "--day [1...25]")
 	rootCmd.AddCommand(reloadCmd)
