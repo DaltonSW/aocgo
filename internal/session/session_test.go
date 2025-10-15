@@ -6,62 +6,108 @@ import (
 	"testing"
 )
 
-func TestGetSessionTokenFromEnv(t *testing.T) {
-	// Setup: Create a temporary home directory and backup environment variable
-	backupEnv := os.Getenv("AOC_SESSION_TOKEN")
-	defer os.Setenv("AOC_SESSION_TOKEN", backupEnv)
+func TestAddSetAndRemoveUser(t *testing.T) {
+	t.Setenv("XDG_CONFIG_HOME", t.TempDir())
 
-	var err error
-
-	// Test: Get token from environment variable
-	expectedEnvToken := "test_token_from_env"
-	os.Setenv("AOC_SESSION_TOKEN", expectedEnvToken)
-	token, err := getTokenFromEnv()
+	active, err := AddUser("primary", "token-1", true)
 	if err != nil {
-		t.Fatalf("Expected no error, got %v", err)
+		t.Fatalf("AddUser returned error: %v", err)
 	}
-	if token != expectedEnvToken {
-		t.Fatalf("Expected token %v, got %v", expectedEnvToken, token)
+	if active == nil || active.Label != "primary" || active.Token != "token-1" {
+		t.Fatalf("AddUser returned unexpected active user: %#v", active)
 	}
-	os.Unsetenv("AOC_SESSION_TOKEN")
 
-	// Test: No token available
-	token, err = getTokenFromEnv()
-	if token != "" {
-		t.Fatalf("Expected empty token, got %v", token)
+	list, err := ListUsers()
+	if err != nil {
+		t.Fatalf("ListUsers returned error: %v", err)
+	}
+	if len(list) != 1 {
+		t.Fatalf("expected 1 user, got %d", len(list))
+	}
+	if !list[0].Active {
+		t.Fatalf("expected newly added user to be active")
+	}
+
+	_, err = AddUser("secondary", "token-2", false)
+	if err != nil {
+		t.Fatalf("AddUser(secondary) returned error: %v", err)
+	}
+
+	active, err = SetActiveUser("secondary")
+	if err != nil {
+		t.Fatalf("SetActiveUser returned error: %v", err)
+	}
+	if active.Label != "secondary" {
+		t.Fatalf("expected secondary to be active, got %s", active.Label)
+	}
+
+	active, err = RemoveUser("secondary")
+	if err != nil {
+		t.Fatalf("RemoveUser returned error: %v", err)
+	}
+	if active == nil || active.Label != "primary" {
+		t.Fatalf("expected primary to remain active after removing secondary, got %#v", active)
+	}
+
+	active, err = RemoveUser("primary")
+	if err != nil {
+		t.Fatalf("RemoveUser last user returned error: %v", err)
+	}
+	if active != nil {
+		t.Fatalf("expected active to be nil after removing last user, got %#v", active)
 	}
 }
 
-func TestGetTokenFromFile(t *testing.T) {
-	// Setup: Create a temporary config directory and session token file
-	homeDir := t.TempDir()
-	configDir := filepath.Join(homeDir, ".config", "aocutil")
-	if err := os.MkdirAll(configDir, 0755); err != nil {
-		t.Fatalf("Unable to create config directory: %v", err)
-	}
-	tokenFile := filepath.Join(configDir, "session.token")
+func TestGetActiveUserFromEnv(t *testing.T) {
+	t.Setenv("XDG_CONFIG_HOME", t.TempDir())
+	t.Setenv("AOC_SESSION_TOKEN", "env-token")
+	t.Cleanup(func() {
+		os.Unsetenv("AOC_SESSION_TOKEN")
+	})
 
-	// Test: Read token from file
-	expectedToken := "test_token"
-	if err := os.WriteFile(tokenFile, []byte(expectedToken), 0644); err != nil {
-		t.Fatalf("Unable to write session token file: %v", err)
-	}
-	token, err := getTokenFromFile(tokenFile)
-	if token != expectedToken {
-		t.Fatalf("Expected token %v, got %v", expectedToken, token)
-	}
+	active, err := GetActiveUser(false)
 	if err != nil {
-		t.Fatalf("Expected no error, got %v", err)
+		t.Fatalf("GetActiveUser returned error: %v", err)
+	}
+	if active.Label != envUserLabel {
+		t.Fatalf("expected label %q, got %q", envUserLabel, active.Label)
+	}
+	if active.Token != "env-token" {
+		t.Fatalf("expected token env-token, got %s", active.Token)
+	}
+}
+
+func TestLegacyTokenMigration(t *testing.T) {
+	configRoot := t.TempDir()
+	t.Setenv("XDG_CONFIG_HOME", configRoot)
+
+	legacyDir := filepath.Join(configRoot, "aocgo")
+	if err := os.MkdirAll(legacyDir, 0o700); err != nil {
+		t.Fatalf("unable to create legacy dir: %v", err)
 	}
 
-	// Cleanup: Remove the session token file
-	if err := os.Remove(tokenFile); err != nil {
-		t.Fatalf("Unable to remove session token file: %v", err)
+	legacyPath := filepath.Join(legacyDir, legacyTokenFileName)
+	if err := os.WriteFile(legacyPath, []byte("legacy-token"), 0o600); err != nil {
+		t.Fatalf("unable to write legacy token: %v", err)
 	}
 
-	// Test: Token file does not exist
-	token, err = getTokenFromFile(tokenFile)
-	if token != "" {
-		t.Fatalf("Expected empty token, got %v", token)
+	active, err := GetActiveUser(false)
+	if err != nil {
+		t.Fatalf("GetActiveUser returned error after migration: %v", err)
+	}
+	if active.Label != "default" {
+		t.Fatalf("expected default label after migration, got %s", active.Label)
+	}
+	if active.Token != "legacy-token" {
+		t.Fatalf("expected token legacy-token, got %s", active.Token)
+	}
+
+	// Ensure data persisted in new store.
+	list, err := ListUsers()
+	if err != nil {
+		t.Fatalf("ListUsers after migration returned error: %v", err)
+	}
+	if len(list) != 1 || list[0].Label != "default" {
+		t.Fatalf("expected one migrated user named default, got %#v", list)
 	}
 }

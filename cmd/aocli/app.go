@@ -11,6 +11,7 @@ import (
 	"go.dalton.dog/aocgo/internal/cache"
 	"go.dalton.dog/aocgo/internal/output"
 	"go.dalton.dog/aocgo/internal/resources"
+	"go.dalton.dog/aocgo/internal/session"
 	"go.dalton.dog/aocgo/internal/styles"
 	"go.dalton.dog/aocgo/internal/utils"
 )
@@ -23,7 +24,6 @@ var Day string
 var AnswerPart int
 var OutFilename string
 var BaseFilename string
-var ClearUser bool
 
 var UserRsrc *resources.User
 var cacheInitialized bool
@@ -44,16 +44,20 @@ var rootCmd = &cobra.Command{
 			return
 		}
 
-		var err error
-		UserRsrc, err = resources.NewUser("")
+		activeUser, err := session.GetActiveUser(false)
+		if err != nil {
+			output.Fatalf("Unable to determine active user. %v", err)
+		}
+
+		UserRsrc, err = resources.NewUser(activeUser.Label, activeUser.Token)
 
 		if err != nil {
 			output.Fatalf("Unable to create user to run requests as. %v", err)
 		} else {
-			output.Debug("User loaded", "token", UserRsrc.SessionTok)
+			output.Debug("User loaded", "label", UserRsrc.GetLabel())
 		}
 
-		err = cache.StartupDBM(UserRsrc.GetToken())
+		err = cache.StartupDBM(UserRsrc.GetLabel())
 		if err != nil {
 			output.Fatal(err)
 		}

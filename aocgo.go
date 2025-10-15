@@ -161,22 +161,22 @@ func GetInputAsCharMatrix() [][]string {
 }
 
 func getData(year int, day int) []byte {
-	userToken, err := session.GetSessionToken(false)
+	active, err := session.GetActiveUser(false)
 	if err != nil {
 		output.Fatal(err)
 	}
 
-	_, err = resources.NewUser(userToken)
+	_, err = resources.NewUser(active.Label, active.Token)
 	if err != nil {
 		output.Fatal(err)
 	}
 
-	err = cache.StartupDBM(userToken)
+	err = cache.StartupDBM(active.Label)
 	if err != nil {
 		output.Fatal(err)
 	}
 
-	puzzle := resources.LoadOrCreatePuzzle(year, day, userToken)
+	puzzle := resources.LoadOrCreatePuzzle(year, day, active.Token)
 	input, err := puzzle.GetUserInput()
 	if err != nil {
 		output.Fatal(err)

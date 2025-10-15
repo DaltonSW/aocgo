@@ -7,7 +7,6 @@ import (
 
 	"go.dalton.dog/aocgo/internal/api"
 	"go.dalton.dog/aocgo/internal/output"
-	"go.dalton.dog/aocgo/internal/session"
 	"go.dalton.dog/aocgo/internal/utils"
 
 	"github.com/PuerkitoBio/goquery"
@@ -16,6 +15,7 @@ import (
 
 // User represents a session token and accompanying puzzles.
 type User struct {
+	Label       string
 	DisplayName string
 	NumStars    int
 	Years       map[int][]*Puzzle
@@ -27,23 +27,23 @@ func (u *User) GetToken() string {
 	return u.SessionTok
 }
 
-// Creates a new user based on a provided session token.
-// If none is provided, it'll be loaded from environment
-// variable or from config file.
-func NewUser(token string) (*User, error) {
-	var err error
-	if token == "" {
-		token, err = session.GetSessionToken(false)
-		if err != nil {
-			return nil, err
-		}
-	}
+// GetLabel returns the user's configured label.
+func (u *User) GetLabel() string {
+	return u.Label
+}
 
-	if token == "" {
-		return nil, errors.New("Token was still empty after load attempts.")
-	}
-
+// NewUser creates a user model based on the provided label and session token.
+func NewUser(label, token string) (*User, error) {
 	token = strings.TrimSpace(token)
+	if token == "" {
+		return nil, errors.New("token cannot be empty")
+	}
+
+	label = strings.TrimSpace(label)
+	if label == "" {
+		return nil, errors.New("label cannot be empty")
+	}
+
 	api.InitClient(token)
 
 	yearMap := make(map[int][]*Puzzle)
@@ -52,6 +52,7 @@ func NewUser(token string) (*User, error) {
 	}
 
 	newUser := &User{
+		Label:      label,
 		SessionTok: token,
 		Years:      yearMap,
 	}

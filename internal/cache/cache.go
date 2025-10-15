@@ -1,9 +1,13 @@
 package cache
 
 import (
+	"crypto/sha1"
+	"encoding/hex"
 	"fmt"
 	"os"
 	"path"
+	"regexp"
+	"strings"
 	"time"
 
 	"go.dalton.dog/aocgo/internal/output"
@@ -27,11 +31,12 @@ const (
 )
 
 var (
-	UserCacheDir, _ = os.UserCacheDir()
-	CacheDir        = path.Join(UserCacheDir, "aocgo")
-	CacheFile       = path.Join(CacheDir, "%v.db")
-	InputCacheDir   = path.Join(CacheDir, "inputs")
-	GeneralCacheDB  = fmt.Sprintf(CacheFile, GENERIC_USER)
+	UserCacheDir, _     = os.UserCacheDir()
+	CacheDir            = path.Join(UserCacheDir, "aocgo")
+	InputCacheDir       = path.Join(CacheDir, "inputs")
+	GeneralCacheDB      = cacheFileForUser(GENERIC_USER)
+	cacheNameSanitizer  = regexp.MustCompile(`[^a-zA-Z0-9_-]+`)
+	cacheWhitespaceTrim = regexp.MustCompile(`\s+`)
 )
 
 // Interface for storable resource
@@ -44,10 +49,29 @@ type Resource interface {
 
 var masterDBM *DatabaseManager
 
-// Create and initialize master database manager, taking in a valid AoC user session token
-func StartupDBM(userSession string) error {
+func cacheFileForUser(label string) string {
+	trimmed := strings.TrimSpace(label)
+	if trimmed == "" {
+		trimmed = GENERIC_USER
+	}
+
+	safeLabel := cacheWhitespaceTrim.ReplaceAllString(trimmed, "_")
+	safeLabel = cacheNameSanitizer.ReplaceAllString(safeLabel, "_")
+	safeLabel = strings.Trim(safeLabel, "_")
+	if safeLabel == "" {
+		safeLabel = "user"
+	}
+
+	hash := sha1.Sum([]byte(trimmed))
+	hashPrefix := hex.EncodeToString(hash[:4])
+
+	return path.Join(CacheDir, fmt.Sprintf("%s-%s.db", strings.ToLower(safeLabel), hashPrefix))
+}
+
+// Create and initialize master database manager, taking in a user identifier (e.g., label).
+func StartupDBM(userIdentifier string) error {
 	dbm := &DatabaseManager{}
-	if err := dbm.initializeDBM(userSession); err != nil {
+	if err := dbm.initializeDBM(userIdentifier); err != nil {
 		return err
 	}
 	masterDBM = dbm
@@ -69,11 +93,11 @@ type DatabaseManager struct {
 }
 
 // Initializes the DBM
-func (dbm *DatabaseManager) initializeDBM(userSession string) error {
+func (dbm *DatabaseManager) initializeDBM(userIdentifier string) error {
 	// log.Debug("---Initializing Database---")
 
 	// Load save file path and ensure it exists
-	dbm.saveFilePath = fmt.Sprintf(CacheFile, userSession)
+	dbm.saveFilePath = cacheFileForUser(userIdentifier)
 	if err := os.MkdirAll(path.Join(CacheDir), os.ModePerm); err != nil {
 		return err
 	}
@@ -177,9 +201,9 @@ func LoadResource(bucketName, idToLoad string) []byte {
 	return output
 }
 
-// Clear database file for a certain user
-func ClearUserDatabase(sessionToken string) {
-	os.Remove(fmt.Sprintf(CacheFile, sessionToken))
+// Clear database file for a certain user identifier (label).
+func ClearUserDatabase(userIdentifier string) {
+	os.Remove(cacheFileForUser(userIdentifier))
 }
 
 func checkErr(err error) {
