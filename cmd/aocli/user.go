@@ -153,6 +153,38 @@ var switchUserCmd = &cobra.Command{
 	},
 }
 
+var updateUserCmd = &cobra.Command{
+	Use:   "update",
+	Short: "Update the active user's session token.",
+	Args:  cobra.NoArgs,
+	RunE: func(cmd *cobra.Command, args []string) error {
+		active, err := session.GetActiveUser(false)
+		if err != nil {
+			return err
+		}
+
+		var token string
+		if err := huh.NewForm(
+			huh.NewGroup(
+				huh.NewInput().
+					Title(fmt.Sprintf("New session token for %s", active.Label)).
+					EchoMode(huh.EchoModePassword).
+					Value(&token),
+			),
+		).Run(); err != nil {
+			return err
+		}
+
+		updated, err := session.UpdateActiveUserToken(token)
+		if err != nil {
+			return err
+		}
+
+		output.Success("Session token updated.", "label", updated.Label)
+		return nil
+	},
+}
+
 var removeUserCmd = &cobra.Command{
 	Use:   "remove",
 	Short: "Remove a stored user.",
@@ -228,11 +260,11 @@ var viewUserCmd = &cobra.Command{
 }
 
 func init() {
-	userCmd.GroupID = "puzzles"
 	userCmd.AddCommand(addUserCmd)
 	userCmd.AddCommand(clearUserCmd)
 	userCmd.AddCommand(listUserCmd)
 	userCmd.AddCommand(switchUserCmd)
+	userCmd.AddCommand(updateUserCmd)
 	userCmd.AddCommand(removeUserCmd)
 	userCmd.AddCommand(viewUserCmd)
 	rootCmd.AddCommand(userCmd)

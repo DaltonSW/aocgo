@@ -111,3 +111,34 @@ func TestLegacyTokenMigration(t *testing.T) {
 		t.Fatalf("expected one migrated user named default, got %#v", list)
 	}
 }
+
+func TestUpdateActiveUserToken(t *testing.T) {
+	t.Setenv("XDG_CONFIG_HOME", t.TempDir())
+
+	if _, err := UpdateActiveUserToken("token-2"); err == nil {
+		t.Fatalf("expected error when no active user in store")
+	}
+
+	if _, err := AddUser("primary", "token-1", true); err != nil {
+		t.Fatalf("AddUser returned error: %v", err)
+	}
+
+	updated, err := UpdateActiveUserToken("token-2")
+	if err != nil {
+		t.Fatalf("UpdateActiveUserToken returned error: %v", err)
+	}
+	if updated == nil || updated.Label != "primary" {
+		t.Fatalf("expected primary to remain active, got %#v", updated)
+	}
+	if updated.Token != "token-2" {
+		t.Fatalf("expected token-2, got %s", updated.Token)
+	}
+
+	active, err := GetActiveUser(false)
+	if err != nil {
+		t.Fatalf("GetActiveUser returned error: %v", err)
+	}
+	if active.Token != "token-2" {
+		t.Fatalf("expected stored token to update to token-2, got %s", active.Token)
+	}
+}
