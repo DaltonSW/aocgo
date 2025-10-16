@@ -8,6 +8,7 @@ import (
 	"github.com/charmbracelet/fang"
 	"github.com/charmbracelet/lipgloss/v2"
 	"github.com/spf13/cobra"
+
 	"go.dalton.dog/aocgo/internal/cache"
 	"go.dalton.dog/aocgo/internal/output"
 	"go.dalton.dog/aocgo/internal/resources"
@@ -29,9 +30,7 @@ var UserRsrc *resources.User
 var cacheInitialized bool
 
 func main() {
-	if err := fang.Execute(context.Background(), rootCmd, fang.WithoutCompletions(), fang.WithVersion(Version)); err != nil {
-		output.Fatal(err)
-	}
+	fang.Execute(context.Background(), rootCmd, fang.WithoutCompletions(), fang.WithVersion(Version))
 }
 
 var rootCmd = &cobra.Command{
@@ -80,36 +79,30 @@ var rootCmd = &cobra.Command{
 func init() {
 	rootCmd.AddGroup(&cobra.Group{ID: "puzzles", Title: "Puzzles"})
 
-	getCmd.GroupID = "puzzles"
 	getCmd.Flags().StringVarP(&Year, "year", "y", "0", "--year [2015...2024]")
 	getCmd.Flags().StringVarP(&Day, "day", "d", "0", "--day [1...25]")
 	getCmd.Flags().StringVarP(&OutFilename, "out", "o", "input.txt", "--out filename")
 	rootCmd.AddCommand(getCmd)
 
-	leaderboardCmd.GroupID = "puzzles"
 	leaderboardCmd.Flags().StringVarP(&Year, "year", "y", "0", "--year [2015...2024]")
 	leaderboardCmd.Flags().StringVarP(&Day, "day", "d", "0", "--day [1...25]")
 	rootCmd.AddCommand(leaderboardCmd)
 
-	newCmd.GroupID = "puzzles"
 	newCmd.Flags().StringVarP(&Year, "year", "y", "0", "--year [2015...2024]")
 	newCmd.Flags().StringVarP(&Day, "day", "d", "0", "--day [1...25]")
 	newCmd.Flags().StringVarP(&BaseFilename, "base", "b", "base.go", "--base filename")
 	newCmd.Flags().StringVarP(&OutFilename, "out", "o", "main.go", "--out filename")
 	rootCmd.AddCommand(newCmd)
 
-	reloadCmd.GroupID = "puzzles"
 	reloadCmd.Flags().StringVarP(&Year, "year", "y", "0", "--year [2015...2024]")
 	reloadCmd.Flags().StringVarP(&Day, "day", "d", "0", "--day [1...25]")
 	rootCmd.AddCommand(reloadCmd)
 
-	submitCmd.GroupID = "puzzles"
 	submitCmd.Flags().StringVarP(&Year, "year", "y", "0", "--year [2015...2024]")
 	submitCmd.Flags().StringVarP(&Day, "day", "d", "0", "--day [1...25]")
 	submitCmd.Flags().IntVarP(&AnswerPart, "part", "p", 0, "--part [1|2]")
 	rootCmd.AddCommand(submitCmd)
 
-	viewCmd.GroupID = "puzzles"
 	viewCmd.Flags().StringVarP(&Year, "year", "y", "0", "--year [2015...2024]")
 	viewCmd.Flags().StringVarP(&Day, "day", "d", "0", "--day [1...25]")
 	rootCmd.AddCommand(viewCmd)
