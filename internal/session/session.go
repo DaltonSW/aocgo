@@ -174,6 +174,37 @@ func RemoveUser(label string) (*ActiveUser, error) {
 	return getActiveFromStore(store, false)
 }
 
+// UpdateActiveUserToken replaces the stored session token for the active user.
+func UpdateActiveUserToken(token string) (*ActiveUser, error) {
+	token = strings.TrimSpace(token)
+	if token == "" {
+		return nil, errors.New("session token cannot be empty")
+	}
+
+	store, err := loadStore()
+	if err != nil {
+		return nil, err
+	}
+
+	if store.Active == "" {
+		return nil, errors.New("no active user configured in local store")
+	}
+
+	user, ok := store.Users[store.Active]
+	if !ok {
+		return nil, errors.New("active user not found in local store")
+	}
+
+	user.Token = token
+	store.Users[store.Active] = user
+
+	if err := saveStore(store); err != nil {
+		return nil, err
+	}
+
+	return getActiveFromStore(store, false)
+}
+
 // GetActiveUser returns the currently active user credentials.
 func GetActiveUser(healthLog bool) (*ActiveUser, error) {
 	store, err := loadStore()

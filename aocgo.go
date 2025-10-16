@@ -16,9 +16,11 @@ import (
 	"github.com/charmbracelet/lipgloss/v2"
 )
 
-var correctTestColor = lipgloss.Color("#1d8509")
-var incorrectTestColor = lipgloss.Color("#c40e4f")
-var puzzleSolveColor = lipgloss.Color("#674dd9")
+var (
+	correctTestColor   = lipgloss.BrightGreen
+	incorrectTestColor = lipgloss.BrightRed
+	puzzleSolveColor   = lipgloss.BrightMagenta
+)
 
 // InputData interface is a Generic wrapper around the possible forms you can get puzzle input data in
 type InputData interface {
